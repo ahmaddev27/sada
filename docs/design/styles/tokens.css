@@ -1,0 +1,190 @@
+/* ==========================================================
+   Sada (صدى) — Design Tokens
+   RTL-first, Gulf-aesthetic SaaS
+   ========================================================== */
+
+:root {
+  /* Brand — صدى */
+  --sada-50:  #F3FAF7;
+  --sada-100: #E6F4F0;
+  --sada-200: #C7E5DD;
+  --sada-300: #8DCDBE;
+  --sada-400: #2A9080;
+  --sada-500: #0F6F5C;
+  --sada-600: #0A5A4B;
+  --sada-700: #074539;
+  --sada-800: #053127;
+  --sada-900: #031E18;
+
+  /* Sand — رمال */
+  --sand-50:  #FCF7EE;
+  --sand-100: #F7ECD9;
+  --sand-200: #EED9B4;
+  --sand-300: #E3C48E;
+  --sand-400: #D4A876;
+  --sand-500: #C8965F;
+  --sand-600: #A67849;
+  --sand-700: #7E5A37;
+
+  /* Ink — warm neutrals */
+  --ink-900: #0E1512;
+  --ink-800: #1A2320;
+  --ink-700: #2C3632;
+  --ink-600: #424C48;
+  --ink-500: #5E6A64;
+  --ink-400: #808B85;
+  --ink-300: #A8B1AD;
+  --ink-200: #D6DBD8;
+  --ink-100: #EEF0EE;
+  --ink-50:  #F7F8F7;
+  --white:   #FFFFFF;
+
+  /* Semantic */
+  --success: #0D8B5A;
+  --success-bg: #E3F4EB;
+  --warning: #C97A0F;
+  --warning-bg: #FBEED9;
+  --error:   #B5322F;
+  --error-bg: #F7DEDC;
+  --info:    #2E6FA8;
+  --info-bg: #DCE8F4;
+
+  /* Surfaces (Light default) */
+  --bg-page: #F7F8F7;
+  --bg-surface: #FFFFFF;
+  --bg-surface-2: #F3FAF7;
+  --bg-elevated: #FFFFFF;
+  --bg-muted: #EEF0EE;
+  --bg-seasonal: #F7ECD9;
+  --bg-seasonal-soft: #FCF7EE;
+
+  --text-primary: #0E1512;
+  --text-secondary: #2C3632;
+  --text-muted: #5E6A64;
+  --text-faint: #808B85;
+  --text-inverted: #FFFFFF;
+
+  --border-subtle: #EEF0EE;
+  --border-default: #D6DBD8;
+  --border-strong: #A8B1AD;
+  --border-brand: #C7E5DD;
+
+  --accent: var(--sada-500);
+  --accent-hover: var(--sada-600);
+  --accent-soft: var(--sada-100);
+  --accent-text: var(--sada-700);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 1px rgba(14, 21, 18, 0.04);
+  --shadow-sm: 0 1px 2px rgba(14, 21, 18, 0.05), 0 1px 1px rgba(14, 21, 18, 0.03);
+  --shadow-md: 0 4px 12px rgba(14, 21, 18, 0.08), 0 2px 4px rgba(14, 21, 18, 0.04);
+  --shadow-lg: 0 12px 32px rgba(14, 21, 18, 0.10), 0 4px 8px rgba(14, 21, 18, 0.05);
+  --shadow-xl: 0 24px 64px rgba(14, 21, 18, 0.14);
+  --shadow-focus: 0 0 0 3px rgba(15, 111, 92, 0.20);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 400ms;
+
+  /* Spacing */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 24px; --s-6: 32px; --s-8: 48px; --s-10: 64px; --s-12: 96px;
+
+  /* Font */
+  --font-arabic: 'Tajawal', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-arabic-display: 'Tajawal', 'IBM Plex Sans Arabic', sans-serif;
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --bg-page: #0A0F0D;
+  --bg-surface: #121916;
+  --bg-surface-2: #0F1714;
+  --bg-elevated: #1A2320;
+  --bg-muted: #1A2320;
+  --bg-seasonal: #2B2316;
+  --bg-seasonal-soft: #1E1A12;
+
+  --text-primary: #F3F6F4;
+  --text-secondary: #CFD6D2;
+  --text-muted: #8D9691;
+  --text-faint: #6B7570;
+  --text-inverted: #0E1512;
+
+  --border-subtle: #1F2A26;
+  --border-default: #2A3631;
+  --border-strong: #42504A;
+  --border-brand: #0A5A4B;
+
+  --accent: #2A9080;
+  --accent-hover: #3DA898;
+  --accent-soft: #0A2B26;
+  --accent-text: #8DCDBE;
+
+  --success-bg: #08261B;
+  --warning-bg: #2B1F0D;
+  --error-bg: #2B100F;
+  --info-bg: #0F2238;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.65);
+  --shadow-focus: 0 0 0 3px rgba(42, 144, 128, 0.35);
+}
+
+/* Base */
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-arabic);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body { direction: rtl; }
+
+::selection { background: var(--sada-100); color: var(--sada-700); }
+
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, textarea, select { font-family: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* Scrollbars (webkit) */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 6px;
+  border: 2px solid var(--bg-page);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
+
+/* Focus */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-sm);
+}
+
+/* Utility */
+.num-tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.mono { font-family: var(--font-mono); }
