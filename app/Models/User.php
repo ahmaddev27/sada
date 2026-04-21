@@ -10,8 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-// AUTH-01: MustVerifyEmail enforces email verification before access
-#[Fillable(['name', 'email', 'password', 'token_balance'])]
+// AUTH-01: MustVerifyEmail | AUTH-02: google_id for OAuth users
+#[Fillable(['name', 'email', 'password', 'google_id', 'email_verified_at', 'token_balance'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
