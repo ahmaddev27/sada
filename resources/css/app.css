@@ -1,11 +1,163 @@
 @import 'tailwindcss';
+@plugin "@tailwindcss/forms";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
-@source '../**/*.js';
+@source '../**/*.vue';
+@source '../**/*.ts';
+
+/* ==========================================================
+   Sada (صدى) — Design Tokens (Tailwind v4 @theme)
+   Source of truth: docs/design/styles/tokens.css
+   ========================================================== */
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    /* ── Brand — صدى ─────────────────────────────────────── */
+    --color-sada-50:  #F3FAF7;
+    --color-sada-100: #E6F4F0;
+    --color-sada-200: #C7E5DD;
+    --color-sada-300: #8DCDBE;
+    --color-sada-400: #2A9080;
+    --color-sada-500: #0F6F5C;
+    --color-sada-600: #0A5A4B;
+    --color-sada-700: #074539;
+    --color-sada-800: #053127;
+    --color-sada-900: #031E18;
+
+    /* ── Sand — رمال ─────────────────────────────────────── */
+    --color-sand-50:  #FCF7EE;
+    --color-sand-100: #F7ECD9;
+    --color-sand-200: #EED9B4;
+    --color-sand-300: #E3C48E;
+    --color-sand-400: #D4A876;
+    --color-sand-500: #C8965F;
+    --color-sand-600: #A67849;
+    --color-sand-700: #7E5A37;
+
+    /* ── Ink — warm neutrals ─────────────────────────────── */
+    --color-ink-50:  #F7F8F7;
+    --color-ink-100: #EEF0EE;
+    --color-ink-200: #D6DBD8;
+    --color-ink-300: #A8B1AD;
+    --color-ink-400: #808B85;
+    --color-ink-500: #5E6A64;
+    --color-ink-600: #424C48;
+    --color-ink-700: #2C3632;
+    --color-ink-800: #1A2320;
+    --color-ink-900: #0E1512;
+
+    /* ── Semantic ────────────────────────────────────────── */
+    --color-success:     #0D8B5A;
+    --color-success-bg:  #E3F4EB;
+    --color-warning:     #C97A0F;
+    --color-warning-bg:  #FBEED9;
+    --color-error:       #B5322F;
+    --color-error-bg:    #F7DEDC;
+    --color-info:        #2E6FA8;
+    --color-info-bg:     #DCE8F4;
+
+    /* ── Surfaces ────────────────────────────────────────── */
+    --color-bg-page:         #F7F8F7;
+    --color-bg-surface:      #FFFFFF;
+    --color-bg-surface-2:    #F3FAF7;
+    --color-bg-elevated:     #FFFFFF;
+    --color-bg-muted:        #EEF0EE;
+    --color-bg-seasonal:     #F7ECD9;
+    --color-bg-seasonal-soft:#FCF7EE;
+
+    /* ── Typography ──────────────────────────────────────── */
+    --font-arabic:         'Tajawal', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+    --font-arabic-display: 'Tajawal', 'IBM Plex Sans Arabic', sans-serif;
+    --font-latin:          'Inter', 'IBM Plex Sans', -apple-system, sans-serif;
+    --font-mono:           'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+
+    /* ── Border Radius ───────────────────────────────────── */
+    --radius-sm:   6px;
+    --radius-md:   10px;
+    --radius-lg:   16px;
+    --radius-xl:   24px;
+    --radius-full: 9999px;
+
+    /* ── Shadows ─────────────────────────────────────────── */
+    --shadow-xs:    0 1px 1px rgba(14, 21, 18, 0.04);
+    --shadow-sm:    0 1px 2px rgba(14, 21, 18, 0.05), 0 1px 1px rgba(14, 21, 18, 0.03);
+    --shadow-md:    0 4px 12px rgba(14, 21, 18, 0.08), 0 2px 4px rgba(14, 21, 18, 0.04);
+    --shadow-lg:    0 12px 32px rgba(14, 21, 18, 0.10), 0 4px 8px rgba(14, 21, 18, 0.05);
+    --shadow-xl:    0 24px 64px rgba(14, 21, 18, 0.14);
+    --shadow-focus: 0 0 0 3px rgba(15, 111, 92, 0.20);
+
+    /* ── Motion ──────────────────────────────────────────── */
+    --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --duration-fast: 150ms;
+    --duration-base: 250ms;
+    --duration-slow: 400ms;
+}
+
+/* ==========================================================
+   Base — RTL-first
+   ========================================================== */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    direction: rtl;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+body {
+    font-family: var(--font-arabic);
+    background-color: var(--color-bg-page);
+    color: var(--color-ink-900);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+/* Arabic typography — letter-spacing must be 0 */
+[lang="ar"], [dir="rtl"] {
+    letter-spacing: 0;
+}
+
+/* Latin content inside RTL context */
+[dir="ltr"] {
+    font-family: var(--font-latin);
+}
+
+::selection {
+    background: var(--color-sada-100);
+    color: var(--color-sada-700);
+}
+
+/* Focus ring — brand green */
+:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+    border-radius: var(--radius-sm);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: var(--color-ink-200);
+    border-radius: 6px;
+    border: 2px solid var(--color-bg-page);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-ink-300); }
+
+button { font-family: inherit; cursor: pointer; }
+input, textarea, select { font-family: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* Tabular numbers for dashboards */
+.num-tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
 }

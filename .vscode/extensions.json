@@ -1,0 +1,16 @@
+{
+  "recommendations": [
+    "bmewburn.vscode-intelephense-client",
+    "Vue.volar",
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "onecentlin.laravel-blade",
+    "amiralizadeh9480.laravel-extra-intellisense",
+    "austenc.laravel-blade-spacer",
+    "neilbrayfield.php-docblocker",
+    "EditorConfig.EditorConfig",
+    "usernamehw.errorlens",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}
