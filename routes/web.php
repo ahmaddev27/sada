@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\WorkspaceController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -58,4 +59,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard/Index');
     })->name('dashboard');
+
+    // WS-01 → WS-05
+    Route::get('/workspaces', [WorkspaceController::class, 'index'])->name('workspace.index');
+    Route::post('/workspaces', [WorkspaceController::class, 'store'])->name('workspace.store');
+    Route::get('/workspaces/{workspace}/settings', [WorkspaceController::class, 'settings'])->name('workspace.settings');
+    Route::post('/workspaces/{workspace}', [WorkspaceController::class, 'update'])->name('workspace.update');
+    Route::post('/workspaces/{workspace}/brand', [WorkspaceController::class, 'updateBrand'])->name('workspace.brand');
+    Route::post('/workspaces/{workspace}/switch', [WorkspaceController::class, 'switch'])->name('workspace.switch');
+    Route::post('/workspaces/{workspace}/archive', [WorkspaceController::class, 'archive'])->name('workspace.archive');
 });
