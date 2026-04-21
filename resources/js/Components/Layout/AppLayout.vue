@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import Toast from '@/Components/Base/Toast.vue';
 import type { PageProps } from '@/Types';
 
 const page = usePage<PageProps>();
@@ -166,4 +167,6 @@ const navItems = [
             </main>
         </div>
     </div>
+
+    <Toast />
 </template>
