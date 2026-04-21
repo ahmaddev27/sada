@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// ── Landing page ───────────────────────────────────────────────────────────
+Route::get('/', function () {
+    return Inertia::render('Landing');
+})->name('landing');
+
 // ── Guest routes ───────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
     // AUTH-01
