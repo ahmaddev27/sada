@@ -1,0 +1,189 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+
+const props = withDefaults(defineProps<{
+    name: string;
+    size?: number;
+}>(), { size: 18 });
+
+// Each icon: array of path `d` strings + optional fill mode
+const icons: Record<string, { paths: string[]; fill?: boolean }> = {
+    home: {
+        paths: [
+            'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
+            'M9 22V12h6v10',
+        ],
+    },
+    sparkle: {
+        paths: [
+            'M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-6.26L4 10l5.91-1.74z',
+            'M5 3v3M3 5h3M19 17v3M17 19h3',
+        ],
+    },
+    calendar: {
+        paths: [
+            'M8 2v4M16 2v4',
+            'M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',
+            'M3 10h18',
+        ],
+    },
+    clock: {
+        paths: [
+            'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z',
+            'M12 6v6l4 2',
+        ],
+    },
+    megaphone: {
+        paths: [
+            'M3 11v2a6 6 0 0 0 6 6h1',
+            'M11 5L5.5 9H2v6h3.5L11 19V5z',
+            'M19.07 4.93a10 10 0 0 1 0 14.14',
+            'M15.54 8.46a5 5 0 0 1 0 7.07',
+        ],
+    },
+    moon: {
+        paths: ['M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'],
+    },
+    sun: {
+        paths: [
+            'M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42',
+            'M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z',
+        ],
+    },
+    chart: {
+        paths: ['M18 20V10M12 20V4M6 20v-6'],
+    },
+    credit: {
+        paths: [
+            'M2 5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5z',
+            'M2 10h20',
+        ],
+    },
+    settings: {
+        paths: [
+            'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+            'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z',
+        ],
+    },
+    chevronDown: {
+        paths: ['M6 9l6 6 6-6'],
+    },
+    chevronLeft: {
+        paths: ['M15 18l-6-6 6-6'],
+    },
+    chevronRight: {
+        paths: ['M9 18l6-6-6-6'],
+    },
+    menu: {
+        paths: ['M3 12h18M3 6h18M3 18h18'],
+    },
+    search: {
+        paths: ['M21 21l-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0'],
+    },
+    bell: {
+        paths: [
+            'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9',
+            'M13.73 21a2 2 0 0 1-3.46 0',
+        ],
+    },
+    x: {
+        paths: ['M18 6L6 18M6 6l12 12'],
+    },
+    arrowLeft: {
+        paths: ['M19 12H5', 'M12 19l-7-7 7-7'],
+    },
+    arrowRight: {
+        paths: ['M5 12h14', 'M12 5l7 7-7 7'],
+    },
+    up: {
+        paths: ['M18 15l-6-6-6 6'],
+    },
+    down: {
+        paths: ['M6 9l6 6 6-6'],
+    },
+    check: {
+        paths: ['M20 6L9 17l-5-5'],
+    },
+    plus: {
+        paths: ['M12 5v14M5 12h14'],
+    },
+    eye: {
+        paths: [
+            'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z',
+            'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+        ],
+    },
+    'eye-off': {
+        paths: [
+            'M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24',
+            'M1 1l22 22',
+        ],
+    },
+    'log-out': {
+        paths: [
+            'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4',
+            'M16 17l5-5-5-5',
+            'M21 12H9',
+        ],
+    },
+    user: {
+        paths: [
+            'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2',
+            'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+        ],
+    },
+    instagram: {
+        paths: [
+            'M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5z',
+            'M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
+            'M17.5 6.5h.01',
+        ],
+    },
+    facebook: {
+        paths: ['M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z'],
+    },
+    palette: {
+        paths: [
+            'M12 22C6.49 22 2 17.52 2 12S6.49 2 12 2c5.52 0 10 4.49 10 10 0 1.65-1.35 3-3 3h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67A3.5 3.5 0 0 1 14 21c-.66 0-1.32-.18-1.88-.5',
+            'M8 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
+            'M16 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
+            'M10 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
+        ],
+    },
+    workspace: {
+        paths: [
+            'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
+            'M9 22V12h6v10',
+        ],
+    },
+    archive: {
+        paths: [
+            'M21 8v13H3V8',
+            'M1 3h22v5H1z',
+            'M10 12h4',
+        ],
+    },
+    refresh: {
+        paths: ['M23 4v6h-6', 'M1 20v-6h6', 'M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15'],
+    },
+};
+
+const icon = computed(() => icons[props.name] ?? icons['x']);
+</script>
+
+<template>
+    <svg
+        :width="size"
+        :height="size"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        style="flex-shrink: 0; display: inline-block; vertical-align: middle;"
+        aria-hidden="true"
+    >
+        <path v-for="(d, i) in icon.paths" :key="i" :d="d" />
+    </svg>
+</template>
