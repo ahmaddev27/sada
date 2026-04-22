@@ -28,6 +28,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // CG: Anthropic Claude AI
+    'anthropic' => [
+        'api_key' => env('ANTHROPIC_API_KEY'),
+    ],
+
     // CON-01→CON-02: Meta (Facebook + Instagram) OAuth
     'meta' => [
         'client_id'     => env('META_APP_ID'),

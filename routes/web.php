@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\SocialAccountController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -69,6 +70,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/workspaces/{workspace}/brand', [WorkspaceController::class, 'updateBrand'])->name('workspace.brand');
     Route::post('/workspaces/{workspace}/switch', [WorkspaceController::class, 'switch'])->name('workspace.switch');
     Route::post('/workspaces/{workspace}/archive', [WorkspaceController::class, 'archive'])->name('workspace.archive');
+
+    // CG-01→CG-11: Content generation
+    Route::get('/generate', [GenerateController::class, 'index'])->name('generate.index');
+    Route::post('/generate', [GenerateController::class, 'generate'])->name('generate.generate');
+    Route::post('/generate/save', [GenerateController::class, 'save'])->name('generate.save');
 
     // CON-01→CON-10: Social account connections
     Route::get('/social/accounts', [SocialAccountController::class, 'index'])->name('social.index');
