@@ -72,6 +72,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // WS-01: first-run onboarding
     Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding');
     Route::post('/onboarding/workspace', [OnboardingController::class, 'storeWorkspace'])->name('onboarding.workspace');
+    Route::post('/onboarding/skip', [OnboardingController::class, 'skip'])->name('onboarding.skip');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

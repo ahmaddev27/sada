@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-// WS-01: first-run onboarding after registration
+// WS-01: first-run onboarding — step 1 workspace, step 2 social connect
 class OnboardingController extends Controller
 {
     private const DIALECTS = [
@@ -40,12 +40,22 @@ class OnboardingController extends Controller
         $user      = $request->user();
         $workspace = $user->activeWorkspaces()->first();
 
-        // Already has workspace — go to dashboard (onboarding done)
         if ($workspace) {
+            // If session flag is set, user just created their first workspace → step 2
+            if ($request->session()->get('onboarding_step') === 2) {
+                return Inertia::render('Onboarding/Index', [
+                    'step'          => 2,
+                    'dialects'      => self::DIALECTS,
+                    'businessTypes' => self::BUSINESS_TYPES,
+                ]);
+            }
+
+            // Already fully onboarded
             return redirect()->route('dashboard');
         }
 
         return Inertia::render('Onboarding/Index', [
+            'step'          => 1,
             'dialects'      => self::DIALECTS,
             'businessTypes' => self::BUSINESS_TYPES,
         ]);
@@ -63,10 +73,18 @@ class OnboardingController extends Controller
         );
 
         $request->session()->put('current_workspace_id', $workspace->id);
+        $request->session()->put('onboarding_step', 2);
 
         $user->notify(new WelcomeNotification());
 
+        return redirect()->route('onboarding');
+    }
+
+    public function skip(Request $request): RedirectResponse
+    {
+        $request->session()->forget('onboarding_step');
+
         return redirect()->route('dashboard')
-            ->with('flash.success', 'مرحباً بك في صدى! تم إنشاء مساحة عملك.');
+            ->with('flash.success', 'مرحباً بك في صدى! يمكنك ربط حساباتك لاحقاً من الإعدادات.');
     }
 }

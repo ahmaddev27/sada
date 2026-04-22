@@ -21,10 +21,14 @@ use Inertia\Response;
 class CampaignController extends Controller
 {
     // ADS-01: create campaign page
-    public function create(Request $request): Response
+    public function create(Request $request): Response|\Illuminate\Http\RedirectResponse
     {
-        /** @var Workspace $workspace */
+        /** @var Workspace|null $workspace */
         $workspace = $request->attributes->get('current_workspace');
+
+        if (! $workspace) {
+            return redirect()->route('onboarding');
+        }
 
         $socialAccounts = SocialAccount::withoutWorkspaceScope()
             ->where('workspace_id', $workspace->id)
@@ -44,10 +48,14 @@ class CampaignController extends Controller
     }
 
     // ADS-01: list campaigns with optional status filter
-    public function index(Request $request): Response
+    public function index(Request $request): Response|\Illuminate\Http\RedirectResponse
     {
-        /** @var Workspace $workspace */
+        /** @var Workspace|null $workspace */
         $workspace = $request->attributes->get('current_workspace');
+
+        if (! $workspace) {
+            return redirect()->route('onboarding');
+        }
 
         $campaigns = Campaign::with(['socialAccount', 'post'])
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
@@ -79,8 +87,12 @@ class CampaignController extends Controller
     // ADS-02: create campaign
     public function store(StoreCampaignRequest $request, CreateCampaignAction $action): RedirectResponse
     {
-        /** @var Workspace $workspace */
+        /** @var Workspace|null $workspace */
         $workspace = $request->attributes->get('current_workspace');
+
+        if (! $workspace) {
+            return redirect()->route('onboarding');
+        }
 
         try {
             $campaign = $action->execute($workspace, $request->validated());

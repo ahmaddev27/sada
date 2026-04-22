@@ -131,8 +131,10 @@
 <div class="header">
     <div class="brand">صدى · Sada</div>
     <div class="sub">
-        @if(in_array($lang, ['ar', 'both']))تقرير التحليلات — @endif
-        @if(in_array($lang, ['en', 'both']))Analytics Report@endif
+        @if(in_array($lang, ['ar', 'both']))تقرير التحليلات —
+        @endif
+        @if(in_array($lang, ['en', 'both']))Analytics Report
+        @endif
     </div>
     <div class="workspace">{{ $workspace->name }}</div>
 </div>
@@ -150,7 +152,7 @@
 {{-- ── KPI Summary (ANL-01) ───────────────────────────────────────────────── --}}
 <div class="section-title">
     @if(in_array($lang, ['ar', 'both']))مؤشرات الأداء الرئيسية @endif
-    @if(in_array($lang, ['en', 'both']))Key Performance Indicators@endif
+    @if(in_array($lang, ['en', 'both']))Key Performance Indicators @endif
 </div>
 
 <table class="kpi-grid">
@@ -160,7 +162,7 @@
             <div class="kpi-card">
                 <div class="label">
                     @if(in_array($lang, ['ar', 'both']))الوصول @endif
-                    @if(in_array($lang, ['en', 'both']))Reach@endif
+                    @if(in_array($lang, ['en', 'both']))Reach @endif
                 </div>
                 <div class="value">{{ number_format($kpis['total_reach']) }}</div>
             </div>
@@ -170,7 +172,7 @@
             <div class="kpi-card">
                 <div class="label">
                     @if(in_array($lang, ['ar', 'both']))الانطباعات @endif
-                    @if(in_array($lang, ['en', 'both']))Impressions@endif
+                    @if(in_array($lang, ['en', 'both']))Impressions @endif
                 </div>
                 <div class="value">{{ number_format($kpis['total_impressions']) }}</div>
             </div>
@@ -180,7 +182,7 @@
             <div class="kpi-card">
                 <div class="label">
                     @if(in_array($lang, ['ar', 'both']))معدل التفاعل @endif
-                    @if(in_array($lang, ['en', 'both']))Engagement Rate@endif
+                    @if(in_array($lang, ['en', 'both']))Engagement Rate @endif
                 </div>
                 <div class="value">{{ $kpis['engagement_rate'] }}%</div>
                 <div class="sub-value">
@@ -195,7 +197,7 @@
             <div class="kpi-card">
                 <div class="label">
                     @if(in_array($lang, ['ar', 'both']))نسبة النقر @endif
-                    @if(in_array($lang, ['en', 'both']))CTR@endif
+                    @if(in_array($lang, ['en', 'both']))CTR @endif
                 </div>
                 <div class="value">{{ $kpis['ctr'] }}%</div>
                 <div class="sub-value">
@@ -212,7 +214,7 @@
             <div class="kpi-card">
                 <div class="label">
                     @if(in_array($lang, ['ar', 'both']))نمو المتابعين @endif
-                    @if(in_array($lang, ['en', 'both']))Follower Growth@endif
+                    @if(in_array($lang, ['en', 'both']))Follower Growth @endif
                 </div>
                 <div class="value">{{ ($kpis['follower_growth'] >= 0 ? '+' : '') . number_format($kpis['follower_growth']) }}</div>
             </div>
@@ -222,7 +224,7 @@
             <div class="kpi-card">
                 <div class="label">
                     @if(in_array($lang, ['ar', 'both']))الإنفاق الإعلاني @endif
-                    @if(in_array($lang, ['en', 'both']))Ad Spend@endif
+                    @if(in_array($lang, ['en', 'both']))Ad Spend @endif
                 </div>
                 <div class="value">{{ number_format($kpis['total_spend'], 2) }}</div>
                 <div class="sub-value">SAR</div>
@@ -235,7 +237,7 @@
                 <div class="value">—</div>
                 <div class="sub-value">
                     @if(in_array($lang, ['ar', 'both']))قريباً @endif
-                    @if(in_array($lang, ['en', 'both']))Coming soon@endif
+                    @if(in_array($lang, ['en', 'both']))Coming soon @endif
                 </div>
             </div>
         </td>
@@ -247,7 +249,7 @@
 @if(count($topPosts) > 0)
 <div class="section-title">
     @if(in_array($lang, ['ar', 'both']))أفضل المنشورات @endif
-    @if(in_array($lang, ['en', 'both']))Top Posts@endif
+    @if(in_array($lang, ['en', 'both']))Top Posts @endif
 </div>
 
 <table class="data-table">
@@ -255,19 +257,19 @@
         <tr>
             <th>
                 @if(in_array($lang, ['ar', 'both']))المحتوى @endif
-                @if(in_array($lang, ['en', 'both']))Content@endif
+                @if(in_array($lang, ['en', 'both']))Content @endif
             </th>
             <th>
                 @if(in_array($lang, ['ar', 'both']))المنصة @endif
-                @if(in_array($lang, ['en', 'both']))Platform@endif
+                @if(in_array($lang, ['en', 'both']))Platform @endif
             </th>
             <th>
                 @if(in_array($lang, ['ar', 'both']))الوصول @endif
-                @if(in_array($lang, ['en', 'both']))Reach@endif
+                @if(in_array($lang, ['en', 'both']))Reach @endif
             </th>
             <th>
                 @if(in_array($lang, ['ar', 'both']))التفاعل @endif
-                @if(in_array($lang, ['en', 'both']))Engagement@endif
+                @if(in_array($lang, ['en', 'both']))Engagement @endif
             </th>
         </tr>
     </thead>
@@ -287,8 +289,10 @@
 {{-- ── Footer ──────────────────────────────────────────────────────────────── --}}
 <div class="footer">
     صدى · Sada &mdash;
-    @if(in_array($lang, ['ar', 'both']))تقرير تلقائي — جميع الحقوق محفوظة @endif
-    @if(in_array($lang, ['en', 'both']))Automated report — All rights reserved@endif
+    @if(in_array($lang, ['ar', 'both']))تقرير تلقائي &mdash; جميع الحقوق محفوظة
+    @endif
+    @if(in_array($lang, ['en', 'both']))Automated report &mdash; All rights reserved
+    @endif
     &mdash; {{ now()->year }}
 </div>
 
