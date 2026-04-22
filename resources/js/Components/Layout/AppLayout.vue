@@ -1,141 +1,233 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { useUiStore } from '@/Stores/ui';
+import Icon from '@/Components/Base/Icon.vue';
+import Toast from '@/Components/Base/Toast.vue';
 import type { PageProps } from '@/Types';
 
-const page = usePage<PageProps>();
-const user = computed(() => page.props.auth.user);
-const currentWorkspace = computed(() => page.props.currentWorkspace);
+defineProps<{ title?: string; crumbs?: string[] }>();
 
-const sidebarCollapsed = ref(false);
-const toggleSidebar = () => (sidebarCollapsed.value = !sidebarCollapsed.value);
+const page     = usePage<PageProps>();
+const ui       = useUiStore();
+const user      = computed(() => page.props.auth.user);
+const ws        = computed(() => page.props.currentWorkspace);
+
+const flash     = computed(() => page.props.flash);
+
+const mobileOpen = ref(false);
+
+const tokenPct = computed(() => {
+    if (!user.value) return 0;
+    const max = 2000; // TODO: pull from subscription plan
+    return Math.min(100, Math.round((user.value.token_balance / max) * 100));
+});
 
 const navItems = [
-    { label: 'لوحة التحكم', href: '/dashboard', icon: '⊞' },
-    { label: 'إنشاء محتوى', href: '/generate', icon: '✦' },
-    { label: 'التقويم', href: '/calendar', icon: '◫' },
-    { label: 'المواسم', href: '/seasonal', icon: '◈' },
-    { label: 'الحملات', href: '/campaigns', icon: '◉' },
-    { label: 'التحليلات', href: '/analytics', icon: '◎' },
-    { label: 'الفوترة', href: '/billing', icon: '◑' },
-    { label: 'الإعدادات', href: '/settings', icon: '◧' },
+    { label: 'الرئيسية',          href: '/dashboard',  icon: 'home' },
+    { label: 'توليد محتوى',       href: '/generate',   icon: 'sparkle', badge: 'جديد' },
+    { label: 'التقويم',           href: '/calendar',   icon: 'calendar' },
+    { label: 'سجل المحتوى',       href: '/history',    icon: 'clock' },
+    { label: 'الحملات الإعلانية', href: '/campaigns',  icon: 'megaphone' },
+    { label: 'المواسم',           href: '/seasonal',   icon: 'moon' },
+    { label: 'التحليلات',         href: '/analytics',  icon: 'chart' },
 ];
+
+const bottomItems = [
+    { label: 'الفوترة',   href: '/billing',  icon: 'credit' },
+    { label: 'الإعدادات', href: '/settings', icon: 'settings' },
+];
+
+function isActive(href: string): boolean {
+    return window.location.pathname.startsWith(href);
+}
+
+// Close mobile sidebar on ESC
+function onKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape') mobileOpen.value = false;
+}
+onMounted(() => window.addEventListener('keydown', onKeydown));
+onUnmounted(() => window.removeEventListener('keydown', onKeydown));
 </script>
 
 <template>
     <div
-        dir="rtl"
-        class="flex min-h-screen"
-        style="background-color: var(--color-bg-page); font-family: var(--font-arabic);"
+        class="app"
+        :data-collapsed="!ui.sidebarOpen ? 'true' : 'false'"
     >
-        <!-- Sidebar -->
-        <aside
-            :class="[
-                'flex flex-col flex-shrink-0 transition-all duration-300 border-l',
-                sidebarCollapsed ? 'w-[72px]' : 'w-[260px]',
-            ]"
-            style="background-color: var(--color-bg-surface); border-color: var(--color-ink-100);"
-        >
-            <!-- Logo -->
-            <div class="flex items-center gap-3 px-4 py-5 border-b" style="border-color: var(--color-ink-100);">
-                <div
-                    class="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
-                    style="background-color: var(--color-sada-500);"
-                >
-                    <span class="text-white text-sm font-bold">ص</span>
-                </div>
-                <span v-if="!sidebarCollapsed" class="text-base font-bold" style="color: var(--color-ink-900);">
-                    صدى
-                </span>
-            </div>
+        <!-- ─── Sidebar ─────────────────────────────────────────── -->
+        <aside class="sidebar" :data-open="mobileOpen">
 
-            <!-- Workspace selector -->
-            <div
-                v-if="!sidebarCollapsed && currentWorkspace"
-                class="px-3 py-3 border-b"
-                style="border-color: var(--color-ink-100);"
-            >
+            <!-- Logo + Workspace picker -->
+            <div class="sidebar-top">
+                <div class="sidebar-logo">
+                    <div class="mark">ص</div>
+                    <span>صدى</span>
+                </div>
+
                 <button
-                    class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm transition-colors"
-                    style="background-color: var(--color-bg-muted); color: var(--color-ink-700);"
+                    v-if="ws"
+                    class="workspace-picker"
+                    title="تبديل مساحة العمل"
+                    @click="$inertia.visit('/workspaces')"
                 >
-                    <span class="truncate font-medium">{{ currentWorkspace.name }}</span>
-                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <div class="ws-avatar">{{ ws.name.charAt(0) }}</div>
+                    <div class="ws-info">
+                        <div class="ws-name">{{ ws.name }}</div>
+                        <div class="ws-plan">{{ ws.default_dialect === 'sa' ? '🇸🇦 السعودية' : ws.default_dialect }}</div>
+                    </div>
+                    <Icon name="chevronDown" :size="14" class="ws-chevron" style="color: var(--text-faint);" />
+                </button>
+
+                <button
+                    v-else
+                    class="workspace-picker"
+                    @click="$inertia.visit('/workspaces')"
+                >
+                    <div class="ws-avatar">+</div>
+                    <div class="ws-info">
+                        <div class="ws-name">إنشاء مساحة عمل</div>
+                    </div>
                 </button>
             </div>
 
             <!-- Navigation -->
-            <nav class="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+            <nav class="sidebar-nav">
+                <div class="nav-section">العمل</div>
+
                 <a
                     v-for="item in navItems"
                     :key="item.href"
                     :href="item.href"
-                    :title="sidebarCollapsed ? item.label : undefined"
-                    :class="[
-                        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--color-ink-50)]',
-                        sidebarCollapsed ? 'justify-center' : '',
-                    ]"
-                    style="color: var(--color-ink-600);"
+                    :class="['nav-item', { active: isActive(item.href) }]"
+                    :title="!ui.sidebarOpen ? item.label : undefined"
                 >
-                    <span class="text-base leading-none w-5 text-center flex-shrink-0">{{ item.icon }}</span>
-                    <span v-if="!sidebarCollapsed">{{ item.label }}</span>
+                    <Icon :name="item.icon" :size="18" />
+                    <span>{{ item.label }}</span>
+                    <span v-if="item.badge" class="nav-badge">{{ item.badge }}</span>
+                </a>
+
+                <div class="nav-section" style="margin-top: 8px;">الحساب</div>
+
+                <a
+                    v-for="item in bottomItems"
+                    :key="item.href"
+                    :href="item.href"
+                    :class="['nav-item', { active: isActive(item.href) }]"
+                    :title="!ui.sidebarOpen ? item.label : undefined"
+                >
+                    <Icon :name="item.icon" :size="18" />
+                    <span>{{ item.label }}</span>
                 </a>
             </nav>
 
-            <!-- Token balance -->
-            <div
-                v-if="!sidebarCollapsed && user"
-                class="mx-3 mb-3 px-3 py-2 rounded-lg"
-                style="background-color: var(--color-sada-50); border: 1px solid var(--color-sada-100);"
-            >
-                <p class="text-xs mb-0.5" style="color: var(--color-sada-700);">رصيد الرموز</p>
-                <p class="text-sm font-bold num-tabular" style="color: var(--color-sada-600);">
-                    {{ user.token_balance.toLocaleString('ar-SA') }}
-                </p>
-            </div>
+            <!-- Token meter + User chip -->
+            <div class="sidebar-bottom">
+                <!-- Token meter -->
+                <div v-if="user" class="token-meter">
+                    <div class="token-meter-head">
+                        <span class="label">التوكنز</span>
+                        <span class="val num-tabular">
+                            {{ user.token_balance.toLocaleString('ar-EG') }} / 2,000
+                        </span>
+                    </div>
+                    <div class="token-bar">
+                        <div class="token-bar-fill" :style="{ width: tokenPct + '%' }" />
+                    </div>
+                    <button class="token-refill" @click="$inertia.visit('/billing')">
+                        شحن المزيد
+                    </button>
+                </div>
 
-            <!-- Collapse toggle -->
-            <div class="p-2 border-t" style="border-color: var(--color-ink-100);">
+                <!-- User chip -->
+                <div v-if="user" class="user-chip">
+                    <div class="u-avatar">{{ user.name.charAt(0) }}</div>
+                    <div class="user-info">
+                        <div class="user-name">{{ user.name }}</div>
+                        <div class="user-role">{{ user.email }}</div>
+                    </div>
+                    <Icon name="chevronDown" :size="14" style="color: var(--text-faint); flex-shrink: 0;" />
+                </div>
+
+                <!-- Sidebar collapse toggle (desktop) -->
                 <button
-                    @click="toggleSidebar"
-                    class="w-full flex items-center justify-center p-2 rounded-lg transition-colors hover:bg-[var(--color-ink-50)]"
-                    style="color: var(--color-ink-400);"
-                    :title="sidebarCollapsed ? 'توسيع القائمة' : 'طي القائمة'"
+                    class="btn btn-ghost btn-sm"
+                    data-desktop-only="true"
+                    style="width: 100%; justify-content: center; gap: 8px;"
+                    @click="ui.toggleSidebar()"
+                    :title="ui.sidebarOpen ? 'طي القائمة' : 'توسيع القائمة'"
                 >
-                    <svg
-                        :class="['w-4 h-4 transition-transform duration-300', sidebarCollapsed ? 'rotate-180' : '']"
-                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    >
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <Icon :name="ui.sidebarOpen ? 'chevronRight' : 'chevronLeft'" :size="16" />
+                    <span v-if="ui.sidebarOpen" style="font-size: 12px;">طي القائمة</span>
                 </button>
             </div>
         </aside>
 
-        <!-- Main content area -->
-        <div class="flex flex-col flex-1 min-w-0">
-            <!-- Top header -->
-            <header
-                class="flex items-center justify-between px-6 border-b flex-shrink-0"
-                style="
-                    background-color: var(--color-bg-surface);
-                    border-color: var(--color-ink-100);
-                    min-height: 56px;
-                "
-            >
-                <slot name="header">
-                    <h1 class="text-base font-semibold" style="color: var(--color-ink-900);">
-                        <slot name="title" />
-                    </h1>
-                </slot>
+        <!-- Mobile overlay -->
+        <div
+            class="sidebar-overlay"
+            :data-open="mobileOpen"
+            @click="mobileOpen = false"
+        />
 
-                <div class="flex items-center gap-3">
+        <!-- ─── Main area ───────────────────────────────────────── -->
+        <div class="app-main">
+
+            <!-- Topbar -->
+            <header class="topbar">
+                <!-- Mobile menu toggle -->
+                <button
+                    class="btn btn-icon btn-ghost"
+                    data-mobile-only="true"
+                    aria-label="فتح القائمة"
+                    @click="mobileOpen = true"
+                >
+                    <Icon name="menu" :size="20" />
+                </button>
+
+                <!-- Page title / breadcrumbs -->
+                <div class="topbar-title">
+                    <div v-if="crumbs && crumbs.length" class="crumbs">
+                        <span v-for="(crumb, i) in crumbs" :key="i">
+                            {{ crumb }}<span v-if="i < crumbs.length - 1" style="opacity: 0.5; margin: 0 4px;">•</span>
+                        </span>
+                    </div>
+                    <h1>{{ title || 'صدى' }}</h1>
+                </div>
+
+                <!-- Actions -->
+                <div class="topbar-actions">
+                    <!-- Search -->
+                    <div class="topbar-search" data-desktop-only="true">
+                        <Icon name="search" :size="16" style="color: var(--text-muted); flex-shrink: 0;" />
+                        <input placeholder="ابحث في كل شيء..." />
+                        <kbd style="font-size: 10px; padding: 2px 6px; background: var(--bg-elevated); border-radius: 4px; color: var(--text-muted); font-family: var(--font-mono);">⌘K</kbd>
+                    </div>
+
+                    <!-- Theme toggle -->
+                    <button
+                        class="btn btn-icon btn-ghost"
+                        :title="ui.theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'"
+                        @click="ui.toggleTheme()"
+                    >
+                        <Icon :name="ui.theme === 'dark' ? 'sun' : 'moon'" :size="18" />
+                    </button>
+
+                    <!-- Notifications -->
+                    <button class="btn btn-icon btn-ghost" title="الإشعارات">
+                        <Icon name="bell" :size="18" />
+                    </button>
+
+                    <!-- User avatar -->
                     <div
                         v-if="user"
-                        class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                        style="background-color: var(--color-sada-100); color: var(--color-sada-700);"
+                        style="
+                            width: 36px; height: 36px; border-radius: 50%;
+                            background: linear-gradient(135deg, var(--sada-400), var(--sada-600));
+                            color: #fff; font-weight: 700; font-size: 14px;
+                            display: grid; place-items: center; flex-shrink: 0; cursor: pointer;
+                        "
+                        :title="user.name"
                     >
                         {{ user.name.charAt(0) }}
                     </div>
@@ -143,27 +235,38 @@ const navItems = [
             </header>
 
             <!-- Flash messages -->
-            <div v-if="$page.props.flash?.success || $page.props.flash?.error" class="px-8 pt-4">
+            <div
+                v-if="flash?.success || flash?.error"
+                style="padding: 12px 32px 0;"
+            >
                 <div
-                    v-if="$page.props.flash?.success"
-                    class="px-4 py-3 rounded-lg text-sm"
-                    style="background-color: var(--color-success-bg); color: var(--color-success);"
+                    v-if="flash?.success"
+                    style="
+                        padding: 12px 16px; border-radius: var(--radius-md); font-size: 14px;
+                        background: var(--success-bg); color: var(--success);
+                        border: 1px solid color-mix(in oklab, var(--success) 20%, transparent);
+                    "
                 >
-                    {{ $page.props.flash.success }}
+                    {{ flash.success }}
                 </div>
                 <div
-                    v-if="$page.props.flash?.error"
-                    class="px-4 py-3 rounded-lg text-sm"
-                    style="background-color: var(--color-error-bg); color: var(--color-error);"
+                    v-if="flash?.error"
+                    style="
+                        padding: 12px 16px; border-radius: var(--radius-md); font-size: 14px;
+                        background: var(--error-bg); color: var(--error);
+                        border: 1px solid color-mix(in oklab, var(--error) 20%, transparent);
+                    "
                 >
-                    {{ $page.props.flash.error }}
+                    {{ flash.error }}
                 </div>
             </div>
 
             <!-- Page content -->
-            <main class="flex-1 overflow-y-auto p-8">
+            <main class="content-area">
                 <slot />
             </main>
         </div>
     </div>
+
+    <Toast />
 </template>
