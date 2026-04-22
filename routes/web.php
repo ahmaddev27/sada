@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\SeasonalController;
 use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SocialAccountController;
@@ -84,6 +85,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/posts/stats', [PostController::class, 'stats'])->name('posts.stats');
     Route::post('/posts/{post}/reschedule', [PostController::class, 'reschedule'])->name('posts.reschedule');
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+
+    // SE-01→SE-08: Seasonal engine
+    Route::get('/seasonal', [SeasonalController::class, 'index'])->name('seasonal.index');
+    Route::get('/seasonal/{key}/generate', [SeasonalController::class, 'generate'])->name('seasonal.generate');
 
     // CON-01→CON-10: Social account connections
     Route::get('/social/accounts', [SocialAccountController::class, 'index'])->name('social.index');

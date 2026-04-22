@@ -21,8 +21,9 @@ class WorkspaceController extends Controller
     // WS-01: list + create form
     public function index(Request $request): Response
     {
-        $workspaces = $request->user()
-            ->activeWorkspaces()
+        /** @var \App\Models\User $user */
+        $user       = $request->user();
+        $workspaces = $user->activeWorkspaces()
             ->with('brandIdentity')
             ->latest()
             ->get();
@@ -75,7 +76,7 @@ class WorkspaceController extends Controller
             if ($workspace->logo_path) {
                 Storage::disk('public')->delete($workspace->logo_path);
             }
-            $logoPath = $request->file('logo')->store('logos', 'public');
+            $logoPath = $request->file('logo')->store('logos', 'public') ?: null;
         }
 
         $action->execute(
