@@ -7,6 +7,9 @@ use App\Models\Workspace;
 // WS-03
 class UpdateWorkspaceAction
 {
+    /**
+     * @param array<int, string> $countries
+     */
     public function execute(
         Workspace $workspace,
         string $name,
@@ -28,6 +31,6 @@ class UpdateWorkspaceAction
 
         $workspace->update($data);
 
-        return $workspace->fresh();
+        return $workspace->fresh() ?? $workspace;
     }
 }

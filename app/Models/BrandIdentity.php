@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToWorkspace;
+use Database\Factories\BrandIdentityFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['workspace_id', 'description', 'tone', 'target_audience', 'banned_words', 'example_posts'])]
 class BrandIdentity extends Model
 {
+    /** @use HasFactory<BrandIdentityFactory> */
     use HasFactory, BelongsToWorkspace;
 
     protected $casts = [
