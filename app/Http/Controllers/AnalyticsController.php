@@ -159,7 +159,12 @@ class AnalyticsController extends Controller
 
         $postType = $request->query('post_type') ?: null;
 
-        return compact('date_from', 'date_to', 'platform', 'post_type');
+        return [
+            'date_from' => $dateFrom,
+            'date_to'   => $dateTo,
+            'platform'  => $platform,
+            'post_type' => $postType,
+        ];
     }
 
     /**
