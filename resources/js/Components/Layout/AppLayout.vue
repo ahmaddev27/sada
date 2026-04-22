@@ -1,169 +1,232 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-import type { PageProps } from '@/Types';
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { usePage, Link } from '@inertiajs/vue3'
+import { useUiStore } from '@/Stores/ui'
+import Icon from '@/Components/Base/Icon.vue'
+import Toast from '@/Components/Base/Toast.vue'
+import type { PageProps } from '@/Types'
 
-const page = usePage<PageProps>();
-const user = computed(() => page.props.auth.user);
-const currentWorkspace = computed(() => page.props.currentWorkspace);
+const props = defineProps<{ title?: string; crumbs?: string[] }>()
 
-const sidebarCollapsed = ref(false);
-const toggleSidebar = () => (sidebarCollapsed.value = !sidebarCollapsed.value);
+const page = usePage<PageProps>()
+const ui   = useUiStore()
 
-const navItems = [
-    { label: 'لوحة التحكم', href: '/dashboard', icon: '⊞' },
-    { label: 'إنشاء محتوى', href: '/generate', icon: '✦' },
-    { label: 'التقويم', href: '/calendar', icon: '◫' },
-    { label: 'المواسم', href: '/seasonal', icon: '◈' },
-    { label: 'الحملات', href: '/campaigns', icon: '◉' },
-    { label: 'التحليلات', href: '/analytics', icon: '◎' },
-    { label: 'الفوترة', href: '/billing', icon: '◑' },
-    { label: 'الإعدادات', href: '/settings', icon: '◧' },
-];
+const user = computed(() => page.props.auth?.user)
+const ws   = computed(() => page.props.currentWorkspace)
+const flash = computed(() => page.props.flash)
+
+const mobileOpen = ref(false)
+
+const tokenBalance = computed(() => user.value?.token_balance ?? 0)
+const tokenMax     = computed(() => 2000)
+const tokenPct     = computed(() => Math.min(100, Math.round((tokenBalance.value / tokenMax.value) * 100)))
+
+const userInitials = computed(() => {
+    const name = user.value?.name ?? ''
+    return name.split(' ').map((w: string) => w[0]).join('').slice(0, 2)
+})
+
+const wsInitials = computed(() => {
+    const name = ws.value?.name ?? ''
+    return name.split(' ').map((w: string) => w[0]).join('').slice(0, 2)
+})
+
+const currentPath = computed(() => page.url.split('?')[0])
+
+const navWork = [
+    { label: 'الرئيسية',           href: '/dashboard',  icon: 'home' },
+    { label: 'توليد محتوى',        href: '/generate',   icon: 'sparkle', badge: 'جديد' },
+    { label: 'التقويم',            href: '/calendar',   icon: 'calendar' },
+    { label: 'سجل المحتوى',        href: '/history',    icon: 'clock' },
+    { label: 'الحملات الإعلانية',  href: '/campaigns',  icon: 'megaphone' },
+    { label: 'المواسم',            href: '/seasonal',   icon: 'moon' },
+    { label: 'التحليلات',          href: '/analytics',  icon: 'chart' },
+]
+
+const navAccount = [
+    { label: 'الحسابات المرتبطة', href: '/social/accounts', icon: 'instagram' },
+    { label: 'الفوترة',           href: '/billing',         icon: 'credit' },
+    { label: 'الإعدادات',         href: '/settings',        icon: 'settings' },
+]
+
+function isActive(href: string) {
+    return currentPath.value === href || currentPath.value.startsWith(href + '/')
+}
+
+function closeMobile() { mobileOpen.value = false }
+
+function onKey(e: KeyboardEvent) {
+    if (e.key === 'Escape') closeMobile()
+}
+
+onMounted(() => window.addEventListener('keydown', onKey))
+onUnmounted(() => window.removeEventListener('keydown', onKey))
 </script>
 
 <template>
+    <!-- Sidebar overlay (mobile) -->
     <div
-        dir="rtl"
-        class="flex min-h-screen"
-        style="background-color: var(--color-bg-page); font-family: var(--font-arabic);"
-    >
-        <!-- Sidebar -->
-        <aside
-            :class="[
-                'flex flex-col flex-shrink-0 transition-all duration-300 border-l',
-                sidebarCollapsed ? 'w-[72px]' : 'w-[260px]',
-            ]"
-            style="background-color: var(--color-bg-surface); border-color: var(--color-ink-100);"
-        >
-            <!-- Logo -->
-            <div class="flex items-center gap-3 px-4 py-5 border-b" style="border-color: var(--color-ink-100);">
-                <div
-                    class="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
-                    style="background-color: var(--color-sada-500);"
-                >
-                    <span class="text-white text-sm font-bold">ص</span>
-                </div>
-                <span v-if="!sidebarCollapsed" class="text-base font-bold" style="color: var(--color-ink-900);">
-                    صدى
-                </span>
-            </div>
+        class="sidebar-overlay"
+        :data-open="mobileOpen"
+        @click="closeMobile"
+    />
 
-            <!-- Workspace selector -->
-            <div
-                v-if="!sidebarCollapsed && currentWorkspace"
-                class="px-3 py-3 border-b"
-                style="border-color: var(--color-ink-100);"
-            >
-                <button
-                    class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm transition-colors"
-                    style="background-color: var(--color-bg-muted); color: var(--color-ink-700);"
-                >
-                    <span class="truncate font-medium">{{ currentWorkspace.name }}</span>
-                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
+    <div class="app" :data-theme="ui.theme">
+
+        <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+        <aside class="sidebar" :data-open="mobileOpen">
+
+            <!-- Logo + Workspace -->
+            <div class="sidebar-top">
+                <div class="sidebar-logo">
+                    <div class="mark">ص</div>
+                    <span>صدى</span>
+                </div>
+
+                <button class="workspace-picker">
+                    <div class="ws-avatar">{{ wsInitials || 'ع' }}</div>
+                    <div class="ws-info">
+                        <div class="ws-name">{{ ws?.name || 'اختر مساحة عمل' }}</div>
+                        <div class="ws-plan">{{ ws?.business_type || 'Growth' }} · السعودية</div>
+                    </div>
+                    <Icon name="chevronDown" :size="14" class="ws-chev" />
                 </button>
             </div>
 
             <!-- Navigation -->
-            <nav class="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
-                <a
-                    v-for="item in navItems"
+            <nav class="sidebar-nav">
+                <div class="nav-section">العمل</div>
+                <Link
+                    v-for="item in navWork"
                     :key="item.href"
                     :href="item.href"
-                    :title="sidebarCollapsed ? item.label : undefined"
-                    :class="[
-                        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--color-ink-50)]',
-                        sidebarCollapsed ? 'justify-center' : '',
-                    ]"
-                    style="color: var(--color-ink-600);"
+                    class="nav-item"
+                    :class="{ active: isActive(item.href) }"
                 >
-                    <span class="text-base leading-none w-5 text-center flex-shrink-0">{{ item.icon }}</span>
-                    <span v-if="!sidebarCollapsed">{{ item.label }}</span>
-                </a>
+                    <span class="nav-icon">
+                        <Icon :name="item.icon" :size="18" />
+                    </span>
+                    <span class="nav-label">{{ item.label }}</span>
+                    <span v-if="item.badge" class="nav-badge">{{ item.badge }}</span>
+                </Link>
+
+                <div class="nav-section" style="margin-top: 8px;">الحساب</div>
+                <Link
+                    v-for="item in navAccount"
+                    :key="item.href"
+                    :href="item.href"
+                    class="nav-item"
+                    :class="{ active: isActive(item.href) }"
+                >
+                    <span class="nav-icon">
+                        <Icon :name="item.icon" :size="18" />
+                    </span>
+                    <span class="nav-label">{{ item.label }}</span>
+                </Link>
             </nav>
 
-            <!-- Token balance -->
-            <div
-                v-if="!sidebarCollapsed && user"
-                class="mx-3 mb-3 px-3 py-2 rounded-lg"
-                style="background-color: var(--color-sada-50); border: 1px solid var(--color-sada-100);"
-            >
-                <p class="text-xs mb-0.5" style="color: var(--color-sada-700);">رصيد الرموز</p>
-                <p class="text-sm font-bold num-tabular" style="color: var(--color-sada-600);">
-                    {{ user.token_balance.toLocaleString('ar-SA') }}
-                </p>
-            </div>
+            <!-- Bottom: Token meter + User -->
+            <div class="sidebar-bottom">
+                <div class="token-meter">
+                    <div class="token-meter-head">
+                        <span class="label">التوكنز</span>
+                        <span class="val">{{ tokenBalance.toLocaleString('ar') }} / {{ tokenMax.toLocaleString('ar') }}</span>
+                    </div>
+                    <div class="token-bar">
+                        <div class="token-bar-fill" :style="{ width: tokenPct + '%' }" />
+                    </div>
+                    <button class="token-refill">شحن المزيد</button>
+                </div>
 
-            <!-- Collapse toggle -->
-            <div class="p-2 border-t" style="border-color: var(--color-ink-100);">
-                <button
-                    @click="toggleSidebar"
-                    class="w-full flex items-center justify-center p-2 rounded-lg transition-colors hover:bg-[var(--color-ink-50)]"
-                    style="color: var(--color-ink-400);"
-                    :title="sidebarCollapsed ? 'توسيع القائمة' : 'طي القائمة'"
-                >
-                    <svg
-                        :class="['w-4 h-4 transition-transform duration-300', sidebarCollapsed ? 'rotate-180' : '']"
-                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    >
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
+                <div class="user-chip">
+                    <div class="uc-avatar">{{ userInitials || 'أح' }}</div>
+                    <div class="uc-info">
+                        <div class="uc-name">{{ user?.name || 'المستخدم' }}</div>
+                        <div class="uc-role">مالك · Admin</div>
+                    </div>
+                    <Icon name="chevronDown" :size="14" />
+                </div>
             </div>
         </aside>
 
-        <!-- Main content area -->
-        <div class="flex flex-col flex-1 min-w-0">
-            <!-- Top header -->
-            <header
-                class="flex items-center justify-between px-6 border-b flex-shrink-0"
-                style="
-                    background-color: var(--color-bg-surface);
-                    border-color: var(--color-ink-100);
-                    min-height: 56px;
-                "
-            >
-                <slot name="header">
-                    <h1 class="text-base font-semibold" style="color: var(--color-ink-900);">
-                        <slot name="title" />
-                    </h1>
-                </slot>
+        <!-- ═══════════════════ MAIN ═══════════════════ -->
+        <div class="app-main">
 
-                <div class="flex items-center gap-3">
-                    <div
-                        v-if="user"
-                        class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                        style="background-color: var(--color-sada-100); color: var(--color-sada-700);"
+            <!-- Topbar -->
+            <header class="topbar">
+                <div style="display:flex; align-items:center; gap:12px; min-width:0; flex:1;">
+                    <!-- Mobile menu trigger -->
+                    <button
+                        class="btn btn-icon btn-ghost"
+                        data-mobile-only="true"
+                        aria-label="فتح القائمة"
+                        @click="mobileOpen = true"
                     >
-                        {{ user.name.charAt(0) }}
+                        <Icon name="menu" />
+                    </button>
+
+                    <!-- Title + Crumbs -->
+                    <div class="topbar-title">
+                        <div v-if="crumbs?.length" class="crumbs">
+                            <span v-for="(c, i) in crumbs" :key="i">
+                                {{ c }}<span v-if="i < crumbs.length - 1" style="opacity:0.5; margin-right:6px;">•</span>
+                            </span>
+                        </div>
+                        <h1>{{ title || 'لوحة التحكم' }}</h1>
                     </div>
+                </div>
+
+                <div class="topbar-actions">
+                    <!-- Search -->
+                    <div class="topbar-search" data-desktop-only="true">
+                        <Icon name="search" :size="16" style="color:var(--text-muted); flex-shrink:0;" />
+                        <input placeholder="ابحث في كل شيء..." />
+                        <kbd>⌘K</kbd>
+                    </div>
+
+                    <!-- Theme toggle -->
+                    <button
+                        class="btn btn-icon btn-ghost"
+                        :title="ui.theme === 'dark' ? 'وضع النهار' : 'وضع الليل'"
+                        @click="ui.toggleTheme()"
+                    >
+                        <Icon :name="ui.theme === 'dark' ? 'sun' : 'moon'" />
+                    </button>
+
+                    <!-- Notifications -->
+                    <button class="btn btn-icon btn-ghost" title="الإشعارات">
+                        <Icon name="bell" />
+                    </button>
                 </div>
             </header>
 
             <!-- Flash messages -->
-            <div v-if="$page.props.flash?.success || $page.props.flash?.error" class="px-8 pt-4">
-                <div
-                    v-if="$page.props.flash?.success"
-                    class="px-4 py-3 rounded-lg text-sm"
-                    style="background-color: var(--color-success-bg); color: var(--color-success);"
-                >
-                    {{ $page.props.flash.success }}
+            <div v-if="flash?.success || flash?.error" style="padding: 0 32px; padding-top: 16px;">
+                <div v-if="flash.success" class="alert alert-success">
+                    <div class="alert-icon">
+                        <Icon name="check" :size="14" />
+                    </div>
+                    <div class="alert-body">
+                        <div class="alert-desc">{{ flash.success }}</div>
+                    </div>
                 </div>
-                <div
-                    v-if="$page.props.flash?.error"
-                    class="px-4 py-3 rounded-lg text-sm"
-                    style="background-color: var(--color-error-bg); color: var(--color-error);"
-                >
-                    {{ $page.props.flash.error }}
+                <div v-if="flash.error" class="alert alert-error">
+                    <div class="alert-icon">
+                        <Icon name="x" :size="14" />
+                    </div>
+                    <div class="alert-body">
+                        <div class="alert-desc">{{ flash.error }}</div>
+                    </div>
                 </div>
             </div>
 
             <!-- Page content -->
-            <main class="flex-1 overflow-y-auto p-8">
+            <main class="content-area">
                 <slot />
             </main>
         </div>
     </div>
+
+    <!-- Toast notifications -->
+    <Toast />
 </template>

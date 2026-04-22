@@ -20,13 +20,13 @@ export interface Workspace {
 }
 
 export type Dialect =
-    | 'formal'
-    | 'saudi'
-    | 'emirati'
-    | 'kuwaiti'
-    | 'qatari'
-    | 'bahraini'
-    | 'omani';
+    | 'fos'
+    | 'sa'
+    | 'ae'
+    | 'kw'
+    | 'qa'
+    | 'bh'
+    | 'om';
 
 export type Platform =
     | 'instagram'
@@ -41,7 +41,7 @@ export type PostStatus =
     | 'published'
     | 'failed';
 
-export interface PageProps {
+export interface PageProps extends Record<string, unknown> {
     auth: {
         user: User | null;
     };
