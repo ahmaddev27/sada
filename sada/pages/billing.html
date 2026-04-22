@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>صدى — الفوترة والإعدادات</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Rubik:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <style>
+    /* Settings tabs */
+    .settings-tabs-scroll {
+      overflow-x: auto;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 28px;
+    }
+    .settings-tabs {
+      display: flex;
+      gap: 0;
+      white-space: nowrap;
+      padding: 0 4px;
+    }
+    .settings-tab-btn {
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: color var(--dur-fast), border-color var(--dur-fast);
+      position: relative;
+      font-family: inherit;
+    }
+    .settings-tab-btn:hover { color: var(--text-primary); }
+    .settings-tab-btn[data-active="true"] {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 700;
+    }
+    .settings-tab-dot {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .settings-panel { display: none; }
+    .settings-panel[data-visible="true"] { display: block; }
+
+    /* Billing hero grid */
+    .billing-hero-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 900px) { .billing-hero-grid { grid-template-columns: 1fr; } }
+
+    .billing-balance-card {
+      background: linear-gradient(135deg, var(--sada-700), var(--sada-500));
+      color: #fff;
+      padding: 28px 32px;
+      border-radius: var(--radius-xl);
+      position: relative;
+      overflow: hidden;
+    }
+    .billing-balance-card .geom-overlay {
+      position: absolute;
+      inset: 0;
+      opacity: 0.1;
+      pointer-events: none;
+      width: 100%;
+      height: 100%;
+    }
+    .billing-balance-title {
+      font-size: 12px;
+      opacity: 0.85;
+      font-weight: 500;
+      position: relative;
+    }
+    .billing-balance-value {
+      margin: 8px 0 16px;
+      position: relative;
+    }
+    .billing-balance-value .num {
+      font-size: 40px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .billing-balance-value .unit {
+      font-size: 16px;
+      opacity: 0.8;
+      margin-right: 6px;
+    }
+    .billing-balance-bar-bg {
+      height: 6px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+    .billing-balance-bar-fill {
+      height: 100%;
+      background: #fff;
+      border-radius: 999px;
+    }
+    .billing-balance-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 6px;
+      position: relative;
+    }
+    .billing-balance-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      position: relative;
+    }
+    .billing-balance-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 18px;
+      height: 38px;
+      background: #fff;
+      color: var(--sada-700);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform var(--dur-fast);
+    }
+    .billing-balance-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .billing-balance-btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 18px;
+      height: 38px;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.3);
+      cursor: pointer;
+      font-family: inherit;
+      transition: background var(--dur-fast);
+    }
+    .billing-balance-btn-ghost:hover { background: rgba(255,255,255,0.25); }
+
+    /* Payment methods */
+    .payment-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .payment-row:last-child { border-bottom: none; }
+    .payment-card-chip {
+      width: 40px;
+      height: 28px;
+      border-radius: 5px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .payment-info { flex: 1; min-width: 0; }
+    .payment-name { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .payment-last4 { font-size: 12px; color: var(--text-muted); margin-top: 2px; font-family: var(--font-mono); }
+
+    /* Plans */
+    .plan-card {
+      position: relative;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      background: var(--bg-surface);
+      transition: border-color var(--dur-fast), transform var(--dur-fast);
+    }
+    .plan-card:hover { border-color: var(--border-default); transform: translateY(-2px); }
+    .plan-card[data-current="true"] {
+      border-color: var(--accent);
+      background: var(--bg-surface-2);
+    }
+    .plan-current-badge {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-text);
+    }
+    .plan-name { font-size: 16px; font-weight: 700; margin: 0 0 4px; }
+    .plan-price { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .plan-currency { font-size: 16px; font-weight: 600; }
+    .plan-desc { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    /* Integration cards */
+    .integ-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .integ-card:last-child { border-bottom: none; }
+    .integ-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .integ-body { flex: 1; min-width: 0; }
+    .integ-name { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .integ-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .integ-account { font-size: 12px; color: var(--success); margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+
+    /* Toggle */
+    .toggle-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .toggle-input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-track {
+      width: 36px;
+      height: 20px;
+      background: var(--border-default);
+      border-radius: 10px;
+      position: relative;
+      transition: background var(--dur-fast);
+    }
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform var(--dur-fast);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .toggle-input:checked + .toggle-track { background: var(--accent); }
+    .toggle-input:checked + .toggle-track::after { transform: translateX(-16px); }
+
+    /* Toggle row */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      gap: 16px;
+    }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-row-info { flex: 1; min-width: 0; }
+    .toggle-row-label { font-size: 14px; font-weight: 500; }
+    .toggle-row-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Brand identity */
+    .logo-upload {
+      width: 120px;
+      height: 120px;
+      border: 2px dashed var(--border-default);
+      border-radius: var(--radius-lg);
+      background: var(--bg-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: border-color var(--dur-fast);
+      color: var(--text-muted);
+      font-size: 12px;
+      text-align: center;
+      padding: 12px;
+    }
+    .logo-upload:hover { border-color: var(--accent); }
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .color-row:last-child { border-bottom: none; }
+    .color-chip {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .color-input-hex {
+      height: 34px;
+      padding: 0 10px;
+      background: var(--bg-muted);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+      width: 100px;
+      outline: none;
+    }
+    .color-input-hex:focus { border-color: var(--accent); }
+    .color-label { font-size: 13px; color: var(--text-muted); }
+
+    /* Tone chips */
+    .tone-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--bg-muted);
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--dur-fast);
+      font-family: inherit;
+    }
+    .tone-chip:hover { background: var(--bg-surface); border-color: var(--border-default); }
+    .tone-chip[data-selected="true"] {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent-text);
+    }
+
+    /* Keyword tags */
+    .keyword-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--bg-muted);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+    .tag-remove {
+      width: 14px;
+      height: 14px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      background: none;
+      border: none;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    /* Day schedule */
+    .day-schedule {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 13px;
+    }
+    .day-schedule:last-child { border-bottom: none; }
+    .day-name { font-weight: 600; color: var(--text-secondary); min-width: 80px; }
+    .day-times { display: flex; gap: 6px; flex-wrap: wrap; }
+    .day-time {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      background: var(--accent-soft);
+      color: var(--accent-text);
+    }
+
+    /* Placeholder panel */
+    .placeholder-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+      text-align: center;
+      gap: 16px;
+      color: var(--text-muted);
+    }
+    .placeholder-panel svg { opacity: 0.35; }
+    .placeholder-panel h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--text-secondary); }
+    .placeholder-panel p { margin: 0; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<!-- SVG ICONS BLOCK -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2V10z"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.5 5.5l2.8 2.8M15.7 15.7l2.8 2.8M5.5 18.5l2.8-2.8M15.7 8.3l2.8-2.8"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+  <symbol id="i-megaphone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a2 2 0 0 0 2 2h2l6 4V5L7 9H5a2 2 0 0 0-2 2z"/><path d="M17 8a5 5 0 0 1 0 8"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5A9 9 0 1 1 11.5 3a7 7 0 0 0 9.5 9.5z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-credit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="1" fill="currentColor"/><circle cx="17.5" cy="10.5" r="1" fill="currentColor"/><circle cx="8.5" cy="7.5" r="1" fill="currentColor"/><circle cx="6.5" cy="12.5" r="1" fill="currentColor"/><path d="M12 22a10 10 0 1 1 10-10c0 2-1 3-3 3h-2a2 2 0 0 0-2 2c0 1 1 2 2 2a2 2 0 0 1 2 2 3 3 0 0 1-3 3z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+  <symbol id="i-chevrondown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+  <symbol id="i-instagram" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-facebook" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.4 18A5 5 0 0 0 18 8.4a8 8 0 1 0-11.6 8.6"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></symbol>
+</svg>
+
+<div class="app" data-screen-label="sada-billing">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-logo"><div class="mark">ص</div><span>صدى</span></div>
+      <button class="workspace-picker">
+        <div class="avatar">أن</div>
+        <div class="ws-info"><div class="ws-name">متجر أنيق</div><div class="ws-plan">Growth · السعودية</div></div>
+        <svg width="14" height="14" class="chev"><use href="#i-chevrondown"/></svg>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">العمل</div>
+      <a href="home.html" class="nav-item"><svg width="18" height="18" class="icon"><use href="#i-home"/></svg><span>الرئيسية</span></a>
+      <a href="generate.html" class="nav-item"><svg width="18" height="18" class="icon"><use href="#i-sparkle"/></svg><span>توليد محتوى</span><span class="nav-badge">جديد</span></a>
+      <a href="calendar.html" class="nav-item"><svg width="18" height="18" class="icon"><use href="#i-calendar"/></svg><span>التقويم</span></a>
+      <a href="history.html" class="nav-item"><svg width="18" height="18" class="icon"><use href="#i-clock"/></svg><span>سجل المحتوى</span></a>
+      <a href="campaigns.html" class="nav-item"><svg width="18" height="18" class="icon"><use href="#i-megaphone"/></svg><span>الحملات الإعلانية</span></a>
+      <a href="seasonal.html" class="nav-item"><svg width="18" height="18" class="icon"><use href="#i-moon"/></svg><span>المواسم</span></a>
+      <a href="analytics.html" class="nav-item"><svg width="18" height="18" class="icon"><use href="#i-chart"/></svg><span>التحليلات</span></a>
+      <div class="nav-section" style="margin-top:16px">الحساب</div>
+      <a href="billing.html" class="nav-item" data-active="true">
+        <svg width="18" height="18" class="icon"><use href="#i-credit"/></svg><span>الفوترة</span></a>
+      <a href="billing.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-settings"/></svg><span>الإعدادات</span></a>
+      <a href="components.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-palette"/></svg><span>مكتبة المكونات</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="token-meter">
+        <div class="token-meter-head"><span class="label">التوكنز</span><span class="val">1,240 / 2,000</span></div>
+        <div class="token-bar"><div class="token-bar-fill" style="width:62%"></div></div>
+        <button class="token-refill">شحن المزيد</button>
+      </div>
+      <div class="user-chip">
+        <div class="avatar">أح</div>
+        <div class="user-info"><div class="user-name">أحمد العتيبي</div><div class="user-role">مالك · Admin</div></div>
+        <svg width="14" height="14"><use href="#i-chevrondown"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="app-main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1">
+        <div class="topbar-title" style="min-width:0;flex:1">
+          <div class="crumbs"><span>الحساب</span></div>
+          <h1>الفوترة والإعدادات</h1>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-search" style="display:flex;align-items:center;gap:8px;padding:0 12px;height:38px;background:var(--bg-muted);border-radius:10px;min-width:260px">
+          <svg width="16" height="16" style="color:var(--text-muted)"><use href="#i-search"/></svg>
+          <input placeholder="ابحث في كل شيء... (⌘K)" style="flex:1;background:transparent;border:none;outline:none;font-size:13px;color:var(--text-primary);font-family:inherit"/>
+        </div>
+        <button class="btn btn-icon btn-ghost" id="theme-btn" title="تبديل الوضع">
+          <svg width="18" height="18"><use href="#i-moon"/></svg>
+        </button>
+        <button class="btn btn-icon btn-ghost" title="الإشعارات" style="position:relative">
+          <svg width="18" height="18"><use href="#i-bell"/></svg>
+          <span style="position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--error);border:2px solid var(--bg-surface)"></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <div class="stack-lg">
+
+        <!-- SETTINGS TABS NAV -->
+        <div>
+          <div class="settings-tabs-scroll">
+            <div class="settings-tabs">
+              <button class="settings-tab-btn" data-tab="profile">الملف الشخصي</button>
+              <button class="settings-tab-btn" data-tab="brand">هوية العلامة<span class="settings-tab-dot"></span></button>
+              <button class="settings-tab-btn" data-tab="integrations">التكاملات والربط<span class="settings-tab-dot"></span></button>
+              <button class="settings-tab-btn" data-tab="publishing">النشر والجدولة<span class="settings-tab-dot"></span></button>
+              <button class="settings-tab-btn" data-tab="team">الفريق</button>
+              <button class="settings-tab-btn" data-tab="billing" data-active="true">الفوترة</button>
+              <button class="settings-tab-btn" data-tab="notifications">الإشعارات</button>
+              <button class="settings-tab-btn" data-tab="api">API</button>
+            </div>
+          </div>
+
+          <!-- ============================================================ -->
+          <!-- PANEL: BILLING (default visible) -->
+          <!-- ============================================================ -->
+          <div class="settings-panel" data-panel="billing" data-visible="true" style="display:block">
+            <div class="stack-lg">
+
+              <!-- Balance hero + payment methods -->
+              <div class="billing-hero-grid">
+
+                <!-- Balance card -->
+                <div class="billing-balance-card">
+                  <svg class="geom-overlay" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <pattern id="bill-p" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M20 0 L40 20 L20 40 L0 20 Z" fill="none" stroke="#fff" stroke-width="0.6"/>
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#bill-p)"/>
+                  </svg>
+                  <div class="billing-balance-title">الرصيد الحالي</div>
+                  <div class="billing-balance-value">
+                    <span class="num">١٬٢٤٠</span><span class="unit">/ ٢٬٠٠٠ توكن</span>
+                  </div>
+                  <div class="billing-balance-bar-bg">
+                    <div class="billing-balance-bar-fill" style="width:62%"></div>
+                  </div>
+                  <div class="billing-balance-labels">
+                    <span>٦٢٪ مستخدم هذا الشهر</span>
+                    <span>تتجدد خلال ١٢ يوماً</span>
+                  </div>
+                  <div class="billing-balance-actions">
+                    <button class="billing-balance-btn-primary">
+                      <svg width="14" height="14"><use href="#i-plus"/></svg>
+                      شحن توكنز
+                    </button>
+                    <button class="billing-balance-btn-ghost">ترقية الباقة</button>
+                  </div>
+                </div>
+
+                <!-- Payment methods -->
+                <div class="card">
+                  <div class="card-head">
+                    <div>
+                      <h3>طرق الدفع</h3>
+                    </div>
+                    <button class="btn btn-sm btn-ghost">
+                      <svg width="14" height="14"><use href="#i-plus"/></svg>
+                      إضافة
+                    </button>
+                  </div>
+                  <div style="padding:8px 20px">
+                    <div class="payment-row">
+                      <div class="payment-card-chip" style="background:#0F766E">مدى</div>
+                      <div class="payment-info">
+                        <div class="payment-name">
+                          مدى ••••٤٥٦٧
+                          <span class="badge badge-success" style="font-size:10px;padding:2px 7px">افتراضية</span>
+                        </div>
+                        <div class="payment-last4">تنتهي 12/27</div>
+                      </div>
+                      <button class="btn btn-icon btn-ghost btn-sm"><svg width="14" height="14"><use href="#i-edit"/></svg></button>
+                    </div>
+                    <div class="payment-row">
+                      <div class="payment-card-chip" style="background:#1A1F71">Visa</div>
+                      <div class="payment-info">
+                        <div class="payment-name">Visa ••••١٢٣٤</div>
+                        <div class="payment-last4">تنتهي 08/26</div>
+                      </div>
+                      <button class="btn btn-icon btn-ghost btn-sm"><svg width="14" height="14"><use href="#i-edit"/></svg></button>
+                    </div>
+                    <div class="payment-row">
+                      <div class="payment-card-chip" style="background:#000;font-size:9px;letter-spacing:-0.5px">Pay</div>
+                      <div class="payment-info">
+                        <div class="payment-name">Apple Pay</div>
+                        <div class="payment-last4">متصل بالجهاز</div>
+                      </div>
+                      <button class="btn btn-icon btn-ghost btn-sm"><svg width="14" height="14"><use href="#i-edit"/></svg></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Plans -->
+              <div>
+                <div class="section-head">
+                  <div>
+                    <h2>الباقات المتاحة</h2>
+                    <div class="sub">اختر الباقة المناسبة لحجم أعمالك</div>
+                  </div>
+                </div>
+                <div class="grid-3">
+                  <div class="plan-card">
+                    <div class="plan-name">Starter</div>
+                    <div class="plan-price"><span class="plan-currency">٩٩</span> <span style="font-size:14px;font-weight:500;color:var(--text-muted)">ر.س / شهر</span></div>
+                    <div class="plan-desc">١٬٠٠٠ توكن/شهر · ١ workspace</div>
+                    <button class="btn btn-secondary" style="width:100%;margin-top:20px">الانتقال لهذه الباقة</button>
+                  </div>
+                  <div class="plan-card" data-current="true">
+                    <span class="plan-current-badge">باقتك الحالية</span>
+                    <div class="plan-name">Growth</div>
+                    <div class="plan-price" style="color:var(--accent)"><span class="plan-currency">٢٩٩</span> <span style="font-size:14px;font-weight:500;color:var(--text-muted)">ر.س / شهر</span></div>
+                    <div class="plan-desc">٢٬٠٠٠ توكن/شهر · ٣ workspaces</div>
+                    <button class="btn btn-primary" style="width:100%;margin-top:20px" disabled>باقتك الحالية</button>
+                  </div>
+                  <div class="plan-card">
+                    <div class="plan-name">Agency</div>
+                    <div class="plan-price"><span class="plan-currency">٧٩٩</span> <span style="font-size:14px;font-weight:500;color:var(--text-muted)">ر.س / شهر</span></div>
+                    <div class="plan-desc">١٠٬٠٠٠ توكن/شهر · غير محدود</div>
+                    <button class="btn btn-secondary" style="width:100%;margin-top:20px">الترقية لـ Agency</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Invoices -->
+              <div class="card">
+                <div class="card-head">
+                  <div>
+                    <h3>الفواتير</h3>
+                    <div class="sub">شامل ضريبة القيمة المضافة ١٥٪</div>
+                  </div>
+                  <button class="btn btn-sm btn-ghost">
+                    <svg width="14" height="14"><use href="#i-download"/></svg>
+                    تصدير الكل
+                  </button>
+                </div>
+                <div style="overflow-x:auto">
+                  <table class="cmp-table">
+                    <thead>
+                      <tr>
+                        <th>التاريخ</th>
+                        <th>رقم الفاتورة</th>
+                        <th>المبلغ</th>
+                        <th>الحالة</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td style="color:var(--text-secondary)">١ أبريل ٢٠٢٦</td>
+                        <td style="font-family:var(--font-mono);font-size:12px">SADA-2026-0412</td>
+                        <td style="font-weight:600;font-variant-numeric:tabular-nums">٢٩٩ ر.س</td>
+                        <td><span class="badge badge-success">مدفوعة</span></td>
+                        <td><button class="btn btn-sm btn-ghost"><svg width="12" height="12"><use href="#i-download"/></svg> PDF</button></td>
+                      </tr>
+                      <tr>
+                        <td style="color:var(--text-secondary)">١ مارس ٢٠٢٦</td>
+                        <td style="font-family:var(--font-mono);font-size:12px">SADA-2026-0389</td>
+                        <td style="font-weight:600;font-variant-numeric:tabular-nums">٢٩٩ ر.س</td>
+                        <td><span class="badge badge-success">مدفوعة</span></td>
+                        <td><button class="btn btn-sm btn-ghost"><svg width="12" height="12"><use href="#i-download"/></svg> PDF</button></td>
+                      </tr>
+                      <tr>
+                        <td style="color:var(--text-secondary)">١ فبراير ٢٠٢٦</td>
+                        <td style="font-family:var(--font-mono);font-size:12px">SADA-2026-0356</td>
+                        <td style="font-weight:600;font-variant-numeric:tabular-nums">٢٩٩ ر.س</td>
+                        <td><span class="badge badge-success">مدفوعة</span></td>
+                        <td><button class="btn btn-sm btn-ghost"><svg width="12" height="12"><use href="#i-download"/></svg> PDF</button></td>
+                      </tr>
+                      <tr>
+                        <td style="color:var(--text-secondary)">١ يناير ٢٠٢٦</td>
+                        <td style="font-family:var(--font-mono);font-size:12px">SADA-2026-0312</td>
+                        <td style="font-weight:600;font-variant-numeric:tabular-nums">٢٩٩ ر.س</td>
+                        <td><span class="badge badge-success">مدفوعة</span></td>
+                        <td><button class="btn btn-sm btn-ghost"><svg width="12" height="12"><use href="#i-download"/></svg> PDF</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ============================================================ -->
+          <!-- PANEL: BRAND IDENTITY -->
+          <!-- ============================================================ -->
+          <div class="settings-panel" data-panel="brand">
+            <div class="stack-lg">
+
+              <div class="alert alert-brand">
+                <div class="alert-icon"><svg width="16" height="16"><use href="#i-sparkle"/></svg></div>
+                <div class="alert-body">
+                  <div class="alert-title">هوية المتجر = صوت موحّد لكل المنشورات</div>
+                  <div class="alert-desc">كل ما تضعه هنا يُستخدم عند توليد أي محتوى — كلما كانت البيانات أدق، كان المحتوى أفضل.</div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-head"><h3>الشعار والألوان</h3></div>
+                <div class="card-body">
+                  <div style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap">
+                    <div>
+                      <div class="input-label" style="margin-bottom:10px">شعار المتجر</div>
+                      <div class="logo-upload">
+                        <svg width="24" height="24" style="opacity:0.5"><use href="#i-upload"/></svg>
+                        <span>اسحب الشعار هنا</span>
+                        <span style="font-size:11px;color:var(--text-faint)">PNG, SVG, أو JPG</span>
+                      </div>
+                    </div>
+                    <div style="flex:1;min-width:240px">
+                      <div class="input-label" style="margin-bottom:12px">ألوان العلامة</div>
+                      <div class="color-row">
+                        <div class="color-chip" style="background:#0F6F5C"></div>
+                        <input class="color-input-hex" value="#0F6F5C"/>
+                        <span class="color-label">اللون الأساسي</span>
+                      </div>
+                      <div class="color-row">
+                        <div class="color-chip" style="background:#C8965F"></div>
+                        <input class="color-input-hex" value="#C8965F"/>
+                        <span class="color-label">اللون الثانوي</span>
+                      </div>
+                      <div class="color-row">
+                        <div class="color-chip" style="background:#2A9080"></div>
+                        <input class="color-input-hex" value="#2A9080"/>
+                        <span class="color-label">لون التمييز</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-head"><h3>معلومات العلامة</h3></div>
+                <div class="card-body">
+                  <div class="grid-2" style="gap:20px">
+                    <div class="input-group">
+                      <label class="input-label">اسم العلامة</label>
+                      <input class="input" value="متجر أنيق"/>
+                    </div>
+                    <div class="input-group">
+                      <label class="input-label">القطاع</label>
+                      <input class="input" value="أزياء ومجوهرات"/>
+                    </div>
+                    <div class="input-group" style="grid-column:1/-1">
+                      <label class="input-label">وصف المتجر</label>
+                      <textarea class="textarea" rows="4">متجر أنيق متخصص في الأزياء والمجوهرات الراقية للمرأة العصرية في منطقة الخليج العربي.</textarea>
+                    </div>
+                    <div class="input-group">
+                      <label class="input-label">الجمهور المستهدف</label>
+                      <input class="input" value="نساء 25–40 سنة، دخل متوسط–مرتفع"/>
+                    </div>
+                    <div class="input-group">
+                      <label class="input-label">مستوى الأسعار</label>
+                      <select class="select" style="font-family:inherit">
+                        <option>متوسط–مرتفع</option>
+                        <option>اقتصادي</option>
+                        <option>فاخر</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-head"><h3>نبرة الصوت</h3></div>
+                <div class="card-body">
+                  <div class="input-hint" style="margin-bottom:14px">اختر النبرات التي تعبّر عن هوية علامتك</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    <button class="tone-chip" data-selected="true">ودي</button>
+                    <button class="tone-chip">رسمي</button>
+                    <button class="tone-chip" data-selected="true">خليجي</button>
+                    <button class="tone-chip">شبابي</button>
+                    <button class="tone-chip">فاخر</button>
+                    <button class="tone-chip">مرح</button>
+                    <button class="tone-chip">مباشر</button>
+                    <button class="tone-chip">عاطفي</button>
+                    <button class="tone-chip">عملي</button>
+                    <button class="tone-chip" data-selected="true">واثق</button>
+                    <button class="tone-chip">دافئ</button>
+                    <button class="tone-chip">عصري</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="card">
+                  <div class="card-head"><h3>كلمات مفتاحية</h3></div>
+                  <div class="card-body">
+                    <div style="display:flex;flex-wrap:wrap;gap:8px">
+                      <span class="keyword-tag">جودة عالية <button class="tag-remove"><svg width="10" height="10"><use href="#i-x"/></svg></button></span>
+                      <span class="keyword-tag">توصيل سريع <button class="tag-remove"><svg width="10" height="10"><use href="#i-x"/></svg></button></span>
+                      <span class="keyword-tag">ضمان استرجاع <button class="tag-remove"><svg width="10" height="10"><use href="#i-x"/></svg></button></span>
+                      <span class="keyword-tag">عروض أسبوعية <button class="tag-remove"><svg width="10" height="10"><use href="#i-x"/></svg></button></span>
+                      <button class="btn btn-sm btn-ghost"><svg width="12" height="12"><use href="#i-plus"/></svg> إضافة</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-head"><h3>تجنّب دائماً</h3></div>
+                  <div class="card-body">
+                    <div style="display:flex;flex-wrap:wrap;gap:8px">
+                      <span class="keyword-tag" style="background:var(--error-bg);border-color:color-mix(in oklab,var(--error) 25%,transparent);color:var(--error)">لغة رسمية جداً <button class="tag-remove"><svg width="10" height="10"><use href="#i-x"/></svg></button></span>
+                      <span class="keyword-tag" style="background:var(--error-bg);border-color:color-mix(in oklab,var(--error) 25%,transparent);color:var(--error)">وعود مبالغ فيها <button class="tag-remove"><svg width="10" height="10"><use href="#i-x"/></svg></button></span>
+                      <button class="btn btn-sm btn-ghost"><svg width="12" height="12"><use href="#i-plus"/></svg> إضافة</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:10px;justify-content:flex-end">
+                <button class="btn btn-secondary">إلغاء التغييرات</button>
+                <button class="btn btn-primary">حفظ هوية العلامة</button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ============================================================ -->
+          <!-- PANEL: INTEGRATIONS -->
+          <!-- ============================================================ -->
+          <div class="settings-panel" data-panel="integrations">
+            <div class="stack-lg">
+
+              <div class="alert alert-info">
+                <div class="alert-icon"><svg width="16" height="16"><use href="#i-info"/></svg></div>
+                <div class="alert-body">
+                  <div class="alert-title">كل ربط يفتح إمكانيات جديدة</div>
+                  <div class="alert-desc">ربط حساباتك يتيح النشر التلقائي، ومزامنة التحليلات، وتحسين الحملات.</div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-head"><h3>منصات التواصل الاجتماعي</h3></div>
+                <div>
+                  <div class="integ-card">
+                    <div class="integ-icon" style="background:#E1306C;color:#fff"><svg width="20" height="20"><use href="#i-instagram"/></svg></div>
+                    <div class="integ-body">
+                      <div class="integ-name">Instagram <span class="badge badge-success">متصل</span></div>
+                      <div class="integ-account"><svg width="12" height="12"><use href="#i-check"/></svg> @aneeq.sa · 12.4K متابع</div>
+                    </div>
+                    <button class="btn btn-sm btn-secondary">إدارة</button>
+                  </div>
+                  <div class="integ-card">
+                    <div class="integ-icon" style="background:#1877F2;color:#fff"><svg width="20" height="20"><use href="#i-facebook"/></svg></div>
+                    <div class="integ-body">
+                      <div class="integ-name">Facebook <span class="badge badge-success">متصل</span></div>
+                      <div class="integ-account"><svg width="12" height="12"><use href="#i-check"/></svg> Aneeq Boutique · 8.1K متابع</div>
+                    </div>
+                    <button class="btn btn-sm btn-secondary">إدارة</button>
+                  </div>
+                  <div class="integ-card">
+                    <div class="integ-icon" style="background:#010101;color:#fff;font-weight:900;font-size:11px">TT</div>
+                    <div class="integ-body">
+                      <div class="integ-name">TikTok <span class="badge badge-neutral">غير متصل</span></div>
+                      <div class="integ-desc">ربط حسابك على TikTok لنشر الفيديوهات القصيرة</div>
+                    </div>
+                    <button class="btn btn-sm btn-accent-soft">ربط الحساب</button>
+                  </div>
+                  <div class="integ-card">
+                    <div class="integ-icon" style="background:#FFFC00;color:#000;font-weight:900;font-size:11px">SC</div>
+                    <div class="integ-body">
+                      <div class="integ-name">Snapchat <span class="badge badge-neutral">غير متصل</span></div>
+                      <div class="integ-desc">ربط حسابك على Snapchat للقصص الإعلانية</div>
+                    </div>
+                    <button class="btn btn-sm btn-accent-soft">ربط الحساب</button>
+                  </div>
+                  <div class="integ-card">
+                    <div class="integ-icon" style="background:#010101;color:#fff;font-weight:900;font-size:16px">𝕏</div>
+                    <div class="integ-body">
+                      <div class="integ-name">X (Twitter) <span class="badge badge-neutral">غير متصل</span></div>
+                      <div class="integ-desc">ربط حسابك على X للتغريدات والمحادثات</div>
+                    </div>
+                    <button class="btn btn-sm btn-accent-soft">ربط الحساب</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-head"><h3>المتاجر الإلكترونية</h3></div>
+                <div>
+                  <div class="integ-card">
+                    <div class="integ-icon" style="background:var(--sada-100);color:var(--sada-700);font-size:12px">سلة</div>
+                    <div class="integ-body">
+                      <div class="integ-name">سلة <span class="badge badge-success">متصل</span></div>
+                      <div class="integ-account"><svg width="12" height="12"><use href="#i-check"/></svg> aneeq.salla.sa</div>
+                    </div>
+                    <button class="btn btn-sm btn-secondary">إدارة</button>
+                  </div>
+                  <div class="integ-card">
+                    <div class="integ-icon" style="background:var(--sand-100);color:var(--sand-700);font-size:13px">زد</div>
+                    <div class="integ-body">
+                      <div class="integ-name">زد <span class="badge badge-neutral">غير متصل</span></div>
+                      <div class="integ-desc">ربط متجرك على منصة زد</div>
+                    </div>
+                    <button class="btn btn-sm btn-accent-soft">ربط المتجر</button>
+                  </div>
+                  <div class="integ-card">
+                    <div class="integ-icon" style="background:#96BF48;color:#fff;font-size:10px;font-weight:700">SFY</div>
+                    <div class="integ-body">
+                      <div class="integ-name">Shopify <span class="badge badge-neutral">غير متصل</span></div>
+                      <div class="integ-desc">ربط متجرك على Shopify</div>
+                    </div>
+                    <button class="btn btn-sm btn-accent-soft">ربط المتجر</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-head">
+                  <div>
+                    <h3>WhatsApp Business</h3>
+                  </div>
+                  <span class="badge badge-success">متصل</span>
+                </div>
+                <div class="card-body" style="display:flex;align-items:center;gap:16px">
+                  <div style="width:40px;height:40px;border-radius:10px;background:#25D366;color:#fff;display:grid;place-items:center;flex-shrink:0;font-weight:800;font-size:13px">WA</div>
+                  <div>
+                    <div style="font-weight:600;font-size:14px">+966 50 123 4567</div>
+                    <div style="font-size:12px;color:var(--text-muted)">حساب أعمال موثق</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card" style="background:var(--bg-surface-2)">
+                <div class="card-head"><h3>إعدادات Meta Business Suite</h3></div>
+                <div>
+                  <div class="toggle-row">
+                    <div class="toggle-row-info">
+                      <div class="toggle-row-label">نشر تلقائي عند الجدولة</div>
+                      <div class="toggle-row-desc">ينشر المحتوى تلقائياً في الوقت المحدد</div>
+                    </div>
+                    <label class="toggle-wrap"><input type="checkbox" class="toggle-input" checked><span class="toggle-track"></span></label>
+                  </div>
+                  <div class="toggle-row">
+                    <div class="toggle-row-info">
+                      <div class="toggle-row-label">مزامنة ردود الرسائل مع الذكاء الاصطناعي</div>
+                      <div class="toggle-row-desc">يرد الذكاء الاصطناعي على الرسائل تلقائياً</div>
+                    </div>
+                    <label class="toggle-wrap"><input type="checkbox" class="toggle-input"><span class="toggle-track"></span></label>
+                  </div>
+                  <div class="toggle-row">
+                    <div class="toggle-row-info">
+                      <div class="toggle-row-label">استيراد تحليلات الحملات الممولة</div>
+                      <div class="toggle-row-desc">تستورد بيانات أداء الإعلانات المدفوعة</div>
+                    </div>
+                    <label class="toggle-wrap"><input type="checkbox" class="toggle-input" checked><span class="toggle-track"></span></label>
+                  </div>
+                  <div class="toggle-row">
+                    <div class="toggle-row-info">
+                      <div class="toggle-row-label">تحسين الميزانية تلقائياً</div>
+                      <div class="toggle-row-desc">يوزّع الميزانية على أفضل المنشورات أداءً</div>
+                    </div>
+                    <label class="toggle-wrap"><input type="checkbox" class="toggle-input"><span class="toggle-track"></span></label>
+                  </div>
+                  <div class="toggle-row">
+                    <div class="toggle-row-info">
+                      <div class="toggle-row-label">A/B Testing للمنشورات</div>
+                      <div class="toggle-row-desc">يختبر نسختين من كل منشور لتحديد الأفضل</div>
+                    </div>
+                    <label class="toggle-wrap"><input type="checkbox" class="toggle-input" checked><span class="toggle-track"></span></label>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ============================================================ -->
+          <!-- PANEL: PUBLISHING -->
+          <!-- ============================================================ -->
+          <div class="settings-panel" data-panel="publishing">
+            <div class="stack-lg">
+
+              <div class="card">
+                <div class="card-head"><h3>المنصات الافتراضية للنشر</h3></div>
+                <div>
+                  <div class="toggle-row">
+                    <div style="display:flex;align-items:center;gap:10px;flex:1">
+                      <div style="width:32px;height:32px;border-radius:8px;background:#E1306C;color:#fff;display:grid;place-items:center"><svg width="16" height="16"><use href="#i-instagram"/></svg></div>
+                      <div class="toggle-row-label">Instagram</div>
+                    </div>
+                    <label class="toggle-wrap"><input type="checkbox" class="toggle-input" checked><span class="toggle-track"></span></label>
+                  </div>
+                  <div class="toggle-row">
+                    <div style="display:flex;align-items:center;gap:10px;flex:1">
+                      <div style="width:32px;height:32px;border-radius:8px;background:#1877F2;color:#fff;display:grid;place-items:center"><svg width="16" height="16"><use href="#i-facebook"/></svg></div>
+                      <div class="toggle-row-label">Facebook</div>
+                    </div>
+                    <label class="toggle-wrap"><input type="checkbox" class="toggle-input" checked><span class="toggle-track"></span></label>
+                  </div>
+                  <div class="toggle-row">
+                    <div style="display:flex;align-items:center;gap:10px;flex:1">
+                      <div style="width:32px;height:32px;border-radius:8px;background:#010101;color:#fff;display:grid;place-items:center;font-size:10px;font-weight:800">TT</div>
+                      <div class="toggle-row-label">TikTok</div>
+                    </div>
+                    <label class="toggle-wrap"><input type="checkbox" class="toggle-input"><span class="toggle-track"></span></label>
+                  </div>
+                  <div class="toggle-row">
+                    <div style="display:flex;align-items:center;gap:10px;flex:1">
+                      <div style="width:32px;height:32px;border-radius:8px;background:#FFFC00;color:#000;display:grid;place-items:center;font-size:10px;font-weight:800">SC</div>
+                      <div class="toggle-row-label">Snapchat</div>
+                    </div>
+                    <label class="toggle-wrap"><input type="checkbox" class="toggle-input"><span class="toggle-track"></span></label>
+                  </div>
+                  <div class="toggle-row">
+                    <div style="display:flex;align-items:center;gap:10px;flex:1">
+                      <div style="width:32px;height:32px;border-radius:8px;background:#010101;color:#fff;display:grid;place-items:center;font-size:14px;font-weight:900">𝕏</div>
+                      <div class="toggle-row-label">X (Twitter)</div>
+                    </div>
+                    <label class="toggle-wrap"><input type="checkbox" class="toggle-input"><span class="toggle-track"></span></label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="card">
+                  <div class="card-head"><h3>أفضل أوقات النشر</h3></div>
+                  <div class="card-body">
+                    <div class="day-schedule"><span class="day-name">الأحد</span><div class="day-times"><span class="day-time">10:00</span><span class="day-time">20:00</span></div></div>
+                    <div class="day-schedule"><span class="day-name">الاثنين</span><div class="day-times"><span class="day-time">09:00</span><span class="day-time">21:00</span></div></div>
+                    <div class="day-schedule"><span class="day-name">الثلاثاء</span><div class="day-times"><span class="day-time">10:00</span></div></div>
+                    <div class="day-schedule"><span class="day-name">الأربعاء</span><div class="day-times"><span class="day-time">10:00</span><span class="day-time">20:00</span></div></div>
+                    <div class="day-schedule"><span class="day-name">الخميس</span><div class="day-times"><span class="day-time">11:00</span><span class="day-time">22:00</span></div></div>
+                    <div class="day-schedule"><span class="day-name">الجمعة</span><div class="day-times"><span class="day-time">14:00</span></div></div>
+                    <div class="day-schedule"><span class="day-name">السبت</span><div class="day-times"><span class="day-time">12:00</span><span class="day-time">21:00</span></div></div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-head"><h3>سلوك الجدولة</h3></div>
+                  <div>
+                    <div class="toggle-row">
+                      <div class="toggle-row-info">
+                        <div class="toggle-row-label">تأكيد قبل النشر</div>
+                        <div class="toggle-row-desc">إشعار 30 دقيقة قبل كل نشر</div>
+                      </div>
+                      <label class="toggle-wrap"><input type="checkbox" class="toggle-input" checked><span class="toggle-track"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                      <div class="toggle-row-info">
+                        <div class="toggle-row-label">إعادة محاولة تلقائية عند الفشل</div>
+                        <div class="toggle-row-desc">تعيد المحاولة 3 مرات عند أي خطأ</div>
+                      </div>
+                      <label class="toggle-wrap"><input type="checkbox" class="toggle-input" checked><span class="toggle-track"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                      <div class="toggle-row-info">
+                        <div class="toggle-row-label">ملاءمة المواسم تلقائياً</div>
+                        <div class="toggle-row-desc">يعدّل الجدول خلال الأيام الدينية</div>
+                      </div>
+                      <label class="toggle-wrap"><input type="checkbox" class="toggle-input" checked><span class="toggle-track"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                      <div class="toggle-row-info">
+                        <div class="toggle-row-label">إيقاف النشر أيام الجمعة</div>
+                        <div class="toggle-row-desc">لا ينشر أي محتوى يوم الجمعة</div>
+                      </div>
+                      <label class="toggle-wrap"><input type="checkbox" class="toggle-input"><span class="toggle-track"></span></label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:10px;justify-content:flex-end">
+                <button class="btn btn-secondary">إلغاء</button>
+                <button class="btn btn-primary">حفظ إعدادات النشر</button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ============================================================ -->
+          <!-- PLACEHOLDER PANELS -->
+          <!-- ============================================================ -->
+          <div class="settings-panel" data-panel="profile">
+            <div class="card"><div class="placeholder-panel">
+              <svg width="48" height="48"><use href="#i-settings"/></svg>
+              <h3>الملف الشخصي</h3>
+              <p>هذا القسم جاهز للاستخدام</p>
+              <button class="btn btn-primary">تعديل الملف الشخصي</button>
+            </div></div>
+          </div>
+
+          <div class="settings-panel" data-panel="team">
+            <div class="card"><div class="placeholder-panel">
+              <svg width="48" height="48"><use href="#i-users"/></svg>
+              <h3>الفريق</h3>
+              <p>هذا القسم جاهز للاستخدام</p>
+              <button class="btn btn-primary">إدارة أعضاء الفريق</button>
+            </div></div>
+          </div>
+
+          <div class="settings-panel" data-panel="notifications">
+            <div class="card"><div class="placeholder-panel">
+              <svg width="48" height="48"><use href="#i-bell"/></svg>
+              <h3>الإشعارات</h3>
+              <p>هذا القسم جاهز للاستخدام</p>
+              <button class="btn btn-primary">ضبط الإشعارات</button>
+            </div></div>
+          </div>
+
+          <div class="settings-panel" data-panel="api">
+            <div class="card"><div class="placeholder-panel">
+              <svg width="48" height="48"><use href="#i-zap"/></svg>
+              <h3>API</h3>
+              <p>هذا القسم جاهز للاستخدام</p>
+              <button class="btn btn-primary">إنشاء مفتاح API</button>
+            </div></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Theme toggle
+  const themeBtn = document.getElementById('theme-btn');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeBtn.querySelector('use').setAttribute('href', isDark ? '#i-moon' : '#i-sun');
+    });
+  }
+
+  // Settings tab switching
+  const tabBtns = document.querySelectorAll('.settings-tab-btn');
+  const tabPanels = document.querySelectorAll('.settings-panel');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.removeAttribute('data-active'));
+      btn.setAttribute('data-active', 'true');
+      const target = btn.dataset.tab;
+      tabPanels.forEach(p => {
+        const show = p.dataset.panel === target;
+        p.style.display = show ? 'block' : 'none';
+        p.dataset.visible = show ? 'true' : 'false';
+      });
+    });
+  });
+
+  // Tone chip toggle
+  document.querySelectorAll('.tone-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const on = chip.getAttribute('data-selected') === 'true';
+      chip.setAttribute('data-selected', on ? 'false' : 'true');
+    });
+  });
+</script>
+</body>
+</html>

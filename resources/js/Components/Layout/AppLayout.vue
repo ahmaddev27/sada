@@ -5,6 +5,7 @@ import { useUiStore } from '@/Stores/ui'
 import Icon from '@/Components/Base/Icon.vue'
 import Toast from '@/Components/Base/Toast.vue'
 import type { PageProps } from '@/Types'
+import type { AppNotification } from '@/Types'
 
 const props = defineProps<{ title?: string; crumbs?: string[] }>()
 
@@ -19,7 +20,42 @@ const flash      = computed(() => page.props.flash)
 const mobileOpen   = ref(false)
 const wsDropOpen   = ref(false)
 const userDropOpen = ref(false)
+const notifOpen    = ref(false)
 const switching    = ref<number | null>(null)
+
+const notifData        = computed(() => page.props.notifications)
+const unreadCount      = computed(() => notifData.value?.unread_count ?? 0)
+const recentNotifs     = computed(() => notifData.value?.recent ?? [])
+
+function toggleNotif()  { notifOpen.value = !notifOpen.value; wsDropOpen.value = false; userDropOpen.value = false }
+function closeNotif()   { notifOpen.value = false }
+
+function markRead(id: string) {
+    router.post('/notifications/read', { id }, { preserveScroll: true, onSuccess: closeNotif })
+}
+function markAllRead() {
+    router.post('/notifications/read', { id: 'all' }, { preserveScroll: true, onSuccess: closeNotif })
+}
+
+function notifIcon(type: string): string {
+    if (type === 'post_published') return 'check'
+    if (type === 'post_failed')    return 'warning'
+    return 'bell'
+}
+
+function notifColor(type: string): string {
+    if (type === 'post_published') return '#10B981'
+    if (type === 'post_failed')    return '#EF4444'
+    return 'var(--sada-500)'
+}
+
+function timeAgo(iso: string): string {
+    const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
+    if (diff < 60)   return 'الآن'
+    if (diff < 3600) return Math.floor(diff / 60) + ' د'
+    if (diff < 86400) return Math.floor(diff / 3600) + ' س'
+    return Math.floor(diff / 86400) + ' ي'
+}
 
 watch(flash, (val) => {
     if (val?.success) ui.success(val.success)
@@ -83,7 +119,7 @@ function switchWorkspace(id: number) {
 }
 
 function onKey(e: KeyboardEvent) {
-    if (e.key === 'Escape') { closeMobile(); closeWsDrop(); closeUserDrop(); }
+    if (e.key === 'Escape') { closeMobile(); closeWsDrop(); closeUserDrop(); closeNotif(); }
 }
 
 onMounted(() => window.addEventListener('keydown', onKey))
@@ -320,9 +356,54 @@ onUnmounted(() => {
                         <Icon :name="ui.theme === 'dark' ? 'sun' : 'moon'" />
                     </button>
 
-                    <button class="btn btn-icon btn-ghost" title="الإشعارات">
-                        <Icon name="bell" />
-                    </button>
+                    <!-- Notification bell -->
+                    <div style="position:relative;">
+                        <div v-if="notifOpen" style="position:fixed;inset:0;z-index:149;" @click="closeNotif" />
+                        <button
+                            class="btn btn-icon btn-ghost notif-btn"
+                            title="الإشعارات"
+                            @click="toggleNotif"
+                        >
+                            <Icon name="bell" />
+                            <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+                        </button>
+
+                        <Transition name="drop">
+                            <div v-if="notifOpen" class="notif-drop">
+                                <div class="notif-header">
+                                    <span class="notif-title">الإشعارات</span>
+                                    <button v-if="unreadCount > 0" class="notif-read-all" @click="markAllRead">تحديد الكل كمقروء</button>
+                                </div>
+
+                                <div v-if="recentNotifs.length === 0" class="notif-empty">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);margin-bottom:8px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                                    <p>لا توجد إشعارات</p>
+                                </div>
+
+                                <div v-else class="notif-list">
+                                    <component
+                                        :is="n.data.link ? 'a' : 'div'"
+                                        v-for="n in recentNotifs"
+                                        :key="n.id"
+                                        :href="n.data.link"
+                                        :class="['notif-item', { 'notif-item--unread': !n.read_at }]"
+                                        @click="!n.read_at && markRead(n.id)"
+                                    >
+                                        <div class="notif-icon" :style="{ background: `color-mix(in oklab, ${notifColor(n.data.type)} 14%, transparent)`, color: notifColor(n.data.type) }">
+                                            <svg v-if="n.data.type === 'post_published'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                            <svg v-else-if="n.data.type === 'post_failed'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                            <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                                        </div>
+                                        <div class="notif-body">
+                                            <div class="notif-item-title">{{ n.data.title }}</div>
+                                            <div class="notif-item-body">{{ n.data.body }}</div>
+                                        </div>
+                                        <div class="notif-time">{{ timeAgo(n.created_at) }}</div>
+                                    </component>
+                                </div>
+                            </div>
+                        </Transition>
+                    </div>
                 </div>
             </header>
 
@@ -526,4 +607,63 @@ onUnmounted(() => {
 /* ── Flash transition ── */
 .flash-enter-active, .flash-leave-active { transition: opacity .2s, transform .2s; }
 .flash-enter-from, .flash-leave-to { opacity: 0; transform: translateY(-6px); }
+
+/* ── Notifications ── */
+.notif-btn { position: relative; }
+.notif-badge {
+    position: absolute; top: 4px; right: 4px;
+    min-width: 16px; height: 16px; border-radius: 99px;
+    background: #EF4444; color: #fff;
+    font-size: 9px; font-weight: 700; letter-spacing: 0;
+    display: grid; place-items: center; padding: 0 4px;
+    border: 2px solid var(--bg-surface);
+    pointer-events: none;
+}
+.notif-drop {
+    position: absolute; top: calc(100% + 8px); left: 0;
+    width: 340px; max-height: 440px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0,0,0,.14);
+    z-index: 150; overflow: hidden;
+    display: flex; flex-direction: column;
+}
+.notif-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+}
+.notif-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.notif-read-all {
+    font-size: 11px; color: var(--sada-500); background: none;
+    border: none; cursor: pointer; font-family: var(--font-arabic);
+    padding: 0; transition: opacity .15s;
+}
+.notif-read-all:hover { opacity: 0.7; }
+.notif-empty {
+    padding: 32px 16px; text-align: center;
+    display: flex; flex-direction: column; align-items: center;
+    font-size: 13px; color: var(--text-muted);
+}
+.notif-empty p { margin: 0; }
+.notif-list { overflow-y: auto; flex: 1; }
+.notif-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    cursor: pointer; transition: background .12s;
+    text-decoration: none; color: inherit;
+}
+.notif-item:hover { background: var(--bg-muted); }
+.notif-item--unread { background: color-mix(in oklab, var(--sada-500) 4%, transparent); }
+.notif-icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: grid; place-items: center; flex-shrink: 0;
+}
+.notif-body { flex: 1; min-width: 0; }
+.notif-item-title { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+.notif-item-body { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+.notif-time { font-size: 10px; color: var(--text-muted); flex-shrink: 0; padding-top: 2px; }
 </style>
