@@ -18,13 +18,15 @@ trait BelongsToWorkspace
         });
     }
 
+    /** @return BelongsTo<Workspace, $this> */
     public function workspace(): BelongsTo
     {
         return $this->belongsTo(Workspace::class);
     }
 
+    /** @return Builder<static> */
     public static function withoutWorkspaceScope(): Builder
     {
-        return static::withoutGlobalScope('workspace');
+        return static::query()->withoutGlobalScope('workspace');
     }
 }
