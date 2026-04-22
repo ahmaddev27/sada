@@ -25,7 +25,7 @@ const instagram = computed(() => props.accounts.filter(a => a.provider === 'inst
 const facebook  = computed(() => props.accounts.filter(a => a.provider === 'facebook'))
 
 function connectMeta() {
-    router.visit('/social/connect/meta')
+    window.location.href = '/social/connect/meta'
 }
 
 function disconnect(account: SocialAccount) {
