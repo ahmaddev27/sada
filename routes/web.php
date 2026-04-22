@@ -99,6 +99,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/social/accounts/{account}/refresh', [SocialAccountController::class, 'refresh'])->name('social.refresh');
 
     // ADS-01→ADS-11: Campaigns
+    Route::get('campaigns/create', [CampaignController::class, 'create'])->name('campaigns.create');
     Route::resource('campaigns', CampaignController::class)->except(['edit', 'create']);
     Route::post('campaigns/{campaign}/pause',     [CampaignController::class, 'pause'])->name('campaigns.pause');
     Route::post('campaigns/{campaign}/resume',    [CampaignController::class, 'resume'])->name('campaigns.resume');

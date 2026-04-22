@@ -20,6 +20,29 @@ use Inertia\Response;
 
 class CampaignController extends Controller
 {
+    // ADS-01: create campaign page
+    public function create(Request $request): Response
+    {
+        /** @var Workspace $workspace */
+        $workspace = $request->attributes->get('current_workspace');
+
+        $socialAccounts = SocialAccount::withoutWorkspaceScope()
+            ->where('workspace_id', $workspace->id)
+            ->whereIn('provider', ['instagram', 'facebook'])
+            ->get(['id', 'provider', 'account_name']);
+
+        $posts = Post::withoutWorkspaceScope()
+            ->where('workspace_id', $workspace->id)
+            ->where('status', 'published')
+            ->latest()
+            ->get(['id', 'content', 'platform', 'published_at']);
+
+        return Inertia::render('Campaigns/Create', [
+            'socialAccounts' => $socialAccounts,
+            'posts'          => $posts,
+        ]);
+    }
+
     // ADS-01: list campaigns with optional status filter
     public function index(Request $request): Response
     {

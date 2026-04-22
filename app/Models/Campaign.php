@@ -16,6 +16,7 @@ class Campaign extends Model
         'workspace_id',
         'social_account_id',
         'post_id',
+        'ad_copy',
         'name',
         'objective',
         'platform',
