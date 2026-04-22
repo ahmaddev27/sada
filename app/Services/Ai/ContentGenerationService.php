@@ -4,7 +4,14 @@
 
 namespace App\Services\Ai;
 
-use Illuminate\Support\Facades\Http;
+use App\Services\Ai\Drivers\AiDriverInterface;
+use App\Services\Ai\Drivers\AnthropicDriver;
+use App\Services\Ai\Drivers\GeminiDriver;
+use App\Services\Ai\Drivers\GroqDriver;
+use App\Services\Ai\Drivers\OpenAiDriver;
+use Illuminate\Support\Facades\Log;
+use RuntimeException;
+use Throwable;
 
 class ContentGenerationService
 {
@@ -38,44 +45,96 @@ class ContentGenerationService
     ];
 
     /**
-     * CG-05: generate 3 variations using Anthropic Claude.
+     * Build the ordered driver chain from config.
+     * Primary driver first, then the rest as fallbacks.
+     *
+     * @return AiDriverInterface[]
+     */
+    private function buildDriverChain(): array
+    {
+        $all = [
+            'anthropic' => fn () => new AnthropicDriver(
+                apiKey: (string) config('services.anthropic.api_key', ''),
+                model:  (string) config('services.anthropic.model', 'claude-3-5-haiku-20241022'),
+            ),
+            'openai' => fn () => new OpenAiDriver(
+                apiKey: (string) config('services.openai.api_key', ''),
+                model:  (string) config('services.openai.model', 'gpt-4o-mini'),
+            ),
+            'gemini' => fn () => new GeminiDriver(
+                apiKey: (string) config('services.gemini.api_key', ''),
+                model:  (string) config('services.gemini.model', 'gemini-2.0-flash'),
+            ),
+            'groq' => fn () => new GroqDriver(
+                apiKey: (string) config('services.groq.api_key', ''),
+                model:  (string) config('services.groq.model', 'llama-3.3-70b-versatile'),
+            ),
+        ];
+
+        $primary  = (string) config('services.ai.provider', 'anthropic');
+        $fallbacks = (string) config('services.ai.fallbacks', 'openai,gemini');
+
+        $order = array_filter(
+            [$primary, ...explode(',', $fallbacks)],
+            fn (string $k) => isset($all[$k])
+        );
+
+        // Deduplicate while preserving order
+        $seen  = [];
+        $chain = [];
+        foreach ($order as $key) {
+            $key = trim($key);
+            if (! isset($seen[$key])) {
+                $seen[$key] = true;
+                $chain[]    = ($all[$key])();
+            }
+        }
+
+        return $chain;
+    }
+
+    /**
+     * CG-05: generate 3 variations — tries each driver in order until one succeeds.
      *
      * @param array<string, mixed> $params
      * @return array<int, array{title: string, body: string, tags: string[], char_count: int}>
      */
     public function generate(array $params): array
     {
-        $systemPrompt = $this->buildSystemPrompt($params);
-        $userPrompt   = $this->buildUserPrompt($params);
+        $system  = $this->buildSystemPrompt($params);
+        $user    = $this->buildUserPrompt($params);
+        $drivers = $this->buildDriverChain();
+        $last    = null;
 
-        $response = Http::withHeaders([
-            'x-api-key'         => config('services.anthropic.api_key'),
-            'anthropic-version' => '2023-06-01',
-            'content-type'      => 'application/json',
-        ])->post('https://api.anthropic.com/v1/messages', [
-            'model'      => 'claude-3-5-haiku-20241022',
-            'max_tokens' => 2048,
-            'system'     => $systemPrompt,
-            'messages'   => [['role' => 'user', 'content' => $userPrompt]],
-        ])->throw()->json();
+        foreach ($drivers as $driver) {
+            try {
+                $raw = $driver->complete($system, $user);
+                return $this->parseVariations($raw, (string) ($params['platform'] ?? 'instagram'));
+            } catch (Throwable $e) {
+                Log::warning("AI driver [{$driver->name()}] failed: {$e->getMessage()}");
+                $last = $e;
+            }
+        }
 
-        $raw = $response['content'][0]['text'] ?? '';
-
-        return $this->parseVariations($raw, $params['platform']);
+        throw new RuntimeException(
+            'فشل توليد المحتوى من جميع مزودي الذكاء الاصطناعي. حاول مرة أخرى لاحقاً.',
+            0,
+            $last
+        );
     }
 
     /** @param array<string, mixed> $params */
     private function buildSystemPrompt(array $params): string
     {
-        $dialect    = self::DIALECT_INSTRUCTIONS[$params['dialect']] ?? self::DIALECT_INSTRUCTIONS['fos'];
-        $type       = self::CONTENT_TYPE_INSTRUCTIONS[$params['content_type']] ?? self::CONTENT_TYPE_INSTRUCTIONS['post'];
-        $limit      = self::PLATFORM_LIMITS[$params['platform']] ?? 2200;
-        $platform   = $params['platform'];
-        $emojiLine  = $params['include_emojis'] ? 'أضف إيموجيات مناسبة للسياق الخليجي بشكل طبيعي.' : 'لا تستخدم إيموجيات.';
+        $dialect   = self::DIALECT_INSTRUCTIONS[$params['dialect']] ?? self::DIALECT_INSTRUCTIONS['fos'];
+        $type      = self::CONTENT_TYPE_INSTRUCTIONS[$params['content_type']] ?? self::CONTENT_TYPE_INSTRUCTIONS['post'];
+        $limit     = self::PLATFORM_LIMITS[$params['platform']] ?? 2200;
+        $platform  = $params['platform'];
+        $emojiLine = $params['include_emojis'] ? 'أضف إيموجيات مناسبة للسياق الخليجي بشكل طبيعي.' : 'لا تستخدم إيموجيات.';
 
         $brandSection = '';
         if ($params['use_brand'] && ! empty($params['brand_identity'])) {
-            $brand = $params['brand_identity'];
+            $brand        = $params['brand_identity'];
             $brandSection = "\n\nهوية العلامة التجارية:\n" .
                 "- الوصف: {$brand['description']}\n" .
                 "- النبرة: {$brand['tone']}\n" .
@@ -168,12 +227,11 @@ PROMPT;
             $results[] = [
                 'title'      => $title,
                 'body'       => $body,
-                'tags'       => array_slice($tags, 0, 10), // CG-09: max 10
+                'tags'       => array_slice($tags, 0, 10),
                 'char_count' => mb_strlen($body),
             ];
         }
 
-        // Fallback: return empty structure if parsing failed
         if (empty($results)) {
             $results[] = ['title' => 'الخيار ١', 'body' => $raw, 'tags' => [], 'char_count' => mb_strlen($raw)];
         }
