@@ -29,11 +29,13 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     // WS-01: user owns multiple workspaces
+    /** @return HasMany<Workspace, $this> */
     public function workspaces(): HasMany
     {
         return $this->hasMany(Workspace::class);
     }
 
+    /** @return HasMany<Workspace, $this> */
     public function activeWorkspaces(): HasMany
     {
         return $this->workspaces()->whereNull('archived_at');

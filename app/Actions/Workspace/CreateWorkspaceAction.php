@@ -11,6 +11,9 @@ class CreateWorkspaceAction
 {
     private const FREE_TIER_LIMIT = 10;
 
+    /**
+     * @param array<int, string> $countries
+     */
     public function execute(
         User $user,
         string $name,

@@ -8,6 +8,10 @@ use App\Models\Workspace;
 // BI-01 → BI-04
 class UpdateBrandIdentityAction
 {
+    /**
+     * @param array<int, string> $bannedWords
+     * @param array<int, string> $examplePosts
+     */
     public function execute(
         Workspace $workspace,
         ?string $description = null,
