@@ -25,16 +25,16 @@ const instagram = computed(() => props.accounts.filter(a => a.provider === 'inst
 const facebook  = computed(() => props.accounts.filter(a => a.provider === 'facebook'))
 
 function connectMeta() {
-    router.visit(route('social.redirect', { provider: 'meta' }))
+    router.visit('/social/connect/meta')
 }
 
 function disconnect(account: SocialAccount) {
     if (!confirm(`هل أنت متأكد من فصل حساب ${account.account_name}؟`)) return
-    router.delete(route('social.disconnect', { account: account.id }))
+    router.delete(`/social/accounts/${account.id}`)
 }
 
 function refresh(account: SocialAccount) {
-    router.post(route('social.refresh', { account: account.id }))
+    router.post(`/social/accounts/${account.id}/refresh`)
 }
 
 const statusClass: Record<string, string> = {
