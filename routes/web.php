@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\SeasonalController;
@@ -104,4 +106,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('campaigns/{campaign}/pause',     [CampaignController::class, 'pause'])->name('campaigns.pause');
     Route::post('campaigns/{campaign}/resume',    [CampaignController::class, 'resume'])->name('campaigns.resume');
     Route::post('campaigns/{campaign}/duplicate', [CampaignController::class, 'duplicate'])->name('campaigns.duplicate');
+
+    // ANL-01→ANL-07: Analytics
+    Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('/analytics/export/pdf', [AnalyticsController::class, 'exportPdf'])->name('analytics.export.pdf');
+    Route::get('/analytics/export/csv', [AnalyticsController::class, 'exportCsv'])->name('analytics.export.csv');
+
+    // BIL-01→BIL-08: Billing
+    Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
+    Route::post('/billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
+    Route::get('/billing/callback', [BillingController::class, 'callback'])->name('billing.callback');
+    Route::get('/billing/invoices/{invoice}/download', [BillingController::class, 'downloadInvoice'])->name('billing.invoice.download');
 });
+
+// ── Payment gateway webhooks (no CSRF, no auth) ────────────────────────────
+Route::post('/webhooks/moyasar', [BillingController::class, 'webhook'])->name('billing.webhook');

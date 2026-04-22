@@ -71,6 +71,18 @@ return [
         'redirect'      => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
     ],
 
+    // BIL-01: Moyasar payment gateway (SA primary)
+    'moyasar' => [
+        'publishable_key' => env('MOYASAR_PUBLISHABLE_KEY'),
+        'secret_key'      => env('MOYASAR_SECRET_KEY'),
+    ],
+
+    // BIL-01: Tap payment gateway (Gulf fallback)
+    'tap' => [
+        'secret_key'      => env('TAP_SECRET_KEY'),
+        'publishable_key' => env('TAP_PUBLISHABLE_KEY'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

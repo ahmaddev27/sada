@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Invoice;
+use App\Models\TokenTransaction;
 
 // AUTH-01: MustVerifyEmail | AUTH-02: google_id for OAuth users
 #[Fillable(['name', 'email', 'password', 'google_id', 'email_verified_at', 'token_balance'])]
@@ -39,5 +41,19 @@ class User extends Authenticatable implements MustVerifyEmail
     public function activeWorkspaces(): HasMany
     {
         return $this->workspaces()->whereNull('archived_at');
+    }
+
+    // BIL-02: full token transaction history
+    /** @return HasMany<TokenTransaction, $this> */
+    public function tokenTransactions(): HasMany
+    {
+        return $this->hasMany(TokenTransaction::class);
+    }
+
+    // BIL-06 / BIL-07: billing invoices
+    /** @return HasMany<Invoice, $this> */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
     }
 }

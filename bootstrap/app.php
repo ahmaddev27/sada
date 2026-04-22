@@ -17,6 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetCurrentWorkspace::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
+
+        // BIL-01: payment gateway webhooks must bypass CSRF
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/*',
+        ]);
     })
     ->withSchedule(function (Schedule $schedule): void {
         // SCH-02: check for due posts every minute
