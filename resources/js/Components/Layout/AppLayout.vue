@@ -37,7 +37,7 @@ const navWork = [
     { label: 'الرئيسية',           href: '/dashboard',  icon: 'home' },
     { label: 'توليد محتوى',        href: '/generate',   icon: 'sparkle', badge: 'جديد' },
     { label: 'التقويم',            href: '/calendar',   icon: 'calendar' },
-    { label: 'سجل المحتوى',        href: '/history',    icon: 'clock' },
+    { label: 'سجل المحتوى',        href: '/posts',      icon: 'clock' },
     { label: 'الحملات الإعلانية',  href: '/campaigns',  icon: 'megaphone' },
     { label: 'المواسم',            href: '/seasonal',   icon: 'moon' },
     { label: 'التحليلات',          href: '/analytics',  icon: 'chart' },
