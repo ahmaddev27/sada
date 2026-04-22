@@ -21,7 +21,7 @@ class UpdateWorkspaceRequest extends FormRequest
             'countries'       => ['nullable', 'array'],
             'countries.*'     => ['string', 'in:sa,ae,kw,qa,bh,om'],
             'default_dialect' => ['nullable', 'string', 'in:fos,sa,ae,kw,qa,bh,om'],
-            'logo'            => ['nullable', 'image', 'mimes:png,jpg,svg', 'max:2048'],
+            'logo'            => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp,svg', 'max:2048'],
         ];
     }
 
@@ -31,7 +31,7 @@ class UpdateWorkspaceRequest extends FormRequest
             'name.required'  => 'اسم مساحة العمل مطلوب.',
             'name.min'       => 'اسم مساحة العمل يجب أن يكون حرفين على الأقل.',
             'logo.image'     => 'الشعار يجب أن يكون صورة.',
-            'logo.mimes'     => 'الشعار يجب أن يكون PNG أو JPG أو SVG.',
+            'logo.mimes'     => 'الشعار يجب أن يكون PNG أو JPG أو WEBP أو SVG.',
             'logo.max'       => 'حجم الشعار لا يتجاوز 2MB.',
         ];
     }

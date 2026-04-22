@@ -1,9 +1,10 @@
 <script setup lang="ts">
 // CG-01→CG-11
 import { ref, computed, watch } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Components/Layout/AppLayout.vue'
 import Icon from '@/Components/Base/Icon.vue'
+import type { PageProps } from '@/Types'
 
 interface SocialAccount {
     id: number
@@ -21,10 +22,13 @@ interface Variation {
 
 defineProps<{ socialAccounts: SocialAccount[] }>()
 
+const page = usePage<PageProps>()
+const wsDialect = page.props.currentWorkspace?.default_dialect ?? 'sa'
+
 // ── Form state ─────────────────────────────────────────────
 const contentType   = ref<string>('post')
 const platform      = ref<string>('instagram')
-const dialect       = ref<string>('sa')
+const dialect       = ref<string>(wsDialect)
 const prompt        = ref<string>('')
 const useBrand      = ref<boolean>(true)
 const includeEmojis = ref<boolean>(true)

@@ -40,7 +40,7 @@ const toast = useToastStore();
                         font-family: var(--font-arabic);
                         pointer-events: all;
                         cursor: pointer;
-                        background: ${item.variant === 'success' ? '#065F46' : item.variant === 'error' ? '#991B1B' : item.variant === 'warning' ? '#92400E' : 'var(--color-ink-800)'};
+                        background: ${item.variant === 'success' ? 'var(--success)' : item.variant === 'error' ? 'var(--error)' : item.variant === 'warning' ? 'var(--warning)' : 'var(--ink-800)'};
                         color: #fff;
                     `"
                     @click="toast.remove(item.id)"

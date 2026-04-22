@@ -28,7 +28,13 @@ class WorkspaceController extends Controller
             ->latest()
             ->get();
 
-        return Inertia::render('Workspace/Index', compact('workspaces'));
+        /** @var Workspace|null $current */
+        $current = $request->attributes->get('current_workspace');
+
+        return Inertia::render('Workspace/Index', [
+            'workspaces'         => $workspaces,
+            'currentWorkspaceId' => $current?->id,
+        ]);
     }
 
     // WS-01: create

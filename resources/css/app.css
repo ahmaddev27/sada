@@ -112,6 +112,16 @@
     --border-strong:  #A8B1AD;
     --border-brand:   #C7E5DD;
 
+    /* Legacy aliases — map old --color-* vars to design tokens */
+    --color-ink-base:        var(--text-primary);
+    --color-ink-muted:       var(--text-muted);
+    --color-bg-page:         var(--bg-page);
+    --color-bg-card:         var(--bg-surface);
+    --color-bg-input:        var(--bg-surface);
+    --color-border-default:  var(--border-default);
+    --color-border-subtle:   var(--border-subtle);
+    --color-ink-800:         var(--ink-800);
+
     --accent:      var(--sada-500);
     --accent-hover:var(--sada-600);
     --accent-soft: var(--sada-100);
@@ -187,6 +197,16 @@
     --shadow-lg: 0 12px 32px rgba(0,0,0,0.55);
     --shadow-xl: 0 24px 64px rgba(0,0,0,0.65);
     --shadow-focus: 0 0 0 3px rgba(42,144,128,0.35);
+
+    /* Legacy aliases — dark overrides */
+    --color-ink-base:       var(--text-primary);
+    --color-ink-muted:      var(--text-muted);
+    --color-bg-page:        var(--bg-page);
+    --color-bg-card:        var(--bg-surface);
+    --color-bg-input:       var(--bg-surface);
+    --color-border-default: var(--border-default);
+    --color-border-subtle:  var(--border-subtle);
+    --color-ink-800:        var(--ink-800);
 }
 
 /* ============================================================
@@ -313,6 +333,7 @@ p { margin: 0; }
     overflow: hidden;
     grid-column: 1;
     grid-row: 1;
+    z-index: 100;
 }
 .sidebar-top {
     padding: 20px 20px 12px;
@@ -367,7 +388,9 @@ p { margin: 0; }
     display: grid; place-items: center;
     color: #fff; font-weight: 700; font-size: 12px;
     flex-shrink: 0;
+    overflow: hidden;
 }
+.workspace-picker .ws-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .workspace-picker .ws-info { flex: 1; min-width: 0; }
 .workspace-picker .ws-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .workspace-picker .ws-plan { font-size: 11px; color: var(--text-muted); }
@@ -819,6 +842,24 @@ p { margin: 0; }
    Layout helpers
    ============================================================ */
 .divider { height: 1px; background: var(--border-subtle); width: 100%; margin: 0; border: 0; }
+
+/* ── Tabs ── */
+.cmp-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-subtle); }
+.cmp-tabs button {
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    font-family: var(--font-arabic);
+    transition: color .15s;
+    margin-bottom: -1px;
+}
+.cmp-tabs button:hover { color: var(--text-primary); }
+.cmp-tabs button[data-active="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 
 .row    { display: flex; gap: 16px; }
 .row-sm { display: flex; gap: 8px; }

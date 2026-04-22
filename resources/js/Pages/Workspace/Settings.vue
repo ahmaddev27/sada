@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import AppLayout from '@/Components/Layout/AppLayout.vue';
-import Card from '@/Components/Base/Card.vue';
-import Button from '@/Components/Base/Button.vue';
-import Input from '@/Components/Base/Input.vue';
-import Alert from '@/Components/Base/Alert.vue';
-import { useForm, usePage } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import LogoCropper from '@/Components/Base/LogoCropper.vue';
+import { useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps<{
     workspace: {
@@ -25,10 +22,9 @@ const props = defineProps<{
     } | null;
 }>();
 
-const page = usePage();
-const flashSuccess = computed(() => (page.props as any).flash?.success ?? null);
+const activeTab = ref<'general' | 'brand'>('general');
 
-const dialects = {
+const dialects: Record<string, string> = {
     fos: 'الفصحى',
     sa:  '🇸🇦 السعودية',
     ae:  '🇦🇪 الإمارات',
@@ -38,7 +34,7 @@ const dialects = {
     om:  '🇴🇲 عُمان',
 };
 
-const countries = [
+const countryOptions = [
     { code: 'sa', label: '🇸🇦 السعودية' },
     { code: 'ae', label: '🇦🇪 الإمارات' },
     { code: 'kw', label: '🇰🇼 الكويت' },
@@ -47,7 +43,38 @@ const countries = [
     { code: 'om', label: '🇴🇲 عُمان' },
 ];
 
-// Workspace form
+const tones = ['ودّية', 'عصرية', 'رسمية', 'فاخرة', 'مرحة', 'احترافية'];
+
+// ── Logo cropper ───────────────────────────────────────────────────────────
+const cropperOpen    = ref(false)
+const pendingFile    = ref<File | null>(null)
+const logoPreviewUrl = ref<string | null>(
+    props.workspace.logo_path ? `/storage/${props.workspace.logo_path}` : null
+)
+
+function onFileChange(e: Event) {
+    const file = (e.target as HTMLInputElement).files?.[0] ?? null
+    if (!file) return
+    pendingFile.value = file
+    cropperOpen.value = true
+    // reset input so same file can be re-selected
+    ;(e.target as HTMLInputElement).value = ''
+}
+
+function onCrop(blob: Blob) {
+    const file = new File([blob], 'logo.jpg', { type: 'image/jpeg' })
+    wsForm.logo      = file
+    logoPreviewUrl.value = URL.createObjectURL(blob)
+    cropperOpen.value    = false
+    pendingFile.value    = null
+}
+
+function closeCropper() {
+    cropperOpen.value = false
+    pendingFile.value = null
+}
+
+// ── Workspace form ─────────────────────────────────────────────────────────
 const wsForm = useForm({
     name:            props.workspace.name,
     business_type:   props.workspace.business_type ?? '',
@@ -69,15 +96,15 @@ function submitWs() {
     wsForm.post(`/workspaces/${props.workspace.id}`, { forceFormData: true });
 }
 
-// Brand identity form
+// ── Brand identity form ────────────────────────────────────────────────────
 const newBannedWord  = ref('');
 const newExamplePost = ref('');
 
 const brandForm = useForm({
-    description:     props.brandIdentity?.description ?? '',
-    tone:            props.brandIdentity?.tone ?? '',
+    description:     props.brandIdentity?.description     ?? '',
+    tone:            props.brandIdentity?.tone            ?? '',
     target_audience: props.brandIdentity?.target_audience ?? '',
-    banned_words:    [...(props.brandIdentity?.banned_words ?? [])] as string[],
+    banned_words:    [...(props.brandIdentity?.banned_words  ?? [])] as string[],
     example_posts:   [...(props.brandIdentity?.example_posts ?? [])] as string[],
 });
 
@@ -88,10 +115,7 @@ function addBannedWord() {
         newBannedWord.value = '';
     }
 }
-
-function removeBannedWord(i: number) {
-    brandForm.banned_words.splice(i, 1);
-}
+function removeBannedWord(i: number) { brandForm.banned_words.splice(i, 1); }
 
 function addExamplePost() {
     const p = newExamplePost.value.trim();
@@ -100,263 +124,386 @@ function addExamplePost() {
         newExamplePost.value = '';
     }
 }
-
-function removeExamplePost(i: number) {
-    brandForm.example_posts.splice(i, 1);
-}
+function removeExamplePost(i: number) { brandForm.example_posts.splice(i, 1); }
 
 function submitBrand() {
     brandForm.post(`/workspaces/${props.workspace.id}/brand`);
 }
-
-const activeTab = ref<'general' | 'brand'>('general');
 </script>
 
 <template>
     <AppLayout :title="`إعدادات — ${workspace.name}`">
-        <div style="max-width: 760px; margin: 0 auto;">
+        <div class="settings-wrap">
 
-            <!-- Page title -->
-            <div style="margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
-                <a
-                    href="/workspaces"
-                    style="color: var(--color-ink-muted); text-decoration: none; font-size: 13px;"
-                >← مساحات العمل</a>
-                <span style="color: var(--color-border-default);">/</span>
-                <h1 style="margin: 0; font-size: 20px; font-weight: 700; color: var(--color-ink-base);">
-                    {{ workspace.name }}
-                </h1>
+            <!-- Page header -->
+            <div class="page-hd">
+                <a href="/workspaces" class="back-link">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    مساحات العمل
+                </a>
+                <span class="page-hd-sep">/</span>
+                <h1 class="page-hd-title">{{ workspace.name }}</h1>
             </div>
 
-            <!-- Flash -->
-            <Alert v-if="flashSuccess" variant="success" style="margin-bottom: 16px;">{{ flashSuccess }}</Alert>
-
             <!-- Tabs -->
-            <div style="display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 0;">
+            <div class="cmp-tabs" style="margin-bottom:24px">
                 <button
-                    v-for="tab in [{ key: 'general', label: 'معلومات المساحة' }, { key: 'brand', label: 'هوية العلامة التجارية' }]"
-                    :key="tab.key"
-                    :style="`
-                        padding: 10px 16px; font-size: 13px; font-weight: 600;
-                        border: none; background: transparent; cursor: pointer;
-                        border-bottom: 2px solid ${activeTab === tab.key ? 'var(--color-sada-500)' : 'transparent'};
-                        color: ${activeTab === tab.key ? 'var(--color-sada-600)' : 'var(--color-ink-muted)'};
-                        margin-bottom: -1px;
-                        font-family: var(--font-arabic);
-                    `"
-                    @click="activeTab = tab.key as any"
-                >{{ tab.label }}</button>
+                    :data-active="activeTab === 'general'"
+                    @click="activeTab = 'general'"
+                >معلومات المساحة</button>
+                <button
+                    :data-active="activeTab === 'brand'"
+                    @click="activeTab = 'brand'"
+                >هوية العلامة التجارية</button>
             </div>
 
             <!-- ── General tab ─────────────────────────────────────── -->
-            <Card v-if="activeTab === 'general'" padding="24px">
-                <form @submit.prevent="submitWs" style="display: flex; flex-direction: column; gap: 20px;">
+            <div v-if="activeTab === 'general'" class="card">
+                <div class="card-head">
+                    <h3>معلومات المساحة</h3>
+                </div>
+                <div class="card-body">
+                    <form @submit.prevent="submitWs" class="stack">
 
-                    <!-- Logo upload -->
-                    <div>
-                        <p style="font-size: 13px; font-weight: 500; color: var(--color-ink-base); margin: 0 0 8px;">شعار المساحة</p>
-                        <div style="display: flex; align-items: center; gap: 16px;">
-                            <div style="
-                                width: 56px; height: 56px; border-radius: 12px; overflow: hidden;
-                                background: linear-gradient(135deg, var(--color-sada-500), var(--color-sada-600));
-                                color: #fff; font-weight: 700; font-size: 22px;
-                                display: grid; place-items: center;
-                            ">
-                                <img v-if="workspace.logo_path" :src="`/storage/${workspace.logo_path}`" style="width: 100%; height: 100%; object-fit: cover;" />
-                                <span v-else>{{ workspace.name.charAt(0) }}</span>
+                        <!-- Logo upload -->
+                        <div class="input-group">
+                            <label class="input-label">شعار المساحة</label>
+                            <div class="logo-row">
+                                <div class="logo-preview">
+                                    <img v-if="logoPreviewUrl" :src="logoPreviewUrl" alt="logo" />
+                                    <span v-else>{{ workspace.name.charAt(0) }}</span>
+                                </div>
+                                <div class="logo-actions">
+                                    <label class="btn btn-secondary btn-sm" style="cursor:pointer">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.4 18A5 5 0 0 0 18 8.4a8 8 0 1 0-11.6 8.6"/></svg>
+                                        {{ wsForm.logo ? 'تغيير الشعار' : 'رفع شعار' }}
+                                        <input
+                                            type="file"
+                                            accept="image/png,image/jpeg,image/webp"
+                                            style="display:none"
+                                            @change="onFileChange"
+                                        />
+                                    </label>
+                                    <button
+                                        v-if="wsForm.logo"
+                                        type="button"
+                                        class="btn btn-ghost btn-sm"
+                                        @click="cropperOpen = true"
+                                        title="إعادة الاقتصاص"
+                                    >
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+                                        اقتصاص
+                                    </button>
+                                </div>
+                                <span class="hint-text">PNG, JPG, WEBP — أقصى 2MB</span>
                             </div>
-                            <label style="
-                                padding: 8px 14px; font-size: 13px; font-weight: 600;
-                                border: 1px solid var(--color-border-default); border-radius: 8px;
-                                color: var(--color-ink-base); cursor: pointer; font-family: var(--font-arabic);
-                            ">
-                                رفع شعار
-                                <input type="file" accept="image/png,image/jpeg,image/svg+xml" style="display: none;" @change="(e) => wsForm.logo = (e.target as HTMLInputElement).files?.[0] ?? null" />
-                            </label>
-                            <span style="font-size: 11px; color: var(--color-ink-muted);">PNG, JPG, SVG — أقصى 2MB</span>
                         </div>
-                    </div>
 
-                    <Input v-model="wsForm.name" label="اسم المساحة" :error="wsForm.errors.name" />
-                    <Input v-model="wsForm.business_type" label="نوع النشاط" placeholder="مثلاً: تجارة إلكترونية" />
-
-                    <!-- Countries -->
-                    <div>
-                        <p style="font-size: 13px; font-weight: 500; color: var(--color-ink-base); margin: 0 0 8px;">الدول المستهدفة</p>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button
-                                v-for="c in countries"
-                                :key="c.code"
-                                type="button"
-                                :style="`
-                                    padding: 5px 12px; border-radius: 99px; font-size: 12px; font-weight: 600;
-                                    cursor: pointer; border: 1px solid;
-                                    border-color: ${wsForm.countries.includes(c.code) ? 'var(--color-sada-500)' : 'var(--color-border-default)'};
-                                    background: ${wsForm.countries.includes(c.code) ? 'color-mix(in oklab, var(--color-sada-500) 12%, transparent)' : 'transparent'};
-                                    color: ${wsForm.countries.includes(c.code) ? 'var(--color-sada-600)' : 'var(--color-ink-muted)'};
-                                    font-family: var(--font-arabic);
-                                `"
-                                @click="toggleCountry(c.code)"
-                            >{{ c.label }}</button>
-                        </div>
-                    </div>
-
-                    <!-- Dialect -->
-                    <div>
-                        <label style="font-size: 13px; font-weight: 500; color: var(--color-ink-base); display: block; margin-bottom: 4px;">اللهجة الافتراضية</label>
-                        <select
-                            v-model="wsForm.default_dialect"
-                            style="
-                                width: 100%; padding: 9px 12px; font-size: 14px;
-                                border-radius: 8px; border: 1px solid var(--color-border-default);
-                                background: var(--color-bg-input); color: var(--color-ink-base);
-                                font-family: var(--font-arabic); outline: none;
-                            "
-                        >
-                            <option v-for="(label, code) in dialects" :key="code" :value="code">{{ label }}</option>
-                        </select>
-                    </div>
-
-                    <Button type="submit" :loading="wsForm.processing">حفظ التغييرات</Button>
-                </form>
-            </Card>
-
-            <!-- ── Brand identity tab ──────────────────────────────── -->
-            <Card v-if="activeTab === 'brand'" padding="24px">
-                <form @submit.prevent="submitBrand" style="display: flex; flex-direction: column; gap: 20px;">
-
-                    <!-- Description -->
-                    <div>
-                        <label style="font-size: 13px; font-weight: 500; color: var(--color-ink-base); display: block; margin-bottom: 4px;">وصف العلامة التجارية</label>
-                        <textarea
-                            v-model="brandForm.description"
-                            rows="3"
-                            placeholder="اكتب وصفاً مختصراً لعلامتك التجارية، منتجاتك أو خدماتك..."
-                            style="
-                                width: 100%; padding: 9px 12px; font-size: 14px;
-                                border-radius: 8px; border: 1px solid var(--color-border-default);
-                                background: var(--color-bg-input); color: var(--color-ink-base);
-                                font-family: var(--font-arabic); outline: none; resize: vertical;
-                                line-height: 1.6; box-sizing: border-box;
-                            "
-                        />
-                    </div>
-
-                    <!-- Tone -->
-                    <div>
-                        <label style="font-size: 13px; font-weight: 500; color: var(--color-ink-base); display: block; margin-bottom: 8px;">نبرة الصوت</label>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button
-                                v-for="tone in ['ودّية', 'عصرية', 'رسمية', 'فاخرة', 'مرحة', 'احترافية']"
-                                :key="tone"
-                                type="button"
-                                :style="`
-                                    padding: 5px 12px; border-radius: 99px; font-size: 12px; font-weight: 600;
-                                    cursor: pointer; border: 1px solid; font-family: var(--font-arabic);
-                                    border-color: ${brandForm.tone === tone ? 'var(--color-sada-500)' : 'var(--color-border-default)'};
-                                    background: ${brandForm.tone === tone ? 'color-mix(in oklab, var(--color-sada-500) 12%, transparent)' : 'transparent'};
-                                    color: ${brandForm.tone === tone ? 'var(--color-sada-600)' : 'var(--color-ink-muted)'};
-                                `"
-                                @click="brandForm.tone = tone"
-                            >{{ tone }}</button>
-                        </div>
-                    </div>
-
-                    <!-- Target audience -->
-                    <div>
-                        <label style="font-size: 13px; font-weight: 500; color: var(--color-ink-base); display: block; margin-bottom: 4px;">الجمهور المستهدف</label>
-                        <textarea
-                            v-model="brandForm.target_audience"
-                            rows="2"
-                            placeholder="مثلاً: شباب خليجيون من ١٨-٣٥ سنة مهتمون بالموضة والتقنية"
-                            style="
-                                width: 100%; padding: 9px 12px; font-size: 14px;
-                                border-radius: 8px; border: 1px solid var(--color-border-default);
-                                background: var(--color-bg-input); color: var(--color-ink-base);
-                                font-family: var(--font-arabic); outline: none; resize: vertical;
-                                line-height: 1.6; box-sizing: border-box;
-                            "
-                        />
-                    </div>
-
-                    <!-- Banned words (BI-03) -->
-                    <div>
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                            <label style="font-size: 13px; font-weight: 500; color: var(--color-ink-base);">الكلمات المحظورة</label>
-                            <span style="font-size: 11px; color: var(--color-ink-muted);">{{ brandForm.banned_words.length }}/١٠</span>
-                        </div>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
-                            <span
-                                v-for="(word, i) in brandForm.banned_words"
-                                :key="i"
-                                style="
-                                    display: inline-flex; align-items: center; gap: 4px;
-                                    padding: 3px 10px; border-radius: 99px; font-size: 12px;
-                                    background: #FEF2F2; color: #991B1B; font-weight: 600;
-                                "
-                            >
-                                {{ word }}
-                                <button type="button" style="border: none; background: transparent; cursor: pointer; color: #991B1B; font-size: 14px; padding: 0 0 0 2px; line-height: 1;" @click="removeBannedWord(i)">×</button>
-                            </span>
-                        </div>
-                        <div v-if="brandForm.banned_words.length < 10" style="display: flex; gap: 8px;">
+                        <!-- Name -->
+                        <div class="input-group">
+                            <label class="input-label">اسم المساحة</label>
                             <input
-                                v-model="newBannedWord"
+                                v-model="wsForm.name"
                                 type="text"
-                                placeholder="أضف كلمة محظورة..."
-                                style="
-                                    flex: 1; padding: 7px 12px; font-size: 13px;
-                                    border-radius: 8px; border: 1px solid var(--color-border-default);
-                                    background: var(--color-bg-input); color: var(--color-ink-base);
-                                    font-family: var(--font-arabic); outline: none;
-                                "
-                                @keydown.enter.prevent="addBannedWord"
+                                class="input"
+                                placeholder="مثلاً: متجر أنيق"
                             />
-                            <Button type="button" variant="secondary" size="sm" @click="addBannedWord">إضافة</Button>
+                            <span v-if="wsForm.errors.name" class="input-error">{{ wsForm.errors.name }}</span>
                         </div>
-                    </div>
 
-                    <!-- Example posts (BI-04) -->
-                    <div>
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                            <label style="font-size: 13px; font-weight: 500; color: var(--color-ink-base);">منشورات نموذجية</label>
-                            <span style="font-size: 11px; color: var(--color-ink-muted);">{{ brandForm.example_posts.length }}/٥</span>
+                        <!-- Business type -->
+                        <div class="input-group">
+                            <label class="input-label">نوع النشاط <span class="input-hint">(اختياري)</span></label>
+                            <input
+                                v-model="wsForm.business_type"
+                                type="text"
+                                class="input"
+                                placeholder="مثلاً: تجارة إلكترونية"
+                            />
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
-                            <div
-                                v-for="(post, i) in brandForm.example_posts"
-                                :key="i"
-                                style="
-                                    display: flex; gap: 8px; align-items: flex-start;
-                                    padding: 10px 12px; border-radius: 8px;
-                                    background: var(--color-bg-page);
-                                    border: 1px solid var(--color-border-subtle);
-                                    font-size: 13px; color: var(--color-ink-base); line-height: 1.6;
-                                "
-                            >
-                                <span style="flex: 1;">{{ post }}</span>
-                                <button type="button" style="border: none; background: transparent; cursor: pointer; color: var(--color-ink-muted); font-size: 16px; line-height: 1;" @click="removeExamplePost(i)">×</button>
+
+                        <!-- Countries -->
+                        <div class="input-group">
+                            <label class="input-label">الدول المستهدفة</label>
+                            <div class="chips-row">
+                                <button
+                                    v-for="c in countryOptions"
+                                    :key="c.code"
+                                    type="button"
+                                    class="chip"
+                                    :data-selected="wsForm.countries.includes(c.code)"
+                                    @click="toggleCountry(c.code)"
+                                >{{ c.label }}</button>
                             </div>
                         </div>
-                        <div v-if="brandForm.example_posts.length < 5" style="display: flex; gap: 8px; align-items: flex-end;">
-                            <textarea
-                                v-model="newExamplePost"
-                                rows="2"
-                                placeholder="الصق منشوراً سابقاً يمثل أسلوبك..."
-                                style="
-                                    flex: 1; padding: 7px 12px; font-size: 13px;
-                                    border-radius: 8px; border: 1px solid var(--color-border-default);
-                                    background: var(--color-bg-input); color: var(--color-ink-base);
-                                    font-family: var(--font-arabic); outline: none; resize: vertical;
-                                "
-                            />
-                            <Button type="button" variant="secondary" size="sm" @click="addExamplePost">إضافة</Button>
-                        </div>
-                    </div>
 
-                    <Button type="submit" :loading="brandForm.processing">حفظ الهوية التجارية</Button>
-                </form>
-            </Card>
+                        <!-- Default dialect -->
+                        <div class="input-group">
+                            <label class="input-label">اللهجة الافتراضية</label>
+                            <select v-model="wsForm.default_dialect" class="select">
+                                <option v-for="(label, code) in dialects" :key="code" :value="code">{{ label }}</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <button type="submit" class="btn btn-primary" :disabled="wsForm.processing">
+                                <svg v-if="wsForm.processing" class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                                {{ wsForm.processing ? 'جارٍ الحفظ...' : 'حفظ التغييرات' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ── Brand tab ────────────────────────────────────────── -->
+            <div v-if="activeTab === 'brand'" class="card">
+                <div class="card-head">
+                    <div>
+                        <h3>هوية العلامة التجارية</h3>
+                        <p class="sub">تساعد الذكاء الاصطناعي على فهم أسلوبك ونبرتك</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form @submit.prevent="submitBrand" class="stack">
+
+                        <!-- Description (BI-01) -->
+                        <div class="input-group">
+                            <label class="input-label">وصف العلامة التجارية</label>
+                            <textarea
+                                v-model="brandForm.description"
+                                class="textarea"
+                                rows="3"
+                                placeholder="اكتب وصفاً مختصراً لعلامتك التجارية، منتجاتك أو خدماتك..."
+                            />
+                        </div>
+
+                        <!-- Tone (BI-02) -->
+                        <div class="input-group">
+                            <label class="input-label">نبرة الصوت</label>
+                            <div class="chips-row">
+                                <button
+                                    v-for="tone in tones"
+                                    :key="tone"
+                                    type="button"
+                                    class="chip"
+                                    :data-selected="brandForm.tone === tone"
+                                    @click="brandForm.tone = tone"
+                                >{{ tone }}</button>
+                            </div>
+                        </div>
+
+                        <!-- Target audience -->
+                        <div class="input-group">
+                            <label class="input-label">الجمهور المستهدف</label>
+                            <textarea
+                                v-model="brandForm.target_audience"
+                                class="textarea"
+                                rows="2"
+                                placeholder="مثلاً: شباب خليجيون من ١٨-٣٥ سنة مهتمون بالموضة والتقنية"
+                                style="min-height:72px"
+                            />
+                        </div>
+
+                        <!-- Banned words (BI-03) -->
+                        <div class="input-group">
+                            <div class="label-row">
+                                <label class="input-label" style="margin:0">الكلمات المحظورة</label>
+                                <span class="badge badge-neutral">{{ brandForm.banned_words.length }}/١٠</span>
+                            </div>
+                            <div v-if="brandForm.banned_words.length" class="chips-row" style="margin-bottom:10px">
+                                <span
+                                    v-for="(word, i) in brandForm.banned_words"
+                                    :key="i"
+                                    class="badge badge-error"
+                                    style="display:inline-flex;align-items:center;gap:4px;cursor:default"
+                                >
+                                    {{ word }}
+                                    <button
+                                        type="button"
+                                        class="badge-remove-btn"
+                                        @click="removeBannedWord(i)"
+                                        title="حذف"
+                                    >
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                                    </button>
+                                </span>
+                            </div>
+                            <div v-if="brandForm.banned_words.length < 10" class="row-sm">
+                                <input
+                                    v-model="newBannedWord"
+                                    type="text"
+                                    class="input"
+                                    placeholder="أضف كلمة محظورة..."
+                                    @keydown.enter.prevent="addBannedWord"
+                                />
+                                <button type="button" class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="addBannedWord">إضافة</button>
+                            </div>
+                        </div>
+
+                        <!-- Example posts (BI-04) -->
+                        <div class="input-group">
+                            <div class="label-row">
+                                <label class="input-label" style="margin:0">منشورات نموذجية</label>
+                                <span class="badge badge-neutral">{{ brandForm.example_posts.length }}/٥</span>
+                            </div>
+                            <div v-if="brandForm.example_posts.length" class="stack-sm" style="margin-bottom:10px">
+                                <div
+                                    v-for="(post, i) in brandForm.example_posts"
+                                    :key="i"
+                                    class="example-post"
+                                >
+                                    <span>{{ post }}</span>
+                                    <button
+                                        type="button"
+                                        class="btn btn-icon btn-ghost btn-icon-sm"
+                                        title="حذف"
+                                        @click="removeExamplePost(i)"
+                                    >
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div v-if="brandForm.example_posts.length < 5" class="row-sm" style="align-items:flex-end">
+                                <textarea
+                                    v-model="newExamplePost"
+                                    class="textarea"
+                                    rows="2"
+                                    placeholder="الصق منشوراً سابقاً يمثل أسلوبك..."
+                                    style="min-height:60px"
+                                />
+                                <button type="button" class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="addExamplePost">إضافة</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <button type="submit" class="btn btn-primary" :disabled="brandForm.processing">
+                                <svg v-if="brandForm.processing" class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                                {{ brandForm.processing ? 'جارٍ الحفظ...' : 'حفظ الهوية التجارية' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
         </div>
+
+        <!-- Logo cropper modal -->
+        <LogoCropper
+            :show="cropperOpen"
+            :file="pendingFile"
+            @close="closeCropper"
+            @crop="onCrop"
+        />
     </AppLayout>
 </template>
+
+<style scoped>
+.settings-wrap { max-width: 720px; margin: 0 auto; }
+
+/* Page header */
+.page-hd {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: color .15s;
+}
+.back-link:hover { color: var(--text-primary); }
+.back-link svg { transform: scaleX(-1); }
+.page-hd-sep  { color: var(--border-default); font-size: 14px; }
+.page-hd-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Logo */
+.logo-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+.logo-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.logo-preview {
+    width: 56px; height: 56px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--sada-500), var(--sada-600));
+    color: #fff;
+    font-weight: 700;
+    font-size: 22px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+.logo-preview img { width: 100%; height: 100%; object-fit: cover; }
+.hint-text { font-size: 12px; color: var(--text-muted); }
+
+/* Chips row */
+.chips-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Label + counter row */
+.label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+/* Badge remove button */
+.badge-remove-btn {
+    display: inline-flex;
+    align-items: center;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: inherit;
+    padding: 0;
+    opacity: 0.65;
+    line-height: 1;
+}
+.badge-remove-btn:hover { opacity: 1; }
+
+/* Example post item */
+.example-post {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--bg-page);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+.example-post > span { flex: 1; }
+
+/* Input error hint */
+.input-error {
+    font-size: 12px;
+    color: var(--error);
+    margin-top: 2px;
+}
+
+/* Spinner */
+.spin { animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>

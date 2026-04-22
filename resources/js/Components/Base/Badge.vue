@@ -7,28 +7,18 @@ withDefaults(defineProps<{
     variant: 'primary',
 });
 
-const styles: Record<Variant, string> = {
-    primary: 'background: color-mix(in oklab, var(--color-sada-500) 14%, transparent); color: var(--color-sada-600);',
-    sand:    'background: color-mix(in oklab, var(--color-sand-500) 15%, transparent); color: #9B6B35;',
-    success: 'background: #ECFDF5; color: #065F46;',
-    warning: 'background: #FFFBEB; color: #92400E;',
-    error:   'background: #FEF2F2; color: #991B1B;',
-    neutral: 'background: var(--color-bg-page); color: var(--color-ink-muted);',
+const variantClass: Record<Variant, string> = {
+    primary: 'badge-brand',
+    sand:    'badge-sand',
+    success: 'badge-success',
+    warning: 'badge-warning',
+    error:   'badge-error',
+    neutral: 'badge-neutral',
 };
 </script>
 
 <template>
-    <span :style="`
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 10px;
-        border-radius: 99px;
-        font-size: 11px;
-        font-weight: 600;
-        font-family: var(--font-arabic);
-        ${styles[variant]}
-    `">
+    <span class="badge" :class="variantClass[variant]">
         <slot />
     </span>
 </template>

@@ -28,7 +28,7 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
 
-            'workspace'  => $workspace ? [
+            'currentWorkspace' => $workspace ? [
                 'id'              => $workspace->id,
                 'name'            => $workspace->name,
                 'business_type'   => $workspace->business_type,
