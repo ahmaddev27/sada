@@ -16,7 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password')->nullable(); // nullable for OAuth users (AUTH-02)
+            $table->string('google_id')->nullable()->unique(); // AUTH-02
+            $table->unsignedBigInteger('token_balance')->default(0); // SRS §6.1
             $table->rememberToken();
             $table->timestamps();
         });

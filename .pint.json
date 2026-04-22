@@ -1,0 +1,16 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "array_syntax": { "syntax": "short" },
+        "blank_line_before_statement": { "statements": ["return", "throw", "yield"] },
+        "concat_space": { "spacing": "one" },
+        "method_argument_space": { "on_multiline": "ensure_fully_multiline" },
+        "no_unused_imports": true,
+        "ordered_imports": { "sort_algorithm": "alpha" },
+        "single_quote": true
+    },
+    "exclude": [
+        "bootstrap",
+        "storage"
+    ]
+}
