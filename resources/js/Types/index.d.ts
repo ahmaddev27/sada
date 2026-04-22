@@ -52,3 +52,64 @@ export interface PageProps extends Record<string, unknown> {
         error?: string;
     };
 }
+
+// ADS-01 → ADS-11
+export type CampaignStatus =
+    | 'draft'
+    | 'pending'
+    | 'active'
+    | 'paused'
+    | 'completed'
+    | 'rejected';
+
+export type CampaignObjective =
+    | 'awareness'
+    | 'traffic'
+    | 'engagement'
+    | 'conversions'
+    | 'app_installs'
+    | 'video_views';
+
+export interface Campaign {
+    id: number;
+    workspace_id: number;
+    social_account_id: number | null;
+    post_id: number | null;
+    name: string;
+    objective: CampaignObjective;
+    platform: 'instagram' | 'facebook';
+    status: CampaignStatus;
+    target_countries: string[];
+    target_age_min: number;
+    target_age_max: number;
+    target_gender: 'all' | 'male' | 'female';
+    target_interests: string[];
+    budget_type: 'daily' | 'lifetime';
+    budget_amount: string;
+    budget_currency: string;
+    starts_at: string;
+    ends_at: string;
+    meta_campaign_id: string | null;
+    insights: {
+        spend?: number;
+        reach?: number;
+        impressions?: number;
+        clicks?: number;
+        ctr?: number;
+        cpc?: number;
+        roas?: number;
+    } | null;
+    insights_synced_at: string | null;
+    social_account?: {
+        id: number;
+        provider: string;
+        account_name: string;
+    };
+    post?: {
+        id: number;
+        content: string;
+        platform: string;
+    };
+    created_at: string;
+    updated_at: string;
+}

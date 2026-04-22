@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\SeasonalController;
 use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\PostController;
@@ -96,4 +97,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/social/callback/{provider}', [SocialAccountController::class, 'callback'])->name('social.callback');
     Route::delete('/social/accounts/{account}', [SocialAccountController::class, 'disconnect'])->name('social.disconnect');
     Route::post('/social/accounts/{account}/refresh', [SocialAccountController::class, 'refresh'])->name('social.refresh');
+
+    // ADS-01→ADS-11: Campaigns
+    Route::resource('campaigns', CampaignController::class)->except(['edit', 'create']);
+    Route::post('campaigns/{campaign}/pause',     [CampaignController::class, 'pause'])->name('campaigns.pause');
+    Route::post('campaigns/{campaign}/resume',    [CampaignController::class, 'resume'])->name('campaigns.resume');
+    Route::post('campaigns/{campaign}/duplicate', [CampaignController::class, 'duplicate'])->name('campaigns.duplicate');
 });

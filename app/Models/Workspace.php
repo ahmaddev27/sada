@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 // WS-01 → WS-05
@@ -32,6 +33,18 @@ class Workspace extends Model
     public function brandIdentity(): HasOne
     {
         return $this->hasOne(BrandIdentity::class);
+    }
+
+    /** @return HasMany<SocialAccount, $this> */
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+
+    /** @return HasMany<Campaign, $this> */
+    public function campaigns(): HasMany
+    {
+        return $this->hasMany(Campaign::class);
     }
 
     // WS-05: archived workspaces are excluded from normal queries
