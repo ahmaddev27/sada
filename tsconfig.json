@@ -8,6 +8,7 @@
         "jsx": "preserve",
         "lib": ["ESNext", "DOM"],
         "types": ["vite/client"],
+        "ignoreDeprecations": "6.0",
         "baseUrl": ".",
         "paths": {
             "@/*": ["resources/js/*"]
