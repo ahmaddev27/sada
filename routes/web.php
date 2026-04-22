@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CalendarController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\SeasonalController;
 use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SocialAccountController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -64,9 +66,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 
 // ── Authenticated routes ───────────────────────────────────────────────────
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard/Index');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // WS-01 → WS-05
     Route::get('/workspaces', [WorkspaceController::class, 'index'])->name('workspace.index');
@@ -111,6 +111,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
     Route::get('/analytics/export/pdf', [AnalyticsController::class, 'exportPdf'])->name('analytics.export.pdf');
     Route::get('/analytics/export/csv', [AnalyticsController::class, 'exportCsv'])->name('analytics.export.csv');
+
+    // WS-06, AUTH-07: Settings
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::post('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile');
+    Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
+    Route::post('/settings/avatar', [SettingsController::class, 'updateAvatar'])->name('settings.avatar');
 
     // BIL-01→BIL-08: Billing
     Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');

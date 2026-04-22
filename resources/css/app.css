@@ -521,6 +521,12 @@ p { margin: 0; }
     color: #fff; font-weight: 700;
     display: grid; place-items: center;
     font-size: 13px; flex-shrink: 0;
+    overflow: hidden;
+}
+.user-chip .uc-avatar img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    border-radius: inherit;
 }
 .user-chip .uc-info { flex: 1; min-width: 0; }
 .user-chip .uc-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -940,11 +946,18 @@ p { margin: 0; }
     .topbar-title .crumbs { display: none; }
     .topbar-search { display: none !important; }
     .content-area { padding: 14px; }
+    .stack-lg { gap: 14px; }
+    .stack-md { gap: 10px; }
     .kpi-value { font-size: 22px; }
     .section-head { flex-direction: column; align-items: stretch; gap: 8px; }
     .section-head h2 { font-size: 16px; }
     .card-head { padding: 12px 14px; flex-wrap: wrap; }
     .card-body { padding: 14px; }
+    /* Tables on mobile: horizontal scroll only */
+    .table-scroll { -webkit-overflow-scrolling: touch; }
+    /* Buttons full-width in small forms */
+    .form-actions { justify-content: stretch; }
+    .form-actions > * { flex: 1; }
     [data-mobile-only="true"] { display: inline-flex !important; }
     [data-desktop-only="true"] { display: none !important; }
 }

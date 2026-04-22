@@ -6,7 +6,8 @@ type Theme = 'light' | 'dark';
 
 interface ToastItem {
     id:      number;
-    message: string;
+    title:   string;
+    desc?:   string;
     variant: ToastVariant;
 }
 
@@ -19,7 +20,6 @@ export const useUiStore = defineStore('ui', () => {
         (localStorage.getItem('sada-theme') as Theme) || 'light'
     );
 
-    // Apply theme on store init
     document.documentElement.setAttribute('data-theme', theme.value);
 
     function applyTheme(t: Theme): void {
@@ -36,9 +36,9 @@ export const useUiStore = defineStore('ui', () => {
         sidebarOpen.value = !sidebarOpen.value;
     }
 
-    function add(message: string, variant: ToastVariant = 'info', duration = 4000): void {
+    function add(title: string, variant: ToastVariant = 'info', duration = 4000, desc?: string): void {
         const id = ++nextId;
-        items.value.push({ id, message, variant });
+        items.value.push({ id, title, desc, variant });
         setTimeout(() => remove(id), duration);
     }
 
@@ -46,10 +46,10 @@ export const useUiStore = defineStore('ui', () => {
         items.value = items.value.filter(t => t.id !== id);
     }
 
-    function success(message: string): void { add(message, 'success'); }
-    function error(message: string): void   { add(message, 'error'); }
-    function warning(message: string): void { add(message, 'warning'); }
-    function info(message: string): void    { add(message, 'info'); }
+    function success(title: string, desc?: string): void { add(title, 'success', 4000, desc); }
+    function error(title: string, desc?: string): void   { add(title, 'error',   4000, desc); }
+    function warning(title: string, desc?: string): void { add(title, 'warning', 4000, desc); }
+    function info(title: string, desc?: string): void    { add(title, 'info',    4000, desc); }
 
     return {
         items, sidebarOpen, theme,

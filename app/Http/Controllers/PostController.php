@@ -17,11 +17,29 @@ class PostController extends Controller
     {
         $workspace = $request->attributes->get('current_workspace');
 
+        // Aggregate stats (full workspace, not filtered)
+        $aggregates = $workspace
+            ? Post::withoutWorkspaceScope()
+                ->where('workspace_id', $workspace->id)
+                ->selectRaw('status, COUNT(*) as cnt')
+                ->groupBy('status')
+                ->get()
+                ->mapWithKeys(fn ($r) => [$r->status => (int) ($r->getAttributes()['cnt'] ?? 0)])
+            : collect();
+
+        $thisMonth = $workspace
+            ? Post::withoutWorkspaceScope()
+                ->where('workspace_id', $workspace->id)
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->count()
+            : 0;
+
         $query = $workspace
             ? Post::withoutWorkspaceScope()
                 ->where('workspace_id', $workspace->id)
                 ->with('socialAccount:id,provider,account_name')
-            : Post::whereRaw('0=1'); // empty if no workspace
+            : Post::whereRaw('0=1');
 
         // Filters
         if ($status = $request->query('status')) {
@@ -42,6 +60,14 @@ class PostController extends Controller
         return Inertia::render('Posts/Index', [
             'posts'   => $posts,
             'filters' => $request->only(['status', 'platform', 'content_type', 'search']),
+            'stats'   => [
+                'total'      => $aggregates->sum(),
+                'published'  => $aggregates->get('published', 0),
+                'scheduled'  => $aggregates->get('scheduled', 0),
+                'drafts'     => $aggregates->get('draft', 0),
+                'failed'     => $aggregates->get('failed', 0),
+                'this_month' => $thisMonth,
+            ],
         ]);
     }
 
@@ -62,12 +88,12 @@ class PostController extends Controller
         return back()->with('flash', ['success' => 'تم إعادة جدولة المنشور.']);
     }
 
-    public function destroy(Post $post): JsonResponse
+    public function destroy(Post $post): RedirectResponse
     {
         $this->authorize('delete', $post);
         $post->delete();
 
-        return response()->json(['message' => 'تم الحذف.']);
+        return back()->with('flash', ['success' => 'تم حذف المنشور.']);
     }
 
     // Stats summary for the current workspace (used by History KPI strip)

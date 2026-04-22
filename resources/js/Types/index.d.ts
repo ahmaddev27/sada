@@ -4,6 +4,7 @@ export interface User {
     email: string;
     email_verified_at: string | null;
     token_balance: number;
+    avatar_url: string | null;
 }
 
 export interface Workspace {
@@ -50,6 +51,8 @@ export interface PageProps extends Record<string, unknown> {
     flash: {
         success?: string;
         error?: string;
+        warning?: string;
+        info?: string;
     };
 }
 

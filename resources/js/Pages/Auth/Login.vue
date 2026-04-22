@@ -21,150 +21,403 @@ const submit = () => {
 </script>
 
 <template>
-    <div
-        dir="rtl"
-        class="min-h-screen flex items-center justify-center px-4"
-        style="background-color: var(--color-bg-page); font-family: var(--font-arabic);"
-    >
-        <div class="w-full max-w-md">
+    <div dir="rtl" class="page-wrap">
+        <div class="container">
 
             <!-- Logo -->
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold" style="color: var(--color-sada-600);">صدى</h1>
-                <p class="mt-1 text-sm" style="color: var(--color-ink-muted);">منصة التسويق الذكي</p>
+            <div class="logo-block">
+                <div class="logo-mark">ص</div>
+                <h1 class="logo-title">صدى</h1>
+                <p class="logo-sub">منصة التسويق الرقمي بالذكاء الاصطناعي</p>
             </div>
 
             <!-- Card -->
-            <div
-                class="rounded-xl p-8 shadow-md"
-                style="background-color: var(--color-bg-card); border: 1px solid var(--color-border-default);"
-            >
-                <h2 class="text-xl font-semibold mb-6" style="color: var(--color-ink-base);">تسجيل الدخول</h2>
+            <div class="card">
+                <h2 class="card-heading">تسجيل الدخول</h2>
 
-                <!-- Status (password reset success) -->
-                <div
-                    v-if="statusMessage"
-                    class="mb-4 rounded-lg px-4 py-3 text-sm"
-                    style="background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0;"
-                >
+                <!-- Status message -->
+                <div v-if="statusMessage" class="status-msg">
                     {{ statusMessage }}
                 </div>
 
                 <form @submit.prevent="submit" novalidate>
 
                     <!-- Email -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-1" style="color: var(--color-ink-base);">
-                            البريد الإلكتروني
-                        </label>
+                    <div class="field">
+                        <label for="login-email" class="field-label">البريد الإلكتروني</label>
                         <input
+                            id="login-email"
                             v-model="form.email"
                             type="email"
                             autocomplete="email"
                             dir="ltr"
-                            class="w-full rounded-lg px-3 py-2 text-sm outline-none transition"
-                            :class="{ 'ring-2 ring-red-400': form.errors.email }"
-                            style="
-                                background-color: var(--color-bg-input);
-                                border: 1px solid var(--color-border-default);
-                                color: var(--color-ink-base);
-                            "
                             placeholder="example@domain.com"
+                            :class="['field-input', { 'field-input--error': form.errors.email }]"
+                            style="text-align: right;"
                         />
-                        <p v-if="form.errors.email" class="mt-1 text-xs text-red-500">{{ form.errors.email }}</p>
+                        <p v-if="form.errors.email" class="field-error">{{ form.errors.email }}</p>
                     </div>
 
                     <!-- Password -->
-                    <div class="mb-4">
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="text-sm font-medium" style="color: var(--color-ink-base);">كلمة المرور</label>
-                            <a
-                                href="/forgot-password"
-                                class="text-xs hover:underline"
-                                style="color: var(--color-sada-600);"
-                            >نسيت كلمة المرور؟</a>
+                    <div class="field">
+                        <div class="field-label-row">
+                            <label for="login-password" class="field-label">كلمة المرور</label>
+                            <a href="/forgot-password" class="forgot-link">نسيت كلمة المرور؟</a>
                         </div>
-                        <div class="relative">
+                        <div class="input-wrap">
                             <input
+                                id="login-password"
                                 v-model="form.password"
                                 :type="showPassword ? 'text' : 'password'"
                                 autocomplete="current-password"
-                                class="w-full rounded-lg px-3 py-2 text-sm outline-none transition"
-                                :class="{ 'ring-2 ring-red-400': form.errors.password }"
-                                style="
-                                    background-color: var(--color-bg-input);
-                                    border: 1px solid var(--color-border-default);
-                                    color: var(--color-ink-base);
-                                    padding-left: 2.5rem;
-                                "
+                                placeholder="كلمة المرور"
+                                :class="['field-input', { 'field-input--error': form.errors.password }]"
+                                style="padding-left: 44px;"
                             />
                             <button
                                 type="button"
-                                class="absolute left-3 top-1/2 -translate-y-1/2 text-xs"
-                                style="color: var(--color-ink-muted);"
+                                class="eye-btn"
+                                :aria-label="showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'"
                                 @click="showPassword = !showPassword"
                             >
-                                {{ showPassword ? 'إخفاء' : 'إظهار' }}
+                                <!-- Eye open -->
+                                <svg v-if="!showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <!-- Eye off -->
+                                <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
                             </button>
                         </div>
-                        <p v-if="form.errors.password" class="mt-1 text-xs text-red-500">{{ form.errors.password }}</p>
+                        <p v-if="form.errors.password" class="field-error">{{ form.errors.password }}</p>
                     </div>
 
                     <!-- Remember me -->
-                    <div class="mb-6 flex items-center gap-2">
+                    <div class="remember-row">
                         <input
                             id="remember"
                             v-model="form.remember"
                             type="checkbox"
-                            class="rounded"
-                            style="accent-color: var(--color-sada-500);"
+                            class="remember-check"
                         />
-                        <label for="remember" class="text-sm" style="color: var(--color-ink-muted);">تذكّرني لمدة 30 يوماً</label>
+                        <label for="remember" class="remember-label">تذكّرني لمدة 30 يوماً</label>
                     </div>
 
                     <!-- Submit -->
                     <button
                         type="submit"
                         :disabled="form.processing"
-                        class="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
-                        style="background-color: var(--color-sada-600);"
+                        class="btn-primary"
+                        style="color: #fff;"
                     >
                         {{ form.processing ? 'جارٍ تسجيل الدخول...' : 'تسجيل الدخول' }}
                     </button>
 
                     <!-- Divider -->
-                    <div class="my-5 flex items-center gap-3">
-                        <div class="flex-1 h-px" style="background-color: var(--color-border-default);"></div>
-                        <span class="text-xs" style="color: var(--color-ink-muted);">أو</span>
-                        <div class="flex-1 h-px" style="background-color: var(--color-border-default);"></div>
+                    <div class="divider">
+                        <span class="divider-line" />
+                        <span class="divider-text">أو</span>
+                        <span class="divider-line" />
                     </div>
 
                     <!-- Google OAuth -->
-                    <a
-                        href="/auth/google"
-                        class="w-full flex items-center justify-center gap-3 rounded-lg py-2.5 text-sm font-medium transition hover:opacity-90"
-                        style="
-                            background-color: var(--color-bg-input);
-                            border: 1px solid var(--color-border-default);
-                            color: var(--color-ink-base);
-                        "
-                    >
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M17.64 9.2045C17.64 8.5664 17.5827 7.9527 17.4764 7.3636H9V10.845H13.8436C13.635 11.97 13.0009 12.9231 12.0477 13.5613V15.8195H14.9564C16.6582 14.2527 17.64 11.9454 17.64 9.2045Z" fill="#4285F4"/>
-                            <path d="M9 18C11.43 18 13.4673 17.1941 14.9564 15.8195L12.0477 13.5613C11.2418 14.1013 10.2109 14.4204 9 14.4204C6.65591 14.4204 4.67182 12.8372 3.96409 10.71H0.957275V13.0418C2.43818 15.9831 5.48182 18 9 18Z" fill="#34A853"/>
-                            <path d="M3.96409 10.71C3.78409 10.17 3.68182 9.5931 3.68182 9C3.68182 8.4068 3.78409 7.8299 3.96409 7.2899V4.9581H0.957275C0.347727 6.1731 0 7.5477 0 9C0 10.4522 0.347727 11.8268 0.957275 13.0418L3.96409 10.71Z" fill="#FBBC05"/>
-                            <path d="M9 3.5795C10.3214 3.5795 11.5077 4.0336 12.4405 4.9254L15.0218 2.344C13.4632 0.8918 11.4259 0 9 0C5.48182 0 2.43818 2.0168 0.957275 4.9581L3.96409 7.2899C4.67182 5.1627 6.65591 3.5795 9 3.5795Z" fill="#EA4335"/>
+                    <a href="/auth/google" class="btn-google">
+                        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
                         الدخول عبر Google
                     </a>
                 </form>
             </div>
 
-            <!-- Footer link -->
-            <p class="text-center mt-6 text-sm" style="color: var(--color-ink-muted);">
+            <!-- Footer -->
+            <p class="footer-text">
                 ليس لديك حساب؟
-                <a href="/register" class="font-medium hover:underline" style="color: var(--color-sada-600);">أنشئ حساباً</a>
+                <a href="/register" class="footer-link">أنشئ حساباً</a>
             </p>
         </div>
     </div>
 </template>
+
+<style scoped>
+.page-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    background-color: var(--bg-page);
+    font-family: var(--font-arabic);
+}
+
+.container {
+    width: 100%;
+    max-width: 440px;
+}
+
+/* Logo */
+.logo-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 28px;
+    gap: 6px;
+}
+
+.logo-mark {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background-color: var(--sada-500);
+    color: #fff;
+    font-size: 22px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    margin-bottom: 4px;
+}
+
+.logo-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--ink-900);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.logo-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Card */
+.card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--ink-100);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+    padding: 36px;
+}
+
+.card-heading {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink-900);
+    margin: 0 0 24px;
+    line-height: 1.3;
+}
+
+/* Status */
+.status-msg {
+    background-color: var(--success-bg);
+    color: var(--success);
+    border: 1px solid color-mix(in oklab, var(--success) 30%, transparent);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+/* Fields */
+.field {
+    margin-bottom: 18px;
+}
+
+.field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-700);
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+.field-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.field-label-row .field-label {
+    margin-bottom: 0;
+}
+
+.forgot-link {
+    font-size: 12px;
+    color: var(--sada-600);
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.15s;
+}
+.forgot-link:hover { opacity: 0.75; text-decoration: underline; }
+
+.field-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--ink-200);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-family: var(--font-arabic);
+    background-color: var(--bg-surface);
+    color: var(--ink-900);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-sizing: border-box;
+    line-height: 1.5;
+}
+.field-input:focus {
+    border-color: var(--sada-500);
+    box-shadow: var(--shadow-focus);
+}
+.field-input--error {
+    border-color: var(--error);
+}
+.field-input--error:focus {
+    box-shadow: 0 0 0 3px rgba(181, 50, 47, 0.18);
+}
+
+.field-error {
+    margin: 5px 0 0;
+    font-size: 12px;
+    color: var(--error);
+    line-height: 1.4;
+}
+
+/* Password input wrapper */
+.input-wrap {
+    position: relative;
+}
+
+.input-wrap .field-input {
+    padding-left: 44px;
+}
+
+.eye-btn {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: grid;
+    place-items: center;
+    border-radius: 4px;
+    transition: color 0.15s;
+}
+.eye-btn:hover { color: var(--ink-700); }
+
+/* Remember me */
+.remember-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 22px;
+}
+
+.remember-check {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--sada-500);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.remember-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+/* Buttons */
+.btn-primary {
+    width: 100%;
+    height: 48px;
+    background-color: var(--sada-500);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 700;
+    font-family: var(--font-arabic);
+    cursor: pointer;
+    transition: background-color 0.15s;
+    line-height: 1;
+}
+.btn-primary:hover:not(:disabled) { background-color: var(--sada-600); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.divider-line {
+    flex: 1;
+    height: 1px;
+    background-color: var(--border-default);
+    display: block;
+}
+
+.divider-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+/* Google button */
+.btn-google {
+    width: 100%;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--ink-200);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font-arabic);
+    color: var(--ink-700);
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s;
+    box-sizing: border-box;
+}
+.btn-google:hover {
+    background-color: var(--bg-muted);
+    border-color: var(--border-strong);
+}
+
+/* Footer */
+.footer-text {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.footer-link {
+    color: var(--sada-600);
+    font-weight: 600;
+    text-decoration: none;
+}
+.footer-link:hover { text-decoration: underline; }
+</style>

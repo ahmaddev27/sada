@@ -14,7 +14,7 @@ use App\Models\Invoice;
 use App\Models\TokenTransaction;
 
 // AUTH-01: MustVerifyEmail | AUTH-02: google_id for OAuth users
-#[Fillable(['name', 'email', 'password', 'google_id', 'email_verified_at', 'token_balance'])]
+#[Fillable(['name', 'email', 'password', 'google_id', 'avatar_path', 'email_verified_at', 'token_balance'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {

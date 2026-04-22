@@ -18,25 +18,15 @@ const flash      = computed(() => page.props.flash)
 
 const mobileOpen   = ref(false)
 const wsDropOpen   = ref(false)
+const userDropOpen = ref(false)
 const switching    = ref<number | null>(null)
 
-const flashVisible = ref(false)
-let   flashTimer: ReturnType<typeof setTimeout> | null = null
-
 watch(flash, (val) => {
-    if (val?.success || val?.error) {
-        flashVisible.value = true
-        if (flashTimer) clearTimeout(flashTimer)
-        flashTimer = setTimeout(() => { flashVisible.value = false }, 5000)
-    } else {
-        flashVisible.value = false
-    }
+    if (val?.success) ui.success(val.success)
+    if (val?.error)   ui.error(val.error)
+    if (val?.warning) ui.warning(val.warning)
+    if (val?.info)    ui.info(val.info)
 }, { immediate: true })
-
-function dismissFlash() {
-    if (flashTimer) { clearTimeout(flashTimer); flashTimer = null }
-    flashVisible.value = false
-}
 
 const tokenBalance = computed(() => user.value?.token_balance ?? 0)
 const tokenMax     = computed(() => 2000)
@@ -74,9 +64,15 @@ function isActive(href: string) {
     return currentPath.value === href || currentPath.value.startsWith(href + '/')
 }
 
-function closeMobile() { mobileOpen.value = false }
-function toggleWsDrop() { wsDropOpen.value = !wsDropOpen.value }
-function closeWsDrop()  { wsDropOpen.value = false }
+function closeMobile()    { mobileOpen.value = false }
+function toggleWsDrop()   { wsDropOpen.value = !wsDropOpen.value; userDropOpen.value = false }
+function closeWsDrop()    { wsDropOpen.value = false }
+function toggleUserDrop() { userDropOpen.value = !userDropOpen.value; wsDropOpen.value = false }
+function closeUserDrop()  { userDropOpen.value = false }
+
+function logout() {
+    router.post('/logout')
+}
 
 function switchWorkspace(id: number) {
     if (id === ws.value?.id) { closeWsDrop(); return; }
@@ -87,7 +83,7 @@ function switchWorkspace(id: number) {
 }
 
 function onKey(e: KeyboardEvent) {
-    if (e.key === 'Escape') { closeMobile(); closeWsDrop(); }
+    if (e.key === 'Escape') { closeMobile(); closeWsDrop(); closeUserDrop(); }
 }
 
 onMounted(() => window.addEventListener('keydown', onKey))
@@ -238,13 +234,48 @@ onUnmounted(() => {
                     <button class="token-refill">شحن المزيد</button>
                 </div>
 
-                <div class="user-chip">
-                    <div class="uc-avatar">{{ userInitials || 'أح' }}</div>
-                    <div class="uc-info">
-                        <div class="uc-name">{{ user?.name || 'المستخدم' }}</div>
-                        <div class="uc-role">مالك · Admin</div>
-                    </div>
-                    <Icon name="chevronDown" :size="14" />
+                <!-- User dropdown backdrop -->
+                <div
+                    v-if="userDropOpen"
+                    style="position:fixed;inset:0;z-index:99;"
+                    @click="closeUserDrop"
+                />
+
+                <div style="position:relative;">
+                    <button
+                        class="user-chip"
+                        :class="{ 'user-chip--open': userDropOpen }"
+                        @click="toggleUserDrop"
+                    >
+                        <div class="uc-avatar">
+                            <img v-if="user?.avatar_url" :src="user.avatar_url" alt="" />
+                            <span v-else>{{ userInitials || 'أح' }}</span>
+                        </div>
+                        <div class="uc-info">
+                            <div class="uc-name">{{ user?.name || 'المستخدم' }}</div>
+                            <div class="uc-role">مالك · Admin</div>
+                        </div>
+                        <Icon name="chevronDown" :size="14" :style="userDropOpen ? 'transform:rotate(180deg);transition:transform .2s' : 'transition:transform .2s'" />
+                    </button>
+
+                    <!-- User dropdown menu -->
+                    <Transition name="drop">
+                        <div v-if="userDropOpen" class="user-drop">
+                            <div class="user-drop-info">
+                                <div class="user-drop-name">{{ user?.name }}</div>
+                                <div class="user-drop-email">{{ user?.email }}</div>
+                            </div>
+                            <div class="ws-drop-divider" />
+                            <Link href="/settings" class="user-drop-item" @click="closeUserDrop">
+                                <Icon name="settings" :size="14" />
+                                الإعدادات
+                            </Link>
+                            <button class="user-drop-item user-drop-logout" @click="logout">
+                                <Icon name="logout" :size="14" />
+                                تسجيل الخروج
+                            </button>
+                        </div>
+                    </Transition>
                 </div>
             </div>
         </aside>
@@ -294,26 +325,6 @@ onUnmounted(() => {
                     </button>
                 </div>
             </header>
-
-            <!-- Flash messages -->
-            <Transition name="flash">
-                <div v-if="flashVisible && (flash?.success || flash?.error)" style="padding: 0 32px; padding-top: 16px;">
-                    <div v-if="flash.success" class="alert alert-success">
-                        <div class="alert-icon"><Icon name="check" :size="14" /></div>
-                        <div class="alert-body"><div class="alert-desc">{{ flash.success }}</div></div>
-                        <button class="alert-dismiss" @click="dismissFlash" aria-label="إغلاق">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                        </button>
-                    </div>
-                    <div v-if="flash.error" class="alert alert-error">
-                        <div class="alert-icon"><Icon name="x" :size="14" /></div>
-                        <div class="alert-body"><div class="alert-desc">{{ flash.error }}</div></div>
-                        <button class="alert-dismiss" @click="dismissFlash" aria-label="إغلاق">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                        </button>
-                    </div>
-                </div>
-            </Transition>
 
             <!-- Page content -->
             <main class="content-area">
@@ -427,6 +438,71 @@ onUnmounted(() => {
 /* ── Dropdown transition ── */
 .drop-enter-active, .drop-leave-active { transition: opacity .15s, transform .15s; }
 .drop-enter-from, .drop-leave-to { opacity: 0; transform: translateY(-6px); }
+
+/* ── User dropdown ── */
+.user-chip {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--font-arabic);
+    text-align: right;
+    transition: background .15s;
+}
+.user-chip:hover, .user-chip--open { background: var(--bg-muted); }
+
+.user-drop {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    right: 0;
+    left: 0;
+    z-index: 110;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: 10px;
+    box-shadow: 0 -8px 24px rgba(0,0,0,.12);
+    overflow: hidden;
+    min-width: 200px;
+}
+.user-drop-info {
+    padding: 12px 14px 10px;
+}
+.user-drop-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.user-drop-email {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    direction: ltr;
+    text-align: left;
+}
+.user-drop-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 9px 14px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--font-arabic);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: background .12s;
+    text-align: right;
+}
+.user-drop-item:hover { background: var(--bg-muted); }
+.user-drop-logout { color: var(--error) !important; }
 
 /* ── Flash dismiss button ── */
 .alert-dismiss {

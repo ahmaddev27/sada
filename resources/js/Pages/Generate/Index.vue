@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // CG-01→CG-11
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Components/Layout/AppLayout.vue'
 import Icon from '@/Components/Base/Icon.vue'
@@ -35,6 +35,83 @@ const includeEmojis = ref<boolean>(true)
 const length        = ref<string>('med')
 const cta           = ref<string>('')
 const advancedOpen  = ref<boolean>(false)
+
+// ── Occasion context (from seasonal redirect) ───────────────
+const occasionName  = ref<string>('')
+const occasionBanner = ref<string>('')
+
+onMounted(() => {
+    const params = new URLSearchParams(window.location.search)
+    const key    = params.get('occasion_key')
+    const name   = params.get('occasion_name')
+    const tags   = params.get('hashtags')
+    if (name) {
+        occasionName.value   = name
+        occasionBanner.value = name
+        if (!prompt.value) {
+            prompt.value = `محتوى خاص بمناسبة ${name}`
+        }
+        if (tags && !cta.value) {
+            // pre-append hashtags hint into prompt
+            prompt.value += ` — ${tags.replace(/,/g, ' ')}`
+        }
+    }
+})
+
+// ── Schedule modal ───────────────────────────────────────────
+const scheduleModal = ref<boolean>(false)
+const schedDate     = ref<string>('')
+const schedTime     = ref<string>('09:00')
+
+const minDate = computed(() => {
+    const d = new Date()
+    d.setMinutes(d.getMinutes() + 5)
+    return d.toISOString().slice(0, 10)
+})
+
+const schedValid = computed(() => {
+    if (!schedDate.value || !schedTime.value) return false
+    const dt = new Date(`${schedDate.value}T${schedTime.value}`)
+    return dt > new Date()
+})
+
+const schedPreview = computed(() => {
+    if (!schedDate.value || !schedTime.value) return ''
+    return new Date(`${schedDate.value}T${schedTime.value}`)
+        .toLocaleString('ar-SA', {
+            weekday: 'long', year: 'numeric',
+            month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit',
+        })
+})
+
+function setPreset(offset: number, hour = 9) {
+    const d = new Date()
+    d.setDate(d.getDate() + offset)
+    schedDate.value = d.toISOString().slice(0, 10)
+    schedTime.value = `${String(hour).padStart(2, '0')}:00`
+}
+
+function openScheduleModal() {
+    if (!selectedVariation.value) return
+    schedDate.value = ''
+    schedTime.value = '09:00'
+    scheduleModal.value = true
+}
+
+function confirmSchedule() {
+    if (!schedValid.value || !selectedVariation.value) return
+    router.post('/generate/save', {
+        content:       isEditing.value ? editingBody.value : selectedVariation.value.body,
+        hashtags:      selectedVariation.value.tags,
+        platform:      platform.value,
+        content_type:  contentType.value,
+        dialect:       dialect.value,
+        action:        'schedule',
+        scheduled_for: `${schedDate.value}T${schedTime.value}`,
+    })
+    scheduleModal.value = false
+}
 
 // ── Output state ────────────────────────────────────────────
 const variations    = ref<Variation[]>([])
@@ -122,7 +199,7 @@ async function generate() {
 }
 
 // ── Save ─────────────────────────────────────────────────────
-function savePost(action: 'draft' | 'schedule' | 'publish') {
+function savePost(action: 'draft' | 'publish') {
     if (!selectedVariation.value) return
     router.post('/generate/save', {
         content:      isEditing.value ? editingBody.value : selectedVariation.value.body,
@@ -168,6 +245,116 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
 
 <template>
     <AppLayout title="توليد محتوى" :crumbs="['الرئيسية', 'توليد محتوى']">
+
+        <!-- Schedule modal -->
+        <Teleport to="body">
+            <div v-if="scheduleModal" class="sched-backdrop" @click.self="scheduleModal = false">
+                <div class="sched-modal">
+
+                    <!-- Head -->
+                    <div class="sched-head">
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div class="sched-head-icon">
+                                <Icon name="calendar" :size="16" style="color:var(--accent)" />
+                            </div>
+                            <div>
+                                <h3 style="margin:0;font-size:15px;font-weight:700">جدولة المنشور</h3>
+                                <p style="margin:2px 0 0;font-size:12px;color:var(--text-muted)">اختر متى يُنشر هذا المحتوى</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-icon btn-ghost btn-sm" @click="scheduleModal = false">
+                            <Icon name="x" :size="14" />
+                        </button>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="sched-body">
+
+                        <!-- Quick presets -->
+                        <div>
+                            <div class="sched-section-label">اختيار سريع</div>
+                            <div class="sched-presets">
+                                <button class="sched-preset" @click="setPreset(0, 10)">
+                                    <span class="sched-preset-icon">☀️</span>
+                                    <span class="sched-preset-title">اليوم</span>
+                                    <span class="sched-preset-sub">10:00 ص</span>
+                                </button>
+                                <button class="sched-preset" @click="setPreset(1, 9)">
+                                    <span class="sched-preset-icon">📅</span>
+                                    <span class="sched-preset-title">غداً</span>
+                                    <span class="sched-preset-sub">09:00 ص</span>
+                                </button>
+                                <button class="sched-preset" @click="setPreset(1, 19)">
+                                    <span class="sched-preset-icon">🌙</span>
+                                    <span class="sched-preset-title">غداً مساءً</span>
+                                    <span class="sched-preset-sub">07:00 م</span>
+                                </button>
+                                <button class="sched-preset" @click="setPreset(7, 9)">
+                                    <span class="sched-preset-icon">📆</span>
+                                    <span class="sched-preset-title">الأسبوع القادم</span>
+                                    <span class="sched-preset-sub">09:00 ص</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Divider -->
+                        <div style="display:flex;align-items:center;gap:12px">
+                            <div style="flex:1;height:1px;background:var(--border-subtle)" />
+                            <span style="font-size:11px;color:var(--text-muted);font-weight:600">أو اختر يدوياً</span>
+                            <div style="flex:1;height:1px;background:var(--border-subtle)" />
+                        </div>
+
+                        <!-- Date + Time inputs -->
+                        <div class="sched-inputs">
+                            <div class="sched-field">
+                                <label class="sched-field-label">
+                                    <Icon name="calendar" :size="12" /> التاريخ
+                                </label>
+                                <input
+                                    v-model="schedDate"
+                                    type="date"
+                                    class="sched-input"
+                                    :min="minDate"
+                                />
+                            </div>
+                            <div class="sched-field">
+                                <label class="sched-field-label">
+                                    <Icon name="clock" :size="12" /> الوقت
+                                </label>
+                                <input
+                                    v-model="schedTime"
+                                    type="time"
+                                    class="sched-input"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Preview -->
+                        <Transition name="fade">
+                            <div v-if="schedPreview" class="sched-preview">
+                                <Icon name="check" :size="14" style="color:var(--success);flex-shrink:0" />
+                                <span>سيُنشر: <strong>{{ schedPreview }}</strong></span>
+                            </div>
+                        </Transition>
+
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="sched-foot">
+                        <button class="btn btn-ghost btn-sm" @click="scheduleModal = false">إلغاء</button>
+                        <button
+                            class="btn btn-primary btn-sm"
+                            :disabled="!schedValid"
+                            @click="confirmSchedule"
+                        >
+                            <Icon name="calendar" :size="14" />
+                            تأكيد الجدولة
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
         <div class="gen-grid">
 
             <!-- ═══ RIGHT PANEL: Input (sticky) ═══ -->
@@ -184,6 +371,15 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
                 </div>
 
                 <div class="card-body stack-lg">
+
+                    <!-- Occasion banner (from Seasonal redirect) -->
+                    <div v-if="occasionBanner" class="occasion-banner">
+                        <Icon name="moon" :size="14" />
+                        <span>مناسبة: <strong>{{ occasionBanner }}</strong></span>
+                        <button class="btn btn-icon btn-ghost" style="width:18px;height:18px;padding:0;" @click="occasionBanner = ''; prompt = ''">
+                            <Icon name="x" :size="11" />
+                        </button>
+                    </div>
 
                     <!-- Content type (CG-01) -->
                     <div class="input-group">
@@ -462,7 +658,7 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
                         </div>
                         <div style="display:flex; gap:8px;">
                             <button class="btn btn-sm btn-ghost" @click="savePost('draft')">حفظ كمسودة</button>
-                            <button class="btn btn-sm btn-secondary" @click="savePost('schedule')">
+                            <button class="btn btn-sm btn-secondary" @click="openScheduleModal">
                                 <Icon name="calendar" :size="14" /> جدولة
                             </button>
                             <button class="btn btn-sm btn-primary" @click="savePost('publish')">
@@ -628,4 +824,120 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
     display: flex; gap: 10px;
     align-items: center; justify-content: space-between;
 }
+
+/* ── Occasion banner ── */
+.occasion-banner {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    background: color-mix(in oklab, var(--sada-500) 8%, transparent);
+    border: 1px solid color-mix(in oklab, var(--sada-500) 25%, transparent);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--sada-600);
+}
+.occasion-banner strong { font-weight: 700; }
+.occasion-banner button { margin-right: auto; }
+
+/* ── Schedule modal ── */
+.sched-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 500;
+    display: grid; place-items: center;
+    padding: 20px;
+}
+.sched-modal {
+    background: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 24px 64px rgba(0,0,0,.22);
+    width: 460px; max-width: 100%;
+    overflow: hidden;
+}
+.sched-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+.sched-head-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: color-mix(in oklab, var(--accent) 10%, transparent);
+    display: grid; place-items: center; flex-shrink: 0;
+}
+.sched-body {
+    padding: 20px;
+    display: flex; flex-direction: column; gap: 16px;
+}
+.sched-section-label {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px;
+}
+
+/* Quick presets */
+.sched-presets {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+}
+.sched-preset {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 10px 6px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--bg-surface);
+    cursor: pointer; font-family: var(--font-arabic);
+    transition: all .15s;
+}
+.sched-preset:hover {
+    border-color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 6%, transparent);
+}
+.sched-preset-icon { font-size: 18px; line-height: 1; }
+.sched-preset-title { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.sched-preset-sub   { font-size: 10px; color: var(--text-muted); }
+
+/* Date + Time inputs */
+.sched-inputs {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.sched-field { display: flex; flex-direction: column; gap: 6px; }
+.sched-field-label {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+}
+.sched-input {
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-family: var(--font-arabic);
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    width: 100%;
+}
+.sched-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 15%, transparent);
+}
+
+/* Preview */
+.sched-preview {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px;
+    background: color-mix(in oklab, var(--success) 8%, transparent);
+    border: 1px solid color-mix(in oklab, var(--success) 25%, transparent);
+    border-radius: var(--radius-sm);
+    font-size: 13px; color: var(--text-primary);
+}
+
+.sched-foot {
+    display: flex; justify-content: flex-end; gap: 8px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-muted);
+}
+
+/* Fade transition */
+.fade-enter-active, .fade-leave-active { transition: opacity .2s, transform .2s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(4px); }
 </style>
