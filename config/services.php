@@ -28,6 +28,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // CON-01→CON-02: Meta (Facebook + Instagram) OAuth
+    'meta' => [
+        'client_id'     => env('META_APP_ID'),
+        'client_secret' => env('META_APP_SECRET'),
+    ],
+
     // AUTH-02: Google OAuth via Socialite
     'google' => [
         'client_id'     => env('GOOGLE_CLIENT_ID'),
