@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\GenerateController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\SocialAccountController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -75,6 +77,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/generate', [GenerateController::class, 'index'])->name('generate.index');
     Route::post('/generate', [GenerateController::class, 'generate'])->name('generate.generate');
     Route::post('/generate/save', [GenerateController::class, 'save'])->name('generate.save');
+
+    // SCH-01→SCH-11: Scheduling — calendar + posts history
+    Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
+    Route::get('/posts/stats', [PostController::class, 'stats'])->name('posts.stats');
+    Route::post('/posts/{post}/reschedule', [PostController::class, 'reschedule'])->name('posts.reschedule');
+    Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
 
     // CON-01→CON-10: Social account connections
     Route::get('/social/accounts', [SocialAccountController::class, 'index'])->name('social.index');
