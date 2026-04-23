@@ -50,7 +50,7 @@ const navLinks = [
             <div class="nav-inner">
                 <!-- Logo -->
                 <a href="/" class="nav-logo">
-                    <div class="nav-logo-mark">ص</div>
+                    <img src="/images/logo/sada-arch-mark.svg" class="nav-logo-mark" alt="صدى" />
                     صدى
                 </a>
 
@@ -301,7 +301,7 @@ const navLinks = [
         <footer class="footer">
             <div class="footer-inner">
                 <div class="footer-brand">
-                    <div class="footer-logo">ص</div>
+                    <img src="/images/logo/sada-arch-mark.svg" class="footer-logo" alt="صدى" />
                     <span class="footer-name">صدى</span>
                     <span>© ٢٠٢٦ — جميع الحقوق محفوظة</span>
                 </div>
@@ -348,9 +348,8 @@ const navLinks = [
 }
 .nav-logo-mark {
     width: 32px; height: 32px;
-    background: var(--sada-500); border-radius: 9px;
-    color: #fff; font-weight: 800; font-size: 16px;
-    display: grid; place-items: center;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 .nav-links {
     display: flex; align-items: center; gap: 24px; flex: 1;
@@ -660,9 +659,9 @@ const navLinks = [
 }
 .footer-brand { display: flex; gap: 10px; align-items: center; }
 .footer-logo {
-    width: 24px; height: 24px; background: var(--sada-500);
-    border-radius: 6px; color: #fff;
-    display: grid; place-items: center; font-weight: 800; font-size: 13px;
+    width: 28px; height: 28px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 .footer-name { font-weight: 700; color: var(--text-primary); }
 .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }

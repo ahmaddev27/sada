@@ -362,21 +362,11 @@ p { margin: 0; }
     margin-bottom: 16px;
     color: var(--text-primary);
 }
-.sidebar-logo .mark {
-    width: 32px; height: 32px;
-    background: var(--sada-500);
-    border-radius: 9px;
-    display: grid; place-items: center;
-    color: #fff;
-    font-weight: 800;
-    position: relative;
-    overflow: hidden;
+.sidebar-logo .logo-icon {
+    width: 32px;
+    height: 32px;
     flex-shrink: 0;
-}
-.sidebar-logo .mark::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), transparent 60%);
+    object-fit: contain;
 }
 
 .workspace-picker {

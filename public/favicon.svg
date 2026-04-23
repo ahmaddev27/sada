@@ -1,0 +1,19 @@
+<!--
+  Sada — Favicon (Simplified for 16-32px sizes)
+  Place at: public/favicon.svg
+  Note: Simplified from 3 arches to 2 to stay legible at 16px
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Sada">
+  <title>Sada</title>
+
+  <!-- Rounded square background — olive primary -->
+  <rect x="0" y="0" width="32" height="32" rx="6" fill="#0F6F5C"/>
+
+  <!-- Outer arch — sand, simplified -->
+  <path d="M 6 24 L 6 14 A 10 10 0 0 1 26 14 L 26 24"
+        fill="none" stroke="#C8965F" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Inner arch — paper white -->
+  <path d="M 11 24 L 11 17 A 5 5 0 0 1 21 17 L 21 24"
+        fill="none" stroke="#FAF7F2" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

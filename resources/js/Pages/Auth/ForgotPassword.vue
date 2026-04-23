@@ -16,7 +16,7 @@ const submit = () => form.post('/forgot-password');
 
             <!-- Logo -->
             <div class="logo-block">
-                <div class="logo-mark">ص</div>
+                <img src="/images/logo/sada-arch-mark.svg" class="logo-mark" alt="صدى" />
                 <h1 class="logo-title">صدى</h1>
                 <p class="logo-sub">منصة التسويق الرقمي بالذكاء الاصطناعي</p>
             </div>
@@ -100,15 +100,9 @@ const submit = () => form.post('/forgot-password');
 }
 
 .logo-mark {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background-color: var(--sada-500);
-    color: #fff;
-    font-size: 22px;
-    font-weight: 700;
-    display: grid;
-    place-items: center;
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
     margin-bottom: 4px;
 }
 

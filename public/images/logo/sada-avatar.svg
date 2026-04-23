@@ -1,0 +1,31 @@
+<!--
+  Sada — Social Avatar (Profile Pictures)
+  Use: Twitter/X, Instagram, LinkedIn, Facebook profile pictures
+  Place at: public/images/logo/sada-avatar.svg
+  Export sizes: 400x400 (min), 800x800 (recommended), 1200x1200 (high-DPI)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Sada">
+  <title>Sada - صدى</title>
+
+  <!-- Full-bleed olive background (safe for circular crop) -->
+  <rect x="0" y="0" width="400" height="400" fill="#0F6F5C"/>
+
+  <!-- Arches, centered and scaled for avatar -->
+  <g transform="translate(200, 230)">
+    <!-- Outer arch — sand -->
+    <path d="M -100 100 L -100 0 A 100 100 0 0 1 100 0 L 100 100"
+          fill="none" stroke="#C8965F" stroke-width="10" stroke-linecap="round"/>
+
+    <!-- Middle arch — olive light -->
+    <path d="M -68 100 L -68 20 A 68 68 0 0 1 68 20 L 68 100"
+          fill="none" stroke="#2A9080" stroke-width="10" stroke-linecap="round"/>
+
+    <!-- Inner arch — paper -->
+    <path d="M -40 100 L -40 34 A 40 40 0 0 1 40 34 L 40 100"
+          fill="none" stroke="#FAF7F2" stroke-width="10" stroke-linecap="round"/>
+
+    <!-- Baseline — paper -->
+    <line x1="-110" y1="104" x2="110" y2="104"
+          stroke="#FAF7F2" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>

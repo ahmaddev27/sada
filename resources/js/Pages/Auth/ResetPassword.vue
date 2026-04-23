@@ -34,6 +34,7 @@ const submit = () => {
 
             <!-- Logo -->
             <div class="text-center mb-8">
+                <img src="/images/logo/sada-arch-mark.svg" alt="صدى" style="width:56px;height:56px;object-fit:contain;margin:0 auto 8px;" />
                 <h1 class="text-3xl font-bold" style="color: var(--color-sada-600);">صدى</h1>
                 <p class="mt-1 text-sm" style="color: var(--color-ink-muted);">منصة التسويق الذكي</p>
             </div>
