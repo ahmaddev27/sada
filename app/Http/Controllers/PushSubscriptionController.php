@@ -11,16 +11,11 @@ class PushSubscriptionController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'endpoint'        => ['required', 'url', 'max:2000'],
-            'keys.p256dh'     => ['required', 'string'],
-            'keys.auth'       => ['required', 'string'],
+            'fcm_token' => ['required', 'string', 'max:500'],
         ]);
 
-        $hash = hash('sha256', $data['endpoint']);
-
         PushSubscription::updateOrCreate(
-            ['user_id' => $request->user()->id, 'endpoint_hash' => $hash],
-            ['endpoint' => $data['endpoint'], 'p256dh_key' => $data['keys']['p256dh'], 'auth_key' => $data['keys']['auth']],
+            ['user_id' => $request->user()->id, 'fcm_token' => $data['fcm_token']],
         );
 
         return response()->json(['ok' => true]);
@@ -28,10 +23,10 @@ class PushSubscriptionController extends Controller
 
     public function destroy(Request $request): JsonResponse
     {
-        $request->validate(['endpoint' => ['required', 'string']]);
+        $request->validate(['fcm_token' => ['required', 'string']]);
 
         PushSubscription::where('user_id', $request->user()->id)
-            ->where('endpoint', $request->string('endpoint'))
+            ->where('fcm_token', $request->string('fcm_token'))
             ->delete();
 
         return response()->json(['ok' => true]);

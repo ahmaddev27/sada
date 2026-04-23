@@ -109,11 +109,10 @@ return [
         ],
     ],
 
-    // Web Push / VAPID
-    'vapid' => [
-        'public_key'  => env('VAPID_PUBLIC_KEY'),
-        'private_key' => env('VAPID_PRIVATE_KEY'),
-        'subject'     => env('VAPID_SUBJECT', 'mailto:admin@sada.sa'),
+    // Firebase Cloud Messaging
+    'firebase' => [
+        'credentials' => env('FIREBASE_CREDENTIALS', 'storage/app/firebase-credentials.json'),
+        'project_id'  => env('FIREBASE_PROJECT_ID', 'sada-87617'),
     ],
 
 ];

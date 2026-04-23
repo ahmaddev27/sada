@@ -2,12 +2,12 @@
 
 namespace App\Notifications\Channels;
 
-use App\Services\WebPushService;
+use App\Services\FcmService;
 use Illuminate\Notifications\Notification;
 
 class WebPushChannel
 {
-    public function __construct(private readonly WebPushService $service) {}
+    public function __construct(private readonly FcmService $service) {}
 
     public function send(object $notifiable, Notification $notification): void
     {

@@ -1,49 +1,55 @@
 import { ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { getToken, deleteToken } from 'firebase/messaging';
+import { messaging } from '@/firebase';
 
-const VAPID_PUBLIC_KEY = (window as any).__vapid_public_key__ as string | undefined;
+const FCM_VAPID_KEY = '6sp9Bcy2DrT3nFY11dGz4Vvo5RT_jJvBMT5KtXCTGQk';
 
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
-    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-    const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-    const raw     = window.atob(base64);
-    return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
+function getCsrf(): string {
+    return (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '';
+}
+
+async function postJson(url: string, body: object): Promise<void> {
+    await fetch(url, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': getCsrf() },
+        body:    JSON.stringify(body),
+    });
 }
 
 export function usePushNotifications() {
-    const supported   = ref('serviceWorker' in navigator && 'PushManager' in window);
-    const subscribed  = ref(false);
-    const loading     = ref(false);
+    const supported  = ref('serviceWorker' in navigator && 'Notification' in window);
+    const subscribed = ref(false);
+    const loading    = ref(false);
 
-    async function register(): Promise<ServiceWorkerRegistration | null> {
-        if (!supported.value) return null;
-        return navigator.serviceWorker.register('/sw.js');
-    }
+    async function init(): Promise<void> {
+        if (!supported.value) return;
 
-    async function getSubscription(): Promise<PushSubscription | null> {
-        const reg = await navigator.serviceWorker.ready;
-        return reg.pushManager.getSubscription();
+        // Register the Firebase service worker
+        await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+
+        // Check if already subscribed
+        try {
+            const token = await getToken(messaging, { vapidKey: FCM_VAPID_KEY });
+            subscribed.value = !!token;
+        } catch {
+            subscribed.value = false;
+        }
     }
 
     async function subscribe(): Promise<void> {
-        if (!supported.value || !VAPID_PUBLIC_KEY) return;
+        if (!supported.value) return;
         loading.value = true;
 
         try {
-            const reg = await navigator.serviceWorker.ready;
-            const sub = await reg.pushManager.subscribe({
-                userVisibleOnly:      true,
-                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') return;
+
+            const token = await getToken(messaging, {
+                vapidKey:            FCM_VAPID_KEY,
+                serviceWorkerRegistration: await navigator.serviceWorker.ready,
             });
 
-            const json = sub.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } };
-
-            await fetch('/push/subscribe', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': getCsrf() },
-                body:    JSON.stringify({ endpoint: json.endpoint, keys: json.keys }),
-            });
-
+            await postJson('/push/subscribe', { fcm_token: token });
             subscribed.value = true;
         } finally {
             loading.value = false;
@@ -51,33 +57,24 @@ export function usePushNotifications() {
     }
 
     async function unsubscribe(): Promise<void> {
+        if (!supported.value) return;
         loading.value = true;
+
         try {
-            const sub = await getSubscription();
-            if (!sub) return;
+            const token = await getToken(messaging, { vapidKey: FCM_VAPID_KEY });
+            if (!token) return;
 
             await fetch('/push/subscribe', {
                 method:  'DELETE',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': getCsrf() },
-                body:    JSON.stringify({ endpoint: sub.endpoint }),
+                body:    JSON.stringify({ fcm_token: token }),
             });
 
-            await sub.unsubscribe();
+            await deleteToken(messaging);
             subscribed.value = false;
         } finally {
             loading.value = false;
         }
-    }
-
-    async function init(): Promise<void> {
-        if (!supported.value) return;
-        await register();
-        const sub = await getSubscription();
-        subscribed.value = !!sub;
-    }
-
-    function getCsrf(): string {
-        return (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '';
     }
 
     return { supported, subscribed, loading, init, subscribe, unsubscribe };
