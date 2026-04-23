@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>صدى — إعداد حسابك</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Rubik:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <style>
+    .ob-layout {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-page);
+    }
+    .ob-header {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .ob-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+    .ob-logo .mark {
+      width: 32px; height: 32px;
+      background: var(--sada-500);
+      border-radius: 9px;
+      display: grid; place-items: center;
+      color: #fff; font-weight: 800;
+      position: relative; overflow: hidden;
+      flex-shrink: 0;
+    }
+    .ob-logo .mark::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), transparent 60%);
+    }
+
+    /* Progress bar */
+    .ob-progress-wrap {
+      padding: 24px 40px 0;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .ob-progress-inner {
+      max-width: 640px;
+      margin: 0 auto;
+      padding-bottom: 24px;
+    }
+    .ob-progress-steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 12px;
+    }
+    .ob-step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      position: relative;
+    }
+    .ob-step-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 16px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--border-default);
+      z-index: 0;
+    }
+    .ob-step-item.done:not(:last-child)::after,
+    .ob-step-item.active:not(:last-child)::after {
+      background: var(--accent);
+    }
+    .ob-step-circle {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-size: 13px; font-weight: 700;
+      border: 2px solid var(--border-default);
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      position: relative; z-index: 1;
+      transition: all var(--dur-base);
+    }
+    .ob-step-item.active .ob-step-circle {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+    .ob-step-item.done .ob-step-circle {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+    .ob-step-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .ob-step-item.active .ob-step-label { color: var(--accent-text); font-weight: 600; }
+    .ob-step-item.done .ob-step-label { color: var(--text-secondary); }
+
+    /* Main content area */
+    .ob-body {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 48px 40px 80px;
+    }
+    .ob-card {
+      width: 100%;
+      max-width: 640px;
+    }
+    .ob-step-content { display: none; }
+    .ob-step-content.active { display: block; }
+
+    .ob-step-heading {
+      margin: 0 0 8px;
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .ob-step-sub {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin: 0 0 36px;
+      line-height: 1.6;
+    }
+
+    /* Country chips */
+    .country-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .country-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      font-size: 14px;
+      font-weight: 500;
+      background: var(--bg-muted);
+      border: 1.5px solid transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--dur-fast);
+      user-select: none;
+    }
+    .country-chip:hover {
+      background: var(--bg-surface);
+      border-color: var(--border-default);
+    }
+    .country-chip.selected {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent-text);
+      font-weight: 600;
+    }
+    .country-chip .chip-flag {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    /* Navigation footer */
+    .ob-nav-footer {
+      position: sticky;
+      bottom: 0;
+      background: color-mix(in oklab, var(--bg-surface) 95%, transparent);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid var(--border-subtle);
+      padding: 16px 40px;
+    }
+    .ob-nav-inner {
+      max-width: 640px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .ob-step-counter {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Step illustrations / success states */
+    .ob-success-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: var(--success-bg);
+      display: grid; place-items: center;
+      margin: 0 auto 20px;
+      color: var(--success);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .ob-header { padding: 0 20px; }
+      .ob-progress-wrap { padding: 20px 20px 0; }
+      .ob-body { padding: 32px 20px 100px; }
+      .ob-nav-footer { padding: 12px 20px; }
+      .ob-step-heading { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-sparkle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.5 5.5l2.8 2.8M15.7 15.7l2.8 2.8M5.5 18.5l2.8-2.8M15.7 8.3l2.8-2.8"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-chevronleft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-chevronright" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h18"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5A9 9 0 1 1 11.5 3a7 7 0 0 0 9.5 9.5z"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="1" fill="currentColor"/><circle cx="17.5" cy="10.5" r="1" fill="currentColor"/><circle cx="8.5" cy="7.5" r="1" fill="currentColor"/><circle cx="6.5" cy="12.5" r="1" fill="currentColor"/><path d="M12 22a10 10 0 1 1 10-10c0 2-1 3-3 3h-2a2 2 0 0 0-2 2c0 1 1 2 2 2a2 2 0 0 1 2 2 3 3 0 0 1-3 3z"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+  <symbol id="i-instagram" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></symbol>
+  <symbol id="i-video" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></symbol>
+</svg>
+
+<div class="ob-layout">
+  <!-- Header -->
+  <header class="ob-header">
+    <a href="landing.html" class="ob-logo">
+      <div class="mark">ص</div>
+      صدى
+    </a>
+    <a href="home.html" class="btn btn-ghost btn-sm">تخطّي</a>
+  </header>
+
+  <!-- Progress bar -->
+  <div class="ob-progress-wrap">
+    <div class="ob-progress-inner">
+      <div class="ob-progress-steps" id="progress-steps">
+        <div class="ob-step-item active" data-step="1">
+          <div class="ob-step-circle">١</div>
+          <div class="ob-step-label">مساحة العمل</div>
+        </div>
+        <div class="ob-step-item" data-step="2">
+          <div class="ob-step-circle">٢</div>
+          <div class="ob-step-label">المنصات</div>
+        </div>
+        <div class="ob-step-item" data-step="3">
+          <div class="ob-step-circle">٣</div>
+          <div class="ob-step-label">الهوية</div>
+        </div>
+        <div class="ob-step-item" data-step="4">
+          <div class="ob-step-circle">٤</div>
+          <div class="ob-step-label">جاهز!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main body -->
+  <main class="ob-body">
+    <div class="ob-card">
+
+      <!-- Step 1: Workspace setup -->
+      <div class="ob-step-content active" id="step-1">
+        <h1 class="ob-step-heading">أهلاً بك في صدى! 👋</h1>
+        <p class="ob-step-sub">لنبدأ بإعداد مساحة عملك. هذا يساعد AI على توليد محتوى مناسب لنشاطك التجاري.</p>
+
+        <div class="stack-lg">
+          <!-- Workspace name -->
+          <div class="input-group">
+            <label class="input-label" for="ws-name">اسم مساحة العمل</label>
+            <input class="input" id="ws-name" type="text" placeholder="مثال: متجر أنيق، مطعم الأصالة، وكالة نجوم..." value="">
+            <div class="input-hint">هذا هو اسم علامتك التجارية أو مشروعك.</div>
+          </div>
+
+          <!-- Business type -->
+          <div class="input-group">
+            <label class="input-label" for="biz-type">نوع النشاط التجاري</label>
+            <select class="select input" id="biz-type" style="height:44px;cursor:pointer;">
+              <option value="" disabled selected>اختر نوع نشاطك التجاري</option>
+              <optgroup label="التجارة الإلكترونية">
+                <option value="fashion">أزياء وملابس</option>
+                <option value="beauty">مستحضرات تجميل وعناية</option>
+                <option value="electronics">إلكترونيات وتقنية</option>
+                <option value="food">مواد غذائية ومشروبات</option>
+                <option value="home">ديكور ومنزل</option>
+                <option value="jewelry">مجوهرات وإكسسوارات</option>
+                <option value="sports">رياضة ولياقة</option>
+              </optgroup>
+              <optgroup label="الخدمات">
+                <option value="restaurant">مطعم أو كافيه</option>
+                <option value="clinic">عيادة أو صحة</option>
+                <option value="education">تعليم وتدريب</option>
+                <option value="real-estate">عقارات</option>
+                <option value="agency">وكالة إعلانية</option>
+                <option value="freelance">فريلانسر</option>
+              </optgroup>
+              <optgroup label="أخرى">
+                <option value="ngo">منظمة غير ربحية</option>
+                <option value="other">أخرى</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <!-- Target countries -->
+          <div class="input-group">
+            <label class="input-label">الدول المستهدفة</label>
+            <div class="input-hint" style="margin-bottom:12px;">اختر كل الدول التي تستهدفها (يمكن اختيار أكثر من دولة)</div>
+            <div class="country-chips" id="country-chips">
+              <div class="country-chip selected" data-value="sa">
+                <span class="chip-flag">🇸🇦</span>
+                السعودية
+              </div>
+              <div class="country-chip" data-value="ae">
+                <span class="chip-flag">🇦🇪</span>
+                الإمارات
+              </div>
+              <div class="country-chip" data-value="kw">
+                <span class="chip-flag">🇰🇼</span>
+                الكويت
+              </div>
+              <div class="country-chip" data-value="qa">
+                <span class="chip-flag">🇶🇦</span>
+                قطر
+              </div>
+              <div class="country-chip" data-value="bh">
+                <span class="chip-flag">🇧🇭</span>
+                البحرين
+              </div>
+              <div class="country-chip" data-value="om">
+                <span class="chip-flag">🇴🇲</span>
+                عُمان
+              </div>
+            </div>
+          </div>
+
+          <!-- Default dialect -->
+          <div class="input-group">
+            <label class="input-label" for="dialect">اللهجة الافتراضية</label>
+            <select class="select input" id="dialect" style="height:44px;cursor:pointer;">
+              <option value="" disabled selected>اختر لهجتك الافتراضية</option>
+              <option value="gulf-sa">خليجية سعودية</option>
+              <option value="gulf-ae">خليجية إماراتية</option>
+              <option value="gulf-kw">كويتية</option>
+              <option value="gulf-qa">قطرية</option>
+              <option value="gulf-bh">بحرينية</option>
+              <option value="gulf-om">عُمانية</option>
+              <option value="msa">فصحى مبسطة</option>
+            </select>
+            <div class="input-hint">يمكنك تغيير اللهجة عند توليد أي محتوى لاحقاً.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Social platforms -->
+      <div class="ob-step-content" id="step-2">
+        <h1 class="ob-step-heading">ربط منصاتك الاجتماعية</h1>
+        <p class="ob-step-sub">اختر المنصات التي تستخدمها حتى يجدول صدى المحتوى تلقائياً عنك.</p>
+
+        <div class="stack" style="gap:12px;">
+          <label class="card" style="display:flex;align-items:center;gap:16px;padding:16px 20px;cursor:pointer;border-radius:var(--radius-lg);transition:border-color var(--dur-fast);">
+            <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer;">
+            <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);display:grid;place-items:center;flex-shrink:0;">
+              <svg width="20" height="20" style="color:#fff;"><use href="#i-instagram"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:15px;font-weight:700;">إنستغرام</div>
+              <div style="font-size:13px;color:var(--text-muted);">منشورات، ريلز، ستوريز</div>
+            </div>
+            <span class="badge badge-success">موصول</span>
+          </label>
+
+          <label class="card" style="display:flex;align-items:center;gap:16px;padding:16px 20px;cursor:pointer;border-radius:var(--radius-lg);transition:border-color var(--dur-fast);">
+            <input type="checkbox" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer;">
+            <div style="width:40px;height:40px;border-radius:10px;background:#FFFC00;display:grid;place-items:center;flex-shrink:0;">
+              <svg width="22" height="22" style="color:#000;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3c0 0-7 4.5-7 9.5a7 7 0 0 0 14 0C19 7.5 12 3 12 3z"/><path d="M12 3v13.5"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:15px;font-weight:700;">سناب شات</div>
+              <div style="font-size:13px;color:var(--text-muted);">ستوريز وإعلانات سناب</div>
+            </div>
+            <button class="btn btn-sm btn-secondary">ربط</button>
+          </label>
+
+          <label class="card" style="display:flex;align-items:center;gap:16px;padding:16px 20px;cursor:pointer;border-radius:var(--radius-lg);transition:border-color var(--dur-fast);">
+            <input type="checkbox" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer;">
+            <div style="width:40px;height:40px;border-radius:10px;background:#000;display:grid;place-items:center;flex-shrink:0;">
+              <svg width="20" height="20" style="color:#fff;" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:15px;font-weight:700;">X (تويتر)</div>
+              <div style="font-size:13px;color:var(--text-muted);">تغريدات وخيوط</div>
+            </div>
+            <button class="btn btn-sm btn-secondary">ربط</button>
+          </label>
+
+          <label class="card" style="display:flex;align-items:center;gap:16px;padding:16px 20px;cursor:pointer;border-radius:var(--radius-lg);transition:border-color var(--dur-fast);">
+            <input type="checkbox" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer;">
+            <div style="width:40px;height:40px;border-radius:10px;background:#1877F2;display:grid;place-items:center;flex-shrink:0;">
+              <svg width="20" height="20" style="color:#fff;"><use href="#i-send"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:15px;font-weight:700;">تيك توك</div>
+              <div style="font-size:13px;color:var(--text-muted);">فيديوهات قصيرة</div>
+            </div>
+            <button class="btn btn-sm btn-secondary">ربط</button>
+          </label>
+        </div>
+
+        <div class="card" style="margin-top:20px;padding:16px 20px;background:var(--accent-soft);border-color:var(--border-brand);border-radius:var(--radius-lg);">
+          <div style="font-size:13px;color:var(--accent-text);line-height:1.6;">
+            <strong>يمكنك تخطي هذه الخطوة الآن</strong> وربط المنصات لاحقاً من الإعدادات. صدى يمكنه توليد المحتوى وتصديره يدوياً حتى بدون ربط.
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Brand identity -->
+      <div class="ob-step-content" id="step-3">
+        <h1 class="ob-step-heading">هوية علامتك التجارية</h1>
+        <p class="ob-step-sub">أخبرنا عن أسلوبك وجمهورك حتى يتعلم AI صوت علامتك التجارية الفريد.</p>
+
+        <div class="stack-lg">
+          <div class="input-group">
+            <label class="input-label" for="brand-desc">وصف علامتك التجارية</label>
+            <textarea class="textarea input" id="brand-desc" placeholder="مثال: متجر إلكتروني للعطور الفاخرة يستهدف الشباب الخليجي المهتم بالأناقة. أسلوبنا راقٍ لكن قريب من الجمهور، نحب اللهجة العامية مع لمسة من الرقي..." style="min-height:120px;"></textarea>
+            <div class="input-hint">كلما كان الوصف أوضح، كان المحتوى المولّد أكثر دقة.</div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">أسلوب الكتابة</label>
+            <div class="input-hint" style="margin-bottom:12px;">اختر الأسلوب الذي يعبر عن علامتك</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="tone-grid">
+              <div class="country-chip" data-value="fun" style="border-radius:var(--radius-md);padding:12px 16px;justify-content:flex-start;gap:10px;">
+                <span style="font-size:20px;">😄</span>
+                <div>
+                  <div style="font-weight:600;">مرح وخفيف</div>
+                  <div style="font-size:12px;color:var(--text-muted);">يناسب الشباب</div>
+                </div>
+              </div>
+              <div class="country-chip selected" data-value="elegant" style="border-radius:var(--radius-md);padding:12px 16px;justify-content:flex-start;gap:10px;">
+                <span style="font-size:20px;">✨</span>
+                <div>
+                  <div style="font-weight:600;">راقٍ وفاخر</div>
+                  <div style="font-size:12px;color:var(--text-muted);">يناسب المنتجات الفاخرة</div>
+                </div>
+              </div>
+              <div class="country-chip" data-value="professional" style="border-radius:var(--radius-md);padding:12px 16px;justify-content:flex-start;gap:10px;">
+                <span style="font-size:20px;">💼</span>
+                <div>
+                  <div style="font-weight:600;">احترافي وجاد</div>
+                  <div style="font-size:12px;color:var(--text-muted);">يناسب الخدمات</div>
+                </div>
+              </div>
+              <div class="country-chip" data-value="warm" style="border-radius:var(--radius-md);padding:12px 16px;justify-content:flex-start;gap:10px;">
+                <span style="font-size:20px;">🤝</span>
+                <div>
+                  <div style="font-weight:600;">دافئ ومقرّب</div>
+                  <div style="font-size:12px;color:var(--text-muted);">يناسب الطعام والعائلة</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label" for="audience">الجمهور المستهدف</label>
+            <input class="input" id="audience" type="text" placeholder="مثال: نساء ٢٥-٤٠ سنة، مهتمات بالموضة والجمال..." style="height:44px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Done -->
+      <div class="ob-step-content" id="step-4">
+        <div style="text-align:center;padding:24px 0 40px;">
+          <div class="ob-success-icon">
+            <svg width="32" height="32"><use href="#i-check"/></svg>
+          </div>
+          <h1 class="ob-step-heading" style="margin-bottom:12px;">مساحة عملك جاهزة! 🎉</h1>
+          <p class="ob-step-sub" style="margin:0 auto;max-width:460px;">تم إعداد حسابك بنجاح. صدى AI جاهز الآن لتوليد محتوى خليجي أصيل لعلامتك التجارية.</p>
+        </div>
+
+        <div class="card" style="border-radius:var(--radius-xl);overflow:hidden;">
+          <div style="background:linear-gradient(135deg,var(--sada-600),var(--sada-400));padding:24px;">
+            <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:6px;">خطوتك الأولى</div>
+            <div style="font-size:14px;color:rgba(255,255,255,0.8);">جرّب توليد أول منشور لك الآن ورأك صدى AI شغّال!</div>
+          </div>
+          <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+            <a href="generate.html" class="btn btn-primary btn-lg" style="justify-content:center;">
+              <svg width="20" height="20"><use href="#i-sparkle"/></svg>
+              ولّد أول منشور الآن
+            </a>
+            <a href="home.html" class="btn btn-ghost btn-lg" style="justify-content:center;">الذهاب للوحة التحكم</a>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:24px;">
+          <div style="text-align:center;padding:16px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);">
+            <div style="font-size:24px;margin-bottom:6px;">📅</div>
+            <div style="font-size:13px;font-weight:600;color:var(--text-primary);">تقويم المحتوى</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">جدّل منشوراتك</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);">
+            <div style="font-size:24px;margin-bottom:6px;">🌙</div>
+            <div style="font-size:13px;font-weight:600;color:var(--text-primary);">حملات موسمية</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">رمضان والأعياد</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);">
+            <div style="font-size:24px;margin-bottom:6px;">📊</div>
+            <div style="font-size:13px;font-weight:600;color:var(--text-primary);">تحليلات</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">راقب الأداء</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Navigation footer -->
+  <div class="ob-nav-footer">
+    <div class="ob-nav-inner">
+      <button class="btn btn-secondary" id="btn-back" style="visibility:hidden;">
+        <svg width="16" height="16"><use href="#i-chevronleft"/></svg>
+        السابق
+      </button>
+      <div class="ob-step-counter" id="step-counter">الخطوة ١ من ٤</div>
+      <button class="btn btn-primary" id="btn-next">
+        التالي
+        <svg width="16" height="16"><use href="#i-chevronright"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const TOTAL_STEPS = 4;
+  let currentStep = 1;
+
+  const stepContents = document.querySelectorAll('.ob-step-content');
+  const stepItems = document.querySelectorAll('.ob-step-item');
+  const btnBack = document.getElementById('btn-back');
+  const btnNext = document.getElementById('btn-next');
+  const stepCounter = document.getElementById('step-counter');
+
+  const stepCounterLabels = ['الخطوة ١ من ٤', 'الخطوة ٢ من ٤', 'الخطوة ٣ من ٤', 'الخطوة ٤ من ٤'];
+
+  function renderStep(step) {
+    // Update step content visibility
+    stepContents.forEach((el, i) => {
+      el.classList.toggle('active', i + 1 === step);
+    });
+
+    // Update progress indicators
+    stepItems.forEach((el, i) => {
+      el.classList.remove('active', 'done');
+      if (i + 1 === step) el.classList.add('active');
+      else if (i + 1 < step) el.classList.add('done');
+    });
+
+    // Update circle content for done steps (checkmark)
+    stepItems.forEach((el, i) => {
+      const circle = el.querySelector('.ob-step-circle');
+      if (i + 1 < step) {
+        circle.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>';
+      } else {
+        circle.textContent = ['١','٢','٣','٤'][i];
+      }
+    });
+
+    // Update counter
+    stepCounter.textContent = stepCounterLabels[step - 1];
+
+    // Show/hide back button
+    btnBack.style.visibility = step === 1 ? 'hidden' : 'visible';
+
+    // Update next button on last step
+    if (step === TOTAL_STEPS) {
+      btnNext.style.display = 'none';
+    } else {
+      btnNext.style.display = 'inline-flex';
+    }
+  }
+
+  btnNext.addEventListener('click', () => {
+    if (currentStep < TOTAL_STEPS) {
+      currentStep++;
+      renderStep(currentStep);
+    }
+  });
+
+  btnBack.addEventListener('click', () => {
+    if (currentStep > 1) {
+      currentStep--;
+      renderStep(currentStep);
+    }
+  });
+
+  // Country chips toggle
+  document.querySelectorAll('#country-chips .country-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      chip.classList.toggle('selected');
+    });
+  });
+
+  // Tone grid toggle (single select)
+  document.querySelectorAll('#tone-grid .country-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#tone-grid .country-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+    });
+  });
+
+  // Init
+  renderStep(1);
+</script>
+</body>
+</html>
