@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-// WS-01: first-run onboarding — step 1 workspace, step 2 social connect
+// WS-01: first-run onboarding — step 1 workspace, step 2 social connect, step 3 completion
 class OnboardingController extends Controller
 {
     private const DIALECTS = [
@@ -41,10 +41,19 @@ class OnboardingController extends Controller
         $workspace = $user->activeWorkspaces()->first();
 
         if ($workspace) {
-            // If session flag is set, user just created their first workspace → step 2
-            if ($request->session()->get('onboarding_step') === 2) {
+            $step = $request->session()->get('onboarding_step');
+
+            if ($step === 2) {
                 return Inertia::render('Onboarding/Index', [
                     'step'          => 2,
+                    'dialects'      => self::DIALECTS,
+                    'businessTypes' => self::BUSINESS_TYPES,
+                ]);
+            }
+
+            if ($step === 3) {
+                return Inertia::render('Onboarding/Index', [
+                    'step'          => 3,
                     'dialects'      => self::DIALECTS,
                     'businessTypes' => self::BUSINESS_TYPES,
                 ]);
@@ -82,9 +91,16 @@ class OnboardingController extends Controller
 
     public function skip(Request $request): RedirectResponse
     {
+        $request->session()->put('onboarding_step', 3);
+
+        return redirect()->route('onboarding');
+    }
+
+    public function complete(Request $request): RedirectResponse
+    {
         $request->session()->forget('onboarding_step');
 
         return redirect()->route('dashboard')
-            ->with('flash.success', 'مرحباً بك في صدى! يمكنك ربط حساباتك لاحقاً من الإعدادات.');
+            ->with('flash.success', 'مرحباً بك في صدى! ابدأ بتوليد أول منشور.');
     }
 }

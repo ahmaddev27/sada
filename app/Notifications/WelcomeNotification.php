@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Channels\WebPushChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -11,10 +12,20 @@ class WelcomeNotification extends Notification
 {
     use Queueable;
 
-    /** @return string[] */
+    /** @return array<int, string|class-string> */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['database', 'mail', WebPushChannel::class];
+    }
+
+    /** @return array{title: string, body: string, url: string} */
+    public function toWebPush(object $notifiable): array
+    {
+        return [
+            'title' => 'مرحباً بك في صدى!',
+            'body'  => 'ابدأ بتوليد محتواك التسويقي الأول بلهجتك الخليجية.',
+            'url'   => '/generate',
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

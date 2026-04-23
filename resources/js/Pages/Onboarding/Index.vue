@@ -3,12 +3,16 @@ import { computed } from 'vue';
 import { Head, useForm, Link, router } from '@inertiajs/vue3';
 
 const props = defineProps<{
-    step:          1 | 2;
+    step:          1 | 2 | 3;
     dialects:      { value: string; label: string }[];
     businessTypes: string[];
 }>();
 
-const progressPct = computed(() => (props.step === 1 ? 40 : 80));
+const progressPct = computed(() => {
+    if (props.step === 1) return 33;
+    if (props.step === 2) return 66;
+    return 100;
+});
 
 // ── Step 1: workspace ────────────────────────────────────────────────────
 const workspaceForm = useForm({
@@ -49,6 +53,10 @@ function skipSocial() {
     router.post('/onboarding/skip');
 }
 
+function completeOnboarding() {
+    router.post('/onboarding/complete');
+}
+
 const platforms = [
     {
         id:    'instagram',
@@ -75,10 +83,10 @@ const platforms = [
         <!-- Header -->
         <div class="onb-header">
             <Link href="/" class="onb-logo">
-                <div class="logo-mark">ص</div>
+                <img src="/images/logo/sada-arch-mark.svg" class="onb-logo-img" alt="صدى" />
                 <span>صدى</span>
             </Link>
-            <div class="step-indicator">الخطوة {{ step }} من ٢</div>
+            <div class="step-indicator">الخطوة {{ step }} من ٣</div>
         </div>
 
         <!-- Progress bar -->
@@ -213,6 +221,51 @@ const platforms = [
             </div>
         </div>
 
+        <!-- ── Step 3: Ready to go ──────────────────────────────────── -->
+        <div v-else-if="step === 3" class="onb-container">
+            <div class="onb-card onb-card--celebration">
+                <div class="celebration-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                </div>
+                <h1 class="onb-title">أنت جاهز للانطلاق!</h1>
+                <p class="onb-sub">مساحة عملك جاهزة. ابدأ الآن بتوليد محتوى تسويقي باللهجة الخليجية وجدولته مباشرة.</p>
+
+                <!-- Feature highlights -->
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-dot feature-dot--sada"></div>
+                        <div>
+                            <div class="feature-title">توليد المحتوى بالذكاء الاصطناعي</div>
+                            <div class="feature-desc">منشورات بـ 7 لهجات خليجية في ثوانٍ</div>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-dot feature-dot--sand"></div>
+                        <div>
+                            <div class="feature-title">جدولة ونشر مباشر</div>
+                            <div class="feature-desc">على Instagram وFacebook دون تبديل التطبيقات</div>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-dot feature-dot--sada"></div>
+                        <div>
+                            <div class="feature-title">حملات المناسبات الخليجية</div>
+                            <div class="feature-desc">26 مناسبة جاهزة — رمضان، اليوم الوطني، وأكثر</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-submit" @click="completeOnboarding">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    ابدأ توليد المحتوى
+                </button>
+
+                <a href="/social/accounts" class="btn-skip">
+                    ربط حسابات إضافية (TikTok، Snapchat، X)
+                </a>
+            </div>
+        </div>
+
     </div>
 </template>
 
@@ -237,12 +290,7 @@ const platforms = [
     font-weight: 800; font-size: 18px;
     color: var(--text-primary); text-decoration: none;
 }
-.logo-mark {
-    width: 32px; height: 32px; border-radius: 9px;
-    background: var(--sada-500); color: #fff;
-    font-weight: 800; font-size: 16px;
-    display: grid; place-items: center;
-}
+.onb-logo-img { width: 32px; height: 32px; object-fit: contain; }
 .step-indicator { font-size: 13px; color: var(--text-muted); font-weight: 500; }
 
 /* ── Progress ──────────────────────────────────────────────────────── */
@@ -354,6 +402,39 @@ const platforms = [
     color: var(--text-muted); border-radius: 8px;
     font-size: 12px; line-height: 1.5;
 }
+
+/* ── Step 3: celebration ───────────────────────────────────────────── */
+.onb-card--celebration {
+    text-align: center;
+}
+.onb-card--celebration .onb-title,
+.onb-card--celebration .onb-sub {
+    text-align: center;
+}
+.celebration-icon {
+    width: 72px; height: 72px; border-radius: 20px;
+    background: color-mix(in oklab, var(--sand-500) 14%, transparent);
+    color: var(--sand-500);
+    display: grid; place-items: center; margin: 0 auto 20px;
+}
+.feature-list {
+    display: flex; flex-direction: column; gap: 14px;
+    margin: 0 0 28px; text-align: right;
+}
+.feature-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 14px;
+    background: var(--bg-page); border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+}
+.feature-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-top: 5px; flex-shrink: 0;
+}
+.feature-dot--sada { background: var(--sada-500); }
+.feature-dot--sand { background: var(--sand-500); }
+.feature-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.feature-desc  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
 /* ── Responsive ────────────────────────────────────────────────────── */
 @media (max-width: 560px) {

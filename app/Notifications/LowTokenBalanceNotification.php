@@ -4,6 +4,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Channels\WebPushChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -14,10 +15,20 @@ class LowTokenBalanceNotification extends Notification
 
     public function __construct(private readonly int $balance) {}
 
-    /** @return string[] */
+    /** @return array<int, string|class-string> */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['database', 'mail', WebPushChannel::class];
+    }
+
+    /** @return array{title: string, body: string, url: string} */
+    public function toWebPush(object $notifiable): array
+    {
+        return [
+            'title' => 'رصيدك من التوكنز منخفض',
+            'body'  => "رصيدك الحالي هو {$this->balance} توكن. اشحن الآن.",
+            'url'   => '/billing',
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

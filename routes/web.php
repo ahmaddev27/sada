@@ -13,6 +13,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SocialAccountController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -73,6 +74,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding');
     Route::post('/onboarding/workspace', [OnboardingController::class, 'storeWorkspace'])->name('onboarding.workspace');
     Route::post('/onboarding/skip', [OnboardingController::class, 'skip'])->name('onboarding.skip');
+    Route::post('/onboarding/complete', [OnboardingController::class, 'complete'])->name('onboarding.complete');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -128,6 +130,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Notifications
     Route::post('/notifications/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+
+    // Web Push subscriptions
+    Route::post('/push/subscribe', [PushSubscriptionController::class, 'store'])->name('push.subscribe');
+    Route::delete('/push/subscribe', [PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
 
     // BIL-01→BIL-08: Billing
     Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');

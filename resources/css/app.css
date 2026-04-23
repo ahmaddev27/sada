@@ -362,11 +362,11 @@ p { margin: 0; }
     margin-bottom: 16px;
     color: var(--text-primary);
 }
-.sidebar-logo .logo-icon {
-    width: 32px;
-    height: 32px;
-    flex-shrink: 0;
+.sidebar-logo .logo-horizontal {
+    width: 140px;
+    height: auto;
     object-fit: contain;
+    flex-shrink: 0;
 }
 
 .workspace-picker {

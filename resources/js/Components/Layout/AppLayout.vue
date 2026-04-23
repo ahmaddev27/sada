@@ -153,14 +153,11 @@ onUnmounted(() => {
                 <div class="sidebar-logo">
                     <img
                         :src="ui.theme === 'dark'
-                            ? '/images/logo/sada-arch-mark-dark.svg'
-                            : '/images/logo/sada-arch-mark.svg'"
-                        class="logo-icon"
+                            ? '/images/logo/sada-horizontal-ar-dark.svg'
+                            : '/images/logo/sada-horizontal-ar.svg'"
+                        class="logo-horizontal"
                         alt="صدى"
-                        width="32"
-                        height="32"
                     />
-                    <span>صدى</span>
                 </div>
 
                 <!-- Workspace picker button -->

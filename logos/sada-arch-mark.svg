@@ -1,0 +1,35 @@
+<!--
+  Sada — The Arch Logo
+  Place at: public/images/logo/sada-arch-mark.svg
+  Use: <img src="/images/logo/sada-arch-mark.svg" alt="صدى" />
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-80 -80 160 160" role="img" aria-label="Sada - صدى">
+  <title>Sada - صدى</title>
+
+  <!-- Outer arch — sand gold -->
+  <path d="M -55 55 L -55 0 A 55 55 0 0 1 55 0 L 55 55"
+        fill="none"
+        stroke="#C8965F"
+        stroke-width="5"
+        stroke-linecap="round"/>
+
+  <!-- Middle arch — olive light -->
+  <path d="M -38 55 L -38 10 A 38 38 0 0 1 38 10 L 38 55"
+        fill="none"
+        stroke="#2A9080"
+        stroke-width="5"
+        stroke-linecap="round"/>
+
+  <!-- Inner arch — olive primary -->
+  <path d="M -22 55 L -22 18 A 22 22 0 0 1 22 18 L 22 55"
+        fill="none"
+        stroke="#0F6F5C"
+        stroke-width="5"
+        stroke-linecap="round"/>
+
+  <!-- Baseline — ink -->
+  <line x1="-62" y1="58" x2="62" y2="58"
+        stroke="#0E1512"
+        stroke-width="1.5"
+        stroke-linecap="round"/>
+</svg>

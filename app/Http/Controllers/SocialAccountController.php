@@ -178,9 +178,9 @@ class SocialAccountController extends Controller
         $count = count($igAccounts) + count($pages);
 
         if ($request->session()->get('onboarding_step') === 2) {
-            $request->session()->forget('onboarding_step');
-            return redirect()->route('dashboard')
-                ->with('flash.success', "تم ربط {$count} حساب بنجاح. مرحباً بك في صدى!");
+            $request->session()->put('onboarding_step', 3);
+            return redirect()->route('onboarding')
+                ->with('flash.success', "تم ربط {$count} حساب بنجاح!");
         }
 
         return redirect()->route('social.index')

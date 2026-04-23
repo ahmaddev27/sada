@@ -1,0 +1,27 @@
+<!--
+  Sada — Horizontal Lockup (Arabic) — Dark Mode
+  Use: Sidebar on dark backgrounds
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" role="img" aria-label="صدى - Sada">
+  <title>صدى - Sada</title>
+
+  <!-- Mark on the right (RTL-first) -->
+  <g transform="translate(200, 40)">
+    <path d="M -27 28 L -27 0 A 27 27 0 0 1 27 0 L 27 28"
+          fill="none" stroke="#D4A876" stroke-width="3" stroke-linecap="round"/>
+    <path d="M -19 28 L -19 5 A 19 19 0 0 1 19 5 L 19 28"
+          fill="none" stroke="#2A9080" stroke-width="3" stroke-linecap="round"/>
+    <path d="M -11 28 L -11 9 A 11 11 0 0 1 11 9 L 11 28"
+          fill="none" stroke="#3BA596" stroke-width="3" stroke-linecap="round"/>
+    <line x1="-30" y1="30" x2="30" y2="30"
+          stroke="#FAF7F2" stroke-width="1" stroke-linecap="round"/>
+  </g>
+
+  <!-- Arabic wordmark — paper white for dark backgrounds -->
+  <text x="150" y="52"
+        text-anchor="end"
+        font-family="'Tajawal', 'IBM Plex Sans Arabic', sans-serif"
+        font-weight="700"
+        font-size="36"
+        fill="#FAF7F2">صدى</text>
+</svg>

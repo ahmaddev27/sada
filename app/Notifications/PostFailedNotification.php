@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Post;
+use App\Notifications\Channels\WebPushChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -17,10 +18,20 @@ class PostFailedNotification extends Notification
         private readonly string $reason = '',
     ) {}
 
-    /** @return string[] */
+    /** @return array<int, string|class-string> */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['database', 'mail', WebPushChannel::class];
+    }
+
+    /** @return array{title: string, body: string, url: string} */
+    public function toWebPush(object $notifiable): array
+    {
+        return [
+            'title' => 'فشل نشر المنشور',
+            'body'  => 'لم يتم نشر منشورك.' . ($this->reason ? ' السبب: ' . $this->reason : ''),
+            'url'   => '/posts',
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

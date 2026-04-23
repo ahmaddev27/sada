@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
 import AppLayout from '@/Components/Layout/AppLayout.vue';
 import Icon from '@/Components/Base/Icon.vue';
 import AvatarCropper from '@/Components/Base/AvatarCropper.vue';
+import { usePushNotifications } from '@/Composables/usePushNotifications';
 
 const props = defineProps<{
     user: {
@@ -85,6 +86,18 @@ const memberSince = computed(() => {
 const userInitials = computed(() => {
     return props.user.name.split(' ').map(w => w[0]).join('').slice(0, 2);
 });
+
+/* ── Push notifications ── */
+const {
+    supported: pushSupported,
+    subscribed: pushSubscribed,
+    loading: pushLoading,
+    init: pushInit,
+    subscribe: pushSubscribe,
+    unsubscribe: pushUnsubscribe,
+} = usePushNotifications();
+
+onMounted(() => pushInit());
 </script>
 
 <template>
@@ -315,6 +328,42 @@ const userInitials = computed(() => {
                     <div class="info-card-body">
                         <div class="info-card-label">عضو منذ</div>
                         <div class="info-card-value">{{ memberSince }}</div>
+                    </div>
+                </div>
+
+                <div class="divider-line" style="margin:8px 0" />
+
+                <!-- Push notifications -->
+                <div class="push-card">
+                    <div class="push-card-body">
+                        <div class="push-card-title">
+                            <Icon name="bell" :size="16" />
+                            إشعارات المتصفح
+                        </div>
+                        <div class="push-card-desc">
+                            تلقَّ إشعارات فورية عند نشر منشوراتك أو انخفاض رصيدك.
+                        </div>
+                    </div>
+                    <div class="push-card-action">
+                        <span v-if="!pushSupported" class="push-unsupported">غير مدعوم</span>
+                        <button
+                            v-else-if="pushSubscribed"
+                            class="btn-push btn-push--off"
+                            :disabled="pushLoading"
+                            @click="pushUnsubscribe"
+                        >
+                            <span v-if="pushLoading">...</span>
+                            <span v-else>إيقاف</span>
+                        </button>
+                        <button
+                            v-else
+                            class="btn-push btn-push--on"
+                            :disabled="pushLoading"
+                            @click="pushSubscribe"
+                        >
+                            <span v-if="pushLoading">...</span>
+                            <span v-else>تفعيل</span>
+                        </button>
                     </div>
                 </div>
 
@@ -659,6 +708,28 @@ const userInitials = computed(() => {
 .info-card-value span { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-right: 4px; }
 
 /* Danger zone */
+/* ── Push notification card ─────────────────────────────────────────────────── */
+.push-card {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 14px 16px;
+    background: var(--bg-page); border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+}
+.push-card-title {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px;
+}
+.push-card-desc  { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.push-unsupported { font-size: 12px; color: var(--text-muted); }
+.btn-push {
+    padding: 7px 16px; border-radius: 7px; font-size: 13px; font-weight: 600;
+    font-family: var(--font-arabic); cursor: pointer; border: none;
+    transition: opacity .15s; white-space: nowrap;
+}
+.btn-push:disabled { opacity: .6; cursor: not-allowed; }
+.btn-push--on  { background: var(--sada-600); color: #fff; }
+.btn-push--off { background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border-default); }
+
 .danger-zone {
     background: color-mix(in oklab, var(--error) 6%, transparent);
     border: 1px solid color-mix(in oklab, var(--error) 20%, transparent);
