@@ -10,3 +10,7 @@ Artisan::command('inspire', function () {
 
 // SCH-02: dispatch due posts every minute
 Schedule::command('posts:dispatch-due')->everyMinute();
+
+// CON-07: refresh expiring social tokens every 15 minutes
+// 15-min cadence covers Snapchat (30-min TTL) with enough margin
+Schedule::command('social:refresh-tokens')->everyFifteenMinutes();
