@@ -51,7 +51,9 @@ class AuthController extends Controller
     {
         $action->execute($request);
 
-        return redirect()->intended(route('dashboard'));
+        $hasWorkspace = $request->user()->activeWorkspaces()->exists();
+
+        return redirect()->intended(route($hasWorkspace ? 'dashboard' : 'onboarding'));
     }
 
     public function logout(Request $request): RedirectResponse

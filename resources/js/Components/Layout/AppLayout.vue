@@ -125,7 +125,6 @@ function onKey(e: KeyboardEvent) {
 onMounted(() => window.addEventListener('keydown', onKey))
 onUnmounted(() => {
     window.removeEventListener('keydown', onKey)
-    if (flashTimer) clearTimeout(flashTimer)
 })
 </script>
 

@@ -183,7 +183,8 @@ async function generate() {
         const data = await resp.json()
 
         if (!resp.ok) {
-            error.value = data.error ?? 'فشل التوليد. حاول مرة أخرى.'
+            const firstFieldError = data.errors ? Object.values(data.errors as Record<string, string[]>)[0]?.[0] : null
+            error.value = firstFieldError ?? data.error ?? data.message ?? 'فشل التوليد. حاول مرة أخرى.'
             return
         }
 

@@ -785,11 +785,10 @@ p { margin: 0; }
    Toast
    ============================================================ */
 .toast-viewport {
-    position: fixed; bottom: 20px;
-    left: 50%; transform: translateX(-50%);
+    position: fixed; bottom: 20px; right: 20px;
     z-index: 200;
     display: flex; flex-direction: column; gap: 8px;
-    width: min(380px, calc(100vw - 32px));
+    width: min(380px, calc(100vw - 40px));
     pointer-events: none;
 }
 .toast {
@@ -919,7 +918,7 @@ p { margin: 0; }
    Animations
    ============================================================ */
 @keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
-@keyframes toastIn  { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes toastIn  { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
 @keyframes modalIn  { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: none; } }
 @keyframes shimmer  { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
