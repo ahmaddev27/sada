@@ -630,7 +630,119 @@ Week 8  │ M5: Billing + Polish + QA + Launch Prep
 
 ---
 
-## Post-Phase 0.5 Backlog (Phase 1 — Month 3-4)
+---
+
+# Phase 0.6 — Admin Dashboard (Weeks 13-14, post Phase 0.5)
+
+**Goal:** لوحة تحكم داخلية شاملة لإدارة جميع جوانب المنصة — المستخدمين، الاشتراكات، التوكنات، المحتوى، المنصات، والنظام.
+
+**الوصول:** Super Admin فقط — لا يظهر في الـ UI العام، مسار منفصل `/admin`.
+
+**Prerequisite:** اكتمال Phase 0.5 + وجود مستخدمين حقيقيين بعد الإطلاق.
+
+---
+
+## Milestone 8: Admin Dashboard (Weeks 13-14)
+
+### Sprint 13 (Week 13) — Core Admin Infrastructure + Users & Workspaces
+
+#### Backend Tasks
+
+| # | Task | Owner | Estimate |
+|---|------|-------|----------|
+| 8.1.1 | `is_admin` flag على `users` table + migration | Ahmed Q | 1h |
+| 8.1.2 | `AdminMiddleware` — يحجب أي غير admin | Ahmed Q | 1h |
+| 8.1.3 | Route group `/admin` محمي بـ `AdminMiddleware` | Ahmed Q | 1h |
+| 8.1.4 | `AdminDashboardController` — overview stats | Ahmed Q | 3h |
+| 8.1.5 | `AdminUserController` — CRUD + search + filter + ban/unban | Ahmed Q | 6h |
+| 8.1.6 | `AdminWorkspaceController` — list + view + suspend/restore | Ahmed Q | 4h |
+| 8.1.7 | `AdminImpersonateAction` — تسجيل دخول كمستخدم لأغراض الدعم | Ahmed Q | 3h |
+| 8.1.8 | `AdminTokenController` — منح/سحب توكنات يدوياً | Ahmed Q | 3h |
+| 8.1.9 | Activity log: تسجيل كل إجراءات الـ Admin في `admin_logs` table | Ahmed Q | 4h |
+| 8.1.10 | API: إحصائيات عامة (مستخدمون، workspaces، إيرادات، توكنات) | Ahmed Q | 3h |
+
+#### Frontend Tasks
+
+| # | Task | Owner | Estimate |
+|---|------|-------|----------|
+| 8.1.11 | Admin layout منفصل (`AdminLayout.vue`) — sidebar مختلف، لون مميز | Abd | 4h |
+| 8.1.12 | Dashboard overview: KPI cards (مستخدمون، إيرادات، توكنات مستهلكة، منشورات) | Abd | 5h |
+| 8.1.13 | Charts: نمو المستخدمين يومياً + إيرادات شهرية | Abd | 4h |
+| 8.1.14 | Users table: search، filter by plan/status، sort، pagination | Abd | 6h |
+| 8.1.15 | User detail page: بيانات + workspaces + معاملات التوكن + زر ban/impersonate | Abd | 5h |
+| 8.1.16 | Workspaces table: filter by status/owner، suspend/restore | Abd | 4h |
+
+---
+
+### Sprint 14 (Week 14) — Billing, Content, Platform Health & System
+
+#### Backend Tasks
+
+| # | Task | Owner | Estimate |
+|---|------|-------|----------|
+| 8.2.1 | `AdminBillingController` — كل المعاملات، فلترة، export CSV | Ahmed Q | 4h |
+| 8.2.2 | `AdminTokenAuditController` — log كل استهلاك AI مع التكلفة | Ahmed Q | 3h |
+| 8.2.3 | `AdminPostController` — عرض كل المنشورات، فلترة بالمنصة/الحالة | Ahmed Q | 3h |
+| 8.2.4 | `AdminSocialAccountController` — صحة الحسابات المرتبطة لكل workspace | Ahmed Q | 3h |
+| 8.2.5 | `AdminAiCostController` — تقرير تكلفة AI مجمّعة (provider + agent + تاريخ) | Ahmed Q | 4h |
+| 8.2.6 | `AdminNotificationController` — إرسال إشعار/بريد لمستخدم أو لكل المستخدمين | Ahmed Q | 4h |
+| 8.2.7 | `AdminSystemController` — queue health، Horizon stats، cache clear | Ahmed Q | 3h |
+| 8.2.8 | `AdminSettingsController` — token package prices، rate limits، feature flags | Ahmed Q | 4h |
+| 8.2.9 | Export: تقارير PDF/Excel للمعاملات والمستخدمين والإيرادات | Ahmed Q | 4h |
+| 8.2.10 | Pest feature tests لكل admin endpoints | Ahmed Q | 4h |
+
+#### Frontend Tasks
+
+| # | Task | Owner | Estimate |
+|---|------|-------|----------|
+| 8.2.11 | Billing & Revenue page: جدول المعاملات + إجمالي إيرادات + export | Abd | 5h |
+| 8.2.12 | Token Audit page: استهلاك AI مفصّل per workspace/user | Abd | 4h |
+| 8.2.13 | AI Cost Report: تكلفة كل provider مقارنةً بالإيرادات | Abd | 4h |
+| 8.2.14 | Posts moderation page: كل المنشورات مع فلترة + عرض المحتوى | Abd | 4h |
+| 8.2.15 | Platform Health page: كل social accounts + حالة التوكن + تنبيهات المنتهية | Abd | 4h |
+| 8.2.16 | Broadcast Notification modal: إرسال push/email لشريحة أو لكل المستخدمين | Abd | 4h |
+| 8.2.17 | System Health page: Horizon queues، jobs failed، cache stats | Abd | 3h |
+| 8.2.18 | Settings page: token packages pricing، rate limits، maintenance mode toggle | Abd | 5h |
+
+---
+
+## Admin Dashboard — Screens Summary
+
+| الشاشة | الوصف |
+|--------|-------|
+| `/admin` | Overview — KPIs + charts |
+| `/admin/users` | قائمة المستخدمين + بحث وفلترة |
+| `/admin/users/{id}` | تفاصيل مستخدم + impersonate |
+| `/admin/workspaces` | كل الـ workspaces + suspend |
+| `/admin/billing` | المعاملات + إيرادات + export |
+| `/admin/tokens` | Token audit log per user |
+| `/admin/ai-costs` | تكلفة AI per provider |
+| `/admin/posts` | كل المنشورات (moderation) |
+| `/admin/platforms` | صحة الـ social accounts |
+| `/admin/notifications` | إرسال إشعارات broadcast |
+| `/admin/system` | Horizon + queues + cache |
+| `/admin/settings` | Token prices + feature flags |
+
+---
+
+## Data Model الإضافي
+
+```
+admin_logs      id, admin_id, action, target_type, target_id, payload JSON, ip, created_at
+feature_flags   id, key, value, description, updated_by, updated_at
+```
+
+**M8 Definition of Done:**
+- ✅ Super Admin يقدر يدير كل مستخدم وworkspace من لوحة واحدة
+- ✅ Impersonation يشتغل بأمان مع تسجيل كامل في admin_logs
+- ✅ تقارير الإيرادات والتوكنات قابلة للتصدير
+- ✅ إرسال broadcast notification لكل المستخدمين
+- ✅ Pest tests تغطي كل admin endpoints
+- ✅ لا يمكن الوصول لأي admin route بدون is_admin = true
+
+---
+
+## Post-Phase 0.5 Backlog (Phase 1 — Month 4-5)
 
 - AI image generation (DALL-E 3 / Imagen / Gemini)
 - Team members + RBAC (admin/editor/viewer)
