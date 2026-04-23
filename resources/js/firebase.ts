@@ -1,5 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getMessaging } from 'firebase/messaging';
+import { getMessaging, isSupported } from 'firebase/messaging';
+import type { Messaging } from 'firebase/messaging';
 
 const firebaseConfig = {
     apiKey:            'AIzaSyC-9dexx-m1_tyAQvQ0LJD3SvqVYMcBnNw',
@@ -12,4 +13,7 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
-export const messaging = getMessaging(app);
+// Messaging requires HTTPS + service worker support — resolve to null if unsupported
+export const messagingPromise: Promise<Messaging | null> = isSupported()
+    .then(ok => ok ? getMessaging(app) : null)
+    .catch(() => null);
