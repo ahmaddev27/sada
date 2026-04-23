@@ -156,6 +156,7 @@ class ContentGenerationService
 - اكتب دائماً من اليمين إلى اليسار
 - الهاشتاقات دائماً بالعربية ما لم تكن المنصة تستوجب الإنجليزية
 - CG-09: أضف 5-7 هاشتاقات ذات صلة لكل خيار
+- اكتب نصاً عادياً فقط — ممنوع منعاً باتاً استخدام أي تنسيق Markdown مثل ** أو __ أو * أو _ أو # أو ``` — المستخدم يرى النص كما هو مباشرةً
 SYSTEM;
     }
 
@@ -215,7 +216,7 @@ PROMPT;
             preg_match('/TAGS:\s*(.+)/u', $block, $tagsM);
 
             $title = trim($titleM[1] ?? 'خيار');
-            $body  = trim($bodyM[1] ?? $block);
+            $body  = $this->stripMarkdown(trim($bodyM[1] ?? $block));
             $body  = mb_substr($body, 0, $limit); // CG-11: enforce limit
 
             $tagsRaw = trim($tagsM[1] ?? '');
@@ -233,9 +234,25 @@ PROMPT;
         }
 
         if (empty($results)) {
-            $results[] = ['title' => 'الخيار ١', 'body' => $raw, 'tags' => [], 'char_count' => mb_strlen($raw)];
+            $results[] = ['title' => 'الخيار ١', 'body' => $this->stripMarkdown($raw), 'tags' => [], 'char_count' => mb_strlen($raw)];
         }
 
         return $results;
+    }
+
+    private function stripMarkdown(string $text): string
+    {
+        // **bold** و __bold__
+        $text = preg_replace('/\*\*(.+?)\*\*/su', '$1', $text) ?? $text;
+        $text = preg_replace('/__(.+?)__/su', '$1', $text) ?? $text;
+        // *italic* و _italic_  (single — not part of Arabic punctuation)
+        $text = preg_replace('/(?<!\w)\*([^*\n]+)\*(?!\w)/su', '$1', $text) ?? $text;
+        $text = preg_replace('/(?<!\w)_([^_\n]+)_(?!\w)/su', '$1', $text) ?? $text;
+        // ## headers
+        $text = preg_replace('/^#{1,6}\s+/mu', '', $text) ?? $text;
+        // `code`
+        $text = preg_replace('/`([^`]+)`/su', '$1', $text) ?? $text;
+
+        return trim($text);
     }
 }
