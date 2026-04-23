@@ -62,6 +62,7 @@ return [
     'meta' => [
         'client_id'     => env('META_APP_ID'),
         'client_secret' => env('META_APP_SECRET'),
+        'graph_version' => env('META_GRAPH_VERSION', 'v21.0'),
     ],
 
     // AUTH-02: Google OAuth via Socialite

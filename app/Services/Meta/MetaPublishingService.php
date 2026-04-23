@@ -11,7 +11,13 @@ use RuntimeException;
 
 class MetaPublishingService
 {
-    private const GRAPH_BASE = 'https://graph.facebook.com/v19.0';
+    private string $graphBase;
+
+    public function __construct()
+    {
+        $v = (string) config('services.meta.graph_version', 'v21.0');
+        $this->graphBase = "https://graph.facebook.com/{$v}";
+    }
 
     // SCH-04a: publish to Facebook page feed
     public function publishToFacebook(SocialAccount $account, Post $post): string
@@ -24,7 +30,7 @@ class MetaPublishingService
             $payload['link'] = $post->metadata['media_url'];
         }
 
-        $response = Http::get("{$this->base()}/{$pageId}/feed", array_merge($payload, [
+        $response = Http::post("{$this->base()}/{$pageId}/feed", array_merge($payload, [
             'access_token' => $account->access_token,
         ]))->throw()->json();
 
@@ -87,6 +93,6 @@ class MetaPublishingService
 
     private function base(): string
     {
-        return self::GRAPH_BASE;
+        return $this->graphBase;
     }
 }
