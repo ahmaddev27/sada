@@ -8,6 +8,12 @@ use App\Models\Concerns\BelongsToWorkspace;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property-read int         $engagement       Aggregated engagement (selectRaw)
+ * @property-read int         $total_reach      Aggregated reach (selectRaw)
+ * @property-read int         $total_impressions Aggregated impressions (selectRaw)
+ * @property-read int         $total_engagement Aggregated engagement (selectRaw)
+ */
 class AnalyticsSnapshot extends Model
 {
     use BelongsToWorkspace;

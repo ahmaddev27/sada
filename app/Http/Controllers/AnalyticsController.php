@@ -16,7 +16,7 @@ use Maatwebsite\Excel\Facades\Excel;
 class AnalyticsController extends Controller
 {
     // ANL-01, ANL-02, ANL-03, ANL-04
-    public function index(Request $request): Response
+    public function index(Request $request): Response|\Illuminate\Http\RedirectResponse
     {
         /** @var Workspace|null $workspace */
         $workspace = $request->attributes->get('current_workspace');

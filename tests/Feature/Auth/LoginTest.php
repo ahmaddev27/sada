@@ -4,6 +4,7 @@
 // AUTH-06: rate limiting
 
 use App\Models\User;
+use App\Models\Workspace;
 use Illuminate\Support\Facades\RateLimiter;
 
 // ── Login form ─────────────────────────────────────────────────────────────
@@ -25,6 +26,17 @@ it('يرفض الوصول المصادق لصفحة تسجيل الدخول', fu
 it('يُسجّل دخول المستخدم بالبريد الإلكتروني وكلمة المرور الصحيحَين', function () {
     $user = User::factory()->create(['password' => bcrypt('Password1')]);
 
+    // user has no workspace → redirected to onboarding
+    $this->post('/login', ['email' => $user->email, 'password' => 'Password1'])
+        ->assertRedirect(route('onboarding'));
+
+    $this->assertAuthenticatedAs($user);
+});
+
+it('يُعيد التوجيه للوحة التحكم إذا كان لديه مساحة عمل', function () {
+    $user = User::factory()->create(['password' => bcrypt('Password1')]);
+    Workspace::factory()->create(['user_id' => $user->id]);
+
     $this->post('/login', ['email' => $user->email, 'password' => 'Password1'])
         ->assertRedirect(route('dashboard'));
 
@@ -42,11 +54,12 @@ it('يُعيد توجيه المستخدم بعد تسجيل الدخول إلى
 it('يُطبّق remember me — AUTH-05', function () {
     $user = User::factory()->create(['password' => bcrypt('Password1')]);
 
+    // user has no workspace → redirected to onboarding
     $this->post('/login', [
         'email'    => $user->email,
         'password' => 'Password1',
         'remember' => true,
-    ])->assertRedirect(route('dashboard'));
+    ])->assertRedirect(route('onboarding'));
 
     $this->assertAuthenticatedAs($user);
 });
@@ -97,8 +110,9 @@ it('يُفرج عن القيد بعد تسجيل الدخول الناجح', fun
         900,
     );
 
+    // user has no workspace → redirected to onboarding
     $this->post('/login', ['email' => $user->email, 'password' => 'Password1'])
-        ->assertRedirect(route('dashboard'));
+        ->assertRedirect(route('onboarding'));
 });
 
 // ── Logout ──────────────────────────────────────────────────────────────────
