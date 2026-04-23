@@ -8,9 +8,17 @@ use Illuminate\Support\Facades\Http;
 
 class MetaOAuthService
 {
-    private const GRAPH_URL = 'https://graph.facebook.com/v21.0';
-    private const OAUTH_URL = 'https://www.facebook.com/v21.0/dialog/oauth';
-    private const TOKEN_URL = 'https://graph.facebook.com/v21.0/oauth/access_token';
+    private string $graphUrl;
+    private string $oauthUrl;
+    private string $tokenUrl;
+
+    public function __construct()
+    {
+        $v = (string) config('services.meta.graph_version', 'v21.0');
+        $this->graphUrl = "https://graph.facebook.com/{$v}";
+        $this->oauthUrl = "https://www.facebook.com/{$v}/dialog/oauth";
+        $this->tokenUrl = "https://graph.facebook.com/{$v}/oauth/access_token";
+    }
 
     // Required scopes for IG Business + Facebook Pages (MVP)
     private const SCOPES = [
@@ -32,7 +40,7 @@ class MetaOAuthService
             'state'         => $state,
         ]);
 
-        return self::OAUTH_URL . '?' . $params;
+        return $this->oauthUrl . '?' . $params;
     }
 
     /**
@@ -98,7 +106,7 @@ class MetaOAuthService
      */
     public function refreshToken(string $accessToken): array
     {
-        $response = Http::get(self::TOKEN_URL, [
+        $response = Http::get($this->tokenUrl, [
             'grant_type'        => 'fb_exchange_token',
             'client_id'         => config('services.meta.client_id'),
             'client_secret'     => config('services.meta.client_secret'),
@@ -114,7 +122,7 @@ class MetaOAuthService
     // CON-08: revoke token on Meta side
     public function revokeToken(string $accessToken, string $providerAccountId): void
     {
-        Http::delete(self::GRAPH_URL . "/{$providerAccountId}/permissions", [
+        Http::delete($this->graphUrl . "/{$providerAccountId}/permissions", [
             'access_token' => $accessToken,
         ]);
     }
@@ -122,7 +130,7 @@ class MetaOAuthService
     /** @return array{access_token: string, token_type: string} */
     private function fetchShortLivedToken(string $code): array
     {
-        return Http::get(self::TOKEN_URL, [
+        return Http::get($this->tokenUrl, [
             'client_id'     => config('services.meta.client_id'),
             'client_secret' => config('services.meta.client_secret'),
             'redirect_uri'  => $this->callbackUrl(),
@@ -133,7 +141,7 @@ class MetaOAuthService
     /** @return array{access_token: string, expires_in: int} */
     private function exchangeForLongLived(string $shortToken): array
     {
-        $response = Http::get(self::TOKEN_URL, [
+        $response = Http::get($this->tokenUrl, [
             'grant_type'        => 'fb_exchange_token',
             'client_id'         => config('services.meta.client_id'),
             'client_secret'     => config('services.meta.client_secret'),
@@ -152,7 +160,7 @@ class MetaOAuthService
      */
     private function graphGet(string $path, string $accessToken, array $params = []): array
     {
-        return Http::get(self::GRAPH_URL . $path, array_merge($params, [
+        return Http::get($this->graphUrl . $path, array_merge($params, [
             'access_token' => $accessToken,
         ]))->throw()->json();
     }

@@ -78,8 +78,7 @@ class Campaign extends Model
             'active'    => 'نشطة',
             'paused'    => 'موقوفة',
             'completed' => 'مكتملة',
-            'rejected'  => 'مرفوضة',
-            default     => 'غير معروف',
+            default     => 'مرفوضة',
         };
     }
 
@@ -91,8 +90,7 @@ class Campaign extends Model
             'engagement'   => 'التفاعل',
             'conversions'  => 'التحويلات',
             'app_installs' => 'تثبيت التطبيق',
-            'video_views'  => 'مشاهدات الفيديو',
-            default        => 'غير محدد',
+            default        => 'مشاهدات الفيديو',
         };
     }
 
@@ -100,8 +98,7 @@ class Campaign extends Model
     {
         return match ($this->platform) {
             'instagram' => 'انستجرام',
-            'facebook'  => 'فيسبوك',
-            default     => 'غير محدد',
+            default     => 'فيسبوك',
         };
     }
 }

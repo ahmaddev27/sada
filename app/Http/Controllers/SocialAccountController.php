@@ -133,8 +133,15 @@ class SocialAccountController extends Controller
 
         $count = count($igAccounts) + count($pages);
 
+        // If came from onboarding step 2, clear the flag and go to dashboard
+        if ($request->session()->get('onboarding_step') === 2) {
+            $request->session()->forget('onboarding_step');
+            return redirect()->route('dashboard')
+                ->with('flash.success', "تم ربط {$count} حساب بنجاح. مرحباً بك في صدى!");
+        }
+
         return redirect()->route('social.index')
-            ->with('flash', ['success' => "تم ربط {$count} حساب بنجاح."]);
+            ->with('flash.success', "تم ربط {$count} حساب بنجاح.");
     }
 
     // CON-08: disconnect a social account
@@ -147,7 +154,7 @@ class SocialAccountController extends Controller
         $action->execute($account);
 
         return redirect()->route('social.index')
-            ->with('flash', ['success' => "تم فصل حساب {$account->account_name} بنجاح."]);
+            ->with('flash.success', "تم فصل حساب {$account->account_name} بنجاح.");
     }
 
     // CON-07: manually trigger token refresh
@@ -160,11 +167,11 @@ class SocialAccountController extends Controller
         try {
             $action->execute($account);
             $msg = "تم تجديد رمز {$account->account_name} بنجاح.";
-            return redirect()->route('social.index')->with('flash', ['success' => $msg]);
+            return redirect()->route('social.index')->with('flash.success', $msg);
         } catch (\Throwable $e) {
             $account->markExpired();
             return redirect()->route('social.index')
-                ->with('flash', ['error' => 'فشل تجديد الرمز. يرجى إعادة الربط.']);
+                ->with('flash.error', 'فشل تجديد الرمز. يرجى إعادة الربط.');
         }
     }
 }

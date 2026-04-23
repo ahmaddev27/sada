@@ -12,6 +12,8 @@ use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SocialAccountController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -52,7 +54,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
         $request->fulfill();
-        return redirect()->route('dashboard');
+        $hasWorkspace = $request->user()->activeWorkspaces()->exists();
+        return redirect()->route($hasWorkspace ? 'dashboard' : 'onboarding');
     })->middleware('signed')->name('verification.verify');
 
     Route::post('/email/verification-notification', function (Request $request) {
@@ -66,6 +69,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 
 // ── Authenticated routes ───────────────────────────────────────────────────
 Route::middleware(['auth', 'verified'])->group(function () {
+    // WS-01: first-run onboarding
+    Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding');
+    Route::post('/onboarding/workspace', [OnboardingController::class, 'storeWorkspace'])->name('onboarding.workspace');
+    Route::post('/onboarding/skip', [OnboardingController::class, 'skip'])->name('onboarding.skip');
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // WS-01 → WS-05
@@ -117,6 +125,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile');
     Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
     Route::post('/settings/avatar', [SettingsController::class, 'updateAvatar'])->name('settings.avatar');
+
+    // Notifications
+    Route::post('/notifications/read', [NotificationController::class, 'markRead'])->name('notifications.read');
 
     // BIL-01→BIL-08: Billing
     Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');

@@ -52,6 +52,21 @@ class HandleInertiaRequests extends Middleware
                 'error'   => $request->session()->get('flash.error'),
                 'status'  => $request->session()->get('status'),
             ],
+
+            'notifications' => $request->user() ? [
+                'unread_count' => $request->user()->unreadNotifications()->count(),
+                'recent'       => $request->user()->notifications()
+                    ->latest()
+                    ->limit(10)
+                    ->get()
+                    ->map(fn ($n) => [
+                        'id'      => $n->id,
+                        'data'    => $n->data,
+                        'read_at' => $n->read_at?->toIso8601String(),
+                        'created_at' => $n->created_at->toIso8601String(),
+                    ])
+                    ->toArray(),
+            ] : null,
         ]);
     }
 }

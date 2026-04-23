@@ -27,8 +27,9 @@ beforeEach(function () {
 it('يُنشئ مستخدماً جديداً عبر Google OAuth', function () {
     Socialite::shouldReceive('driver->redirect')->andReturnSelf();
 
+    // New user has no workspace → redirects to onboarding
     $this->get('/auth/google/callback')
-        ->assertRedirect(route('dashboard'));
+        ->assertRedirect(route('onboarding'));
 
     $this->assertAuthenticated();
 
@@ -50,6 +51,13 @@ it('يُسجّل دخول مستخدم موجود مسبقاً بـ google_id', 
     $existing = User::factory()->create([
         'email'     => 'mohammed@gmail.com',
         'google_id' => '123456789',
+    ]);
+
+    // Existing user with a workspace → redirects to dashboard
+    $existing->workspaces()->create([
+        'name'            => 'متجر الاختبار',
+        'countries'       => ['sa'],
+        'default_dialect' => 'sa',
     ]);
 
     $this->get('/auth/google/callback')

@@ -145,16 +145,14 @@ it('يُعيد جدولة المنشور بتاريخ جديد', function () {
 
 // ── SCH-08: Delete ───────────────────────────────────────────
 
-it('يحذف المنشور ويُعيد JSON', function () {
+it('يحذف المنشور ويُعيد redirect', function () {
     [$user, $workspace] = makeSchedulingWorkspace();
 
     $post = Post::factory()->for($workspace)->create(['user_id' => $user->id]);
 
-    $response = $this->actingAs($user)
-        ->deleteJson("/posts/{$post->id}");
-
-    $response->assertOk()
-        ->assertJsonFragment(['message' => 'تم الحذف.']);
+    $this->actingAs($user)
+        ->delete("/posts/{$post->id}")
+        ->assertRedirect();
 
     $this->assertDatabaseMissing('posts', ['id' => $post->id]);
 });

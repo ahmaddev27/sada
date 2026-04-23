@@ -16,10 +16,14 @@ use Maatwebsite\Excel\Facades\Excel;
 class AnalyticsController extends Controller
 {
     // ANL-01, ANL-02, ANL-03, ANL-04
-    public function index(Request $request): Response
+    public function index(Request $request): Response|\Illuminate\Http\RedirectResponse
     {
-        /** @var Workspace $workspace */
+        /** @var Workspace|null $workspace */
         $workspace = $request->attributes->get('current_workspace');
+
+        if (! $workspace) {
+            return redirect()->route('onboarding');
+        }
 
         $filters = $this->resolveFilters($request);
 
@@ -51,10 +55,14 @@ class AnalyticsController extends Controller
     }
 
     // ANL-05: PDF export (bilingual via $lang param)
-    public function exportPdf(Request $request): \Illuminate\Http\Response
+    public function exportPdf(Request $request): \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
     {
-        /** @var Workspace $workspace */
+        /** @var Workspace|null $workspace */
         $workspace = $request->attributes->get('current_workspace');
+
+        if (! $workspace) {
+            return redirect()->route('onboarding');
+        }
 
         $lang    = in_array($request->query('lang'), ['ar', 'en', 'both']) ? $request->query('lang') : 'ar';
         $filters = $this->resolveFilters($request);
@@ -74,10 +82,14 @@ class AnalyticsController extends Controller
     }
 
     // ANL-06: CSV export (streamed, no temp file)
-    public function exportCsv(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function exportCsv(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse|\Illuminate\Http\RedirectResponse
     {
-        /** @var Workspace $workspace */
+        /** @var Workspace|null $workspace */
         $workspace = $request->attributes->get('current_workspace');
+
+        if (! $workspace) {
+            return redirect()->route('onboarding');
+        }
 
         $filters = $this->resolveFilters($request);
 

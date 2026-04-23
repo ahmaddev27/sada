@@ -42,6 +42,20 @@ export type PostStatus =
     | 'published'
     | 'failed';
 
+export interface AppNotification {
+    id: string;
+    data: {
+        type: string;
+        title: string;
+        body: string;
+        link?: string;
+        post_id?: number;
+        platform?: string;
+    };
+    read_at: string | null;
+    created_at: string;
+}
+
 export interface PageProps extends Record<string, unknown> {
     auth: {
         user: User | null;
@@ -54,6 +68,10 @@ export interface PageProps extends Record<string, unknown> {
         warning?: string;
         info?: string;
     };
+    notifications: {
+        unread_count: number;
+        recent: AppNotification[];
+    } | null;
 }
 
 // ADS-01 → ADS-11

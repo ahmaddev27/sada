@@ -23,6 +23,8 @@ class GoogleController extends Controller
 
         auth()->login($user, remember: true);
 
-        return redirect()->intended(route('dashboard'));
+        $hasWorkspace = $user->activeWorkspaces()->exists();
+
+        return redirect()->intended(route($hasWorkspace ? 'dashboard' : 'onboarding'));
     }
 }

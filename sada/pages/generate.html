@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>صدى — توليد محتوى</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Rubik:wght@400;500;600;700;800&family=Cairo:wght@400;500;600;700;800&family=Readex+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css"/>
+  <link rel="stylesheet" href="../styles/components.css"/>
+  <style>
+    .generate-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .input-panel {
+      position: sticky;
+      top: 80px;
+    }
+    .type-seg {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 4px;
+      background: var(--bg-muted);
+      border-radius: var(--radius-md);
+      gap: 3px;
+    }
+    .type-seg-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      padding: 10px 6px;
+      border-radius: calc(var(--radius-md) - 3px);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all var(--dur-fast);
+    }
+    .type-seg-btn:hover:not([data-active="true"]) {
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.4);
+    }
+    [data-theme="dark"] .type-seg-btn:hover:not([data-active="true"]) {
+      background: rgba(255,255,255,0.06);
+    }
+    .type-seg-btn[data-active="true"] {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+    .type-seg-btn .seg-icon {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      display: grid; place-items: center;
+      background: var(--bg-surface);
+      color: var(--text-muted);
+    }
+    .type-seg-btn[data-active="true"] .seg-icon {
+      background: var(--accent-soft);
+      color: var(--accent-text);
+    }
+    .dialect-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 12px;
+      background: var(--bg-muted);
+      border-radius: var(--radius-md);
+    }
+    .dialect-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 10px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--dur-fast);
+    }
+    .dialect-chip:hover { border-color: var(--border-strong); }
+    .dialect-chip[data-selected="true"] {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent-text);
+      font-weight: 600;
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 0;
+    }
+    .toggle-row-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .advanced-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--bg-muted);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: background var(--dur-fast);
+      width: 100%;
+      text-align: right;
+    }
+    .advanced-toggle:hover { background: var(--border-subtle); }
+    .advanced-toggle.open { border-radius: var(--radius-md) var(--radius-md) 0 0; }
+    .advanced-body {
+      padding: 14px;
+      background: var(--bg-muted);
+      border-radius: 0 0 var(--radius-md) var(--radius-md);
+      border-top: 1px solid var(--border-default);
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .advanced-body.open { display: flex; }
+    .btn-generate {
+      width: 100%;
+      height: 48px;
+      background: linear-gradient(135deg, var(--sada-500), var(--sada-400));
+      color: #fff;
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      border: none;
+      transition: all var(--dur-fast) var(--ease-out);
+      box-shadow: 0 2px 8px rgba(15,111,92,0.25);
+    }
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(15,111,92,0.35);
+    }
+    .btn-generate:active { transform: translateY(0); }
+    .generated-card {
+      border: 2px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      background: var(--bg-surface);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all var(--dur-fast);
+    }
+    .generated-card:hover { border-color: var(--border-default); box-shadow: var(--shadow-sm); }
+    .generated-card[data-selected="true"] { border-color: var(--accent); }
+    .gen-card-head {
+      padding: 12px 16px;
+      background: var(--bg-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      transition: background var(--dur-fast);
+    }
+    .generated-card[data-selected="true"] .gen-card-head { background: var(--accent-soft); }
+    .gen-card-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .gen-card-body {
+      padding: 14px 16px;
+      font-size: 13.5px;
+      line-height: 1.75;
+      color: var(--text-secondary);
+      white-space: pre-line;
+    }
+    .gen-card-tags {
+      padding: 0 16px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .hash-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      background: var(--accent-soft);
+      color: var(--accent-text);
+      border-radius: var(--radius-full);
+      font-weight: 600;
+    }
+    .insta-preview-wrap {
+      background: var(--bg-surface);
+      border-radius: 0;
+    }
+    .insta-preview-head {
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .insta-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+      display: grid; place-items: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .insta-handle { font-size: 13px; font-weight: 700; }
+    .insta-time { font-size: 11px; color: var(--text-muted); }
+    .insta-image-ph {
+      height: 200px;
+      background: linear-gradient(135deg, var(--sada-100), var(--sand-100));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-faint);
+      font-size: 13px;
+      gap: 8px;
+      flex-direction: column;
+    }
+    .insta-caption {
+      padding: 12px 14px;
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: var(--text-secondary);
+    }
+    .insta-actions {
+      padding: 8px 14px 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--text-secondary);
+    }
+    .action-bar {
+      display: flex;
+      gap: 10px;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .action-bar .btn { flex: 1; justify-content: center; }
+    .field-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+      display: block;
+    }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes generating-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.65; }
+    }
+  </style>
+</head>
+<body>
+
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2V10z"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.5 5.5l2.8 2.8M15.7 15.7l2.8 2.8M5.5 18.5l2.8-2.8M15.7 8.3l2.8-2.8"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+  <symbol id="i-megaphone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a2 2 0 0 0 2 2h2l6 4V5L7 9H5a2 2 0 0 0-2 2z"/><path d="M17 8a5 5 0 0 1 0 8"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5A9 9 0 1 1 11.5 3a7 7 0 0 0 9.5 9.5z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-credit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="1" fill="currentColor"/><circle cx="17.5" cy="10.5" r="1" fill="currentColor"/><circle cx="8.5" cy="7.5" r="1" fill="currentColor"/><circle cx="6.5" cy="12.5" r="1" fill="currentColor"/><path d="M12 22a10 10 0 1 1 10-10c0 2-1 3-3 3h-2a2 2 0 0 0-2 2c0 1 1 2 2 2a2 2 0 0 1 2 2 3 3 0 0 1-3 3z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+  <symbol id="i-chevrondown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-chevronleft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-chevronright" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-arrowleft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14l5-5 5 5"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l5 5 5-5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 1 0-7.8 7.8l1.1 1.1L12 21.3l7.8-7.8 1.1-1.1a5.5 5.5 0 0 0 0-7.8z"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></symbol>
+  <symbol id="i-instagram" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-facebook" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="M21 15l-5-5L5 21"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.1 6.3 7 1-5 4.9 1.2 6.9L12 17.8l-6.3 3.3 1.2-6.9L1.9 9.3l7-1L12 2z"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.5V19l4 2v-8.5L22 3z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+</svg>
+
+<div class="app" data-screen-label="sada-generate">
+  <div class="app-main">
+
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1">
+        <div class="topbar-title" style="min-width:0;flex:1">
+          <div class="crumbs">
+            <span>المحتوى</span>
+            <svg width="12" height="12" style="color:var(--text-faint)"><use href="#i-chevronleft"/></svg>
+            <span>جديد</span>
+          </div>
+          <h1>توليد محتوى</h1>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-search" style="display:flex;align-items:center;gap:8px;padding:0 12px;height:38px;background:var(--bg-muted);border-radius:10px;min-width:260px">
+          <svg width="16" height="16" style="color:var(--text-muted)"><use href="#i-search"/></svg>
+          <input placeholder="ابحث في كل شيء... (⌘K)" style="flex:1;background:transparent;border:none;outline:none;font-size:13px"/>
+        </div>
+        <button class="btn btn-icon btn-ghost" id="theme-btn">
+          <svg width="18" height="18"><use href="#i-moon"/></svg>
+        </button>
+        <button class="btn btn-icon btn-ghost" style="position:relative">
+          <svg width="18" height="18"><use href="#i-bell"/></svg>
+          <span style="position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--error);border:2px solid var(--bg-surface)"></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <div class="generate-grid">
+
+        <!-- RIGHT PANEL: Input (sticky) -->
+        <div class="input-panel">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3 style="margin:0;font-size:15px;font-weight:700">لوحة التوليد</h3>
+                <div class="sub" style="font-size:12px;color:var(--text-muted);margin-top:2px">اضبط المعايير ثم ولّد ٣ خيارات</div>
+              </div>
+              <span class="badge badge-brand" style="display:inline-flex;align-items:center;gap:5px">
+                <svg width="12" height="12"><use href="#i-zap"/></svg>
+                ٤٢ توكن
+              </span>
+            </div>
+
+            <div class="card-body" style="display:flex;flex-direction:column;gap:18px">
+
+              <!-- Content type segmented -->
+              <div>
+                <label class="field-label">نوع المحتوى</label>
+                <div class="type-seg" id="type-seg">
+                  <button class="type-seg-btn" data-active="true" data-type="post" onclick="selectType(this)">
+                    <div class="seg-icon"><svg width="15" height="15"><use href="#i-image"/></svg></div>
+                    منشور
+                  </button>
+                  <button class="type-seg-btn" data-type="reel" onclick="selectType(this)">
+                    <div class="seg-icon"><svg width="15" height="15"><use href="#i-zap"/></svg></div>
+                    ريل
+                  </button>
+                  <button class="type-seg-btn" data-type="story" onclick="selectType(this)">
+                    <div class="seg-icon"><svg width="15" height="15"><use href="#i-star"/></svg></div>
+                    قصة
+                  </button>
+                  <button class="type-seg-btn" data-type="ad" onclick="selectType(this)">
+                    <div class="seg-icon"><svg width="15" height="15"><use href="#i-megaphone"/></svg></div>
+                    إعلان
+                  </button>
+                </div>
+              </div>
+
+              <!-- Platform -->
+              <div>
+                <label class="field-label">المنصة</label>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button class="chip" data-selected="true" onclick="toggleChip(this)">
+                    <svg width="14" height="14"><use href="#i-instagram"/></svg>
+                    انستجرام
+                  </button>
+                  <button class="chip" onclick="toggleChip(this)">
+                    <svg width="14" height="14"><use href="#i-facebook"/></svg>
+                    فيسبوك
+                  </button>
+                </div>
+              </div>
+
+              <!-- Dialect -->
+              <div>
+                <label class="field-label">اللهجة</label>
+                <div class="dialect-strip" id="dialect-strip">
+                  <button class="dialect-chip" onclick="selectDialect(this)">الفصحى</button>
+                  <button class="dialect-chip" data-selected="true" onclick="selectDialect(this)">السعودية 🇸🇦</button>
+                  <button class="dialect-chip" onclick="selectDialect(this)">الإماراتية 🇦🇪</button>
+                  <button class="dialect-chip" onclick="selectDialect(this)">الكويتية 🇰🇼</button>
+                  <button class="dialect-chip" onclick="selectDialect(this)">القطرية 🇶🇦</button>
+                  <button class="dialect-chip" onclick="selectDialect(this)">البحرينية 🇧🇭</button>
+                  <button class="dialect-chip" onclick="selectDialect(this)">العُمانية 🇴🇲</button>
+                </div>
+              </div>
+
+              <!-- Toggle options -->
+              <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:0 14px">
+                <div class="toggle-row" style="border-bottom:1px solid var(--border-subtle)">
+                  <span class="toggle-row-label">استخدام هوية العلامة</span>
+                  <button class="toggle" data-on="true" onclick="this.dataset.on=this.dataset.on==='true'?'false':'true'"></button>
+                </div>
+                <div class="toggle-row">
+                  <span class="toggle-row-label">إيموجيات في المحتوى</span>
+                  <button class="toggle" data-on="true" onclick="this.dataset.on=this.dataset.on==='true'?'false':'true'"></button>
+                </div>
+              </div>
+
+              <!-- Prompt -->
+              <div>
+                <label class="field-label">فكرة المحتوى</label>
+                <textarea class="textarea" id="prompt-input" rows="4" style="resize:vertical;min-height:100px" oninput="updateCharCount(this)">خصم ٣٠٪ على كل المنتجات بمناسبة اليوم الوطني السعودي</textarea>
+                <div style="display:flex;justify-content:space-between;margin-top:5px">
+                  <span style="font-size:11px;color:var(--text-faint)" id="char-count">٥٥ / ٥٠٠</span>
+                  <span style="font-size:11px;color:var(--text-faint)">اكتب بأي لهجة أو وصف</span>
+                </div>
+              </div>
+
+              <!-- Advanced settings collapsible -->
+              <div>
+                <button class="advanced-toggle" id="adv-toggle" onclick="toggleAdvanced()">
+                  <span>إعدادات متقدمة</span>
+                  <svg width="16" height="16" id="adv-chev" style="transition:transform 0.2s;color:var(--text-muted)"><use href="#i-chevrondown"/></svg>
+                </button>
+                <div class="advanced-body" id="adv-body">
+                  <div class="input-group">
+                    <label class="input-label">طول المحتوى</label>
+                    <select class="select" style="height:38px;padding:0 12px">
+                      <option>قصير (٥٠–١٠٠ كلمة)</option>
+                      <option selected>متوسط (١٠٠–٢٠٠ كلمة)</option>
+                      <option>طويل (٢٠٠+ كلمة)</option>
+                    </select>
+                  </div>
+                  <div class="input-group">
+                    <label class="input-label">نبرة الصوت</label>
+                    <select class="select" style="height:38px;padding:0 12px">
+                      <option>حماسي</option>
+                      <option selected>ودود ومحترف</option>
+                      <option>رسمي</option>
+                      <option>فكاهي</option>
+                      <option>مُلهِم</option>
+                    </select>
+                  </div>
+                  <div class="input-group">
+                    <label class="input-label">دعوة للتصرف (CTA)</label>
+                    <input class="input" value="اضغطوا الرابط في البايو" style="height:38px"/>
+                  </div>
+                  <div class="input-group">
+                    <label class="input-label">هاشتاقات مخصصة</label>
+                    <input class="input" placeholder="أضف هاشتاق مخصص..." style="height:38px"/>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Generate button -->
+              <button class="btn-generate" id="gen-btn" onclick="triggerGenerate()">
+                <svg width="20" height="20" id="gen-icon"><use href="#i-sparkle"/></svg>
+                <span id="gen-label">ولّد المحتوى (٣ خيارات)</span>
+              </button>
+
+            </div><!-- /card-body -->
+          </div><!-- /card -->
+        </div><!-- /input-panel -->
+
+        <!-- LEFT PANEL: Output -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+
+          <!-- Output card -->
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3 style="margin:0;font-size:15px;font-weight:700">٣ خيارات مولّدة · السعودية</h3>
+                <div class="sub" style="font-size:12px;color:var(--text-muted);margin-top:2px">اختر الخيار المناسب ثم انشره أو جدوله</div>
+              </div>
+              <button class="btn btn-secondary btn-sm" style="gap:6px">
+                <svg width="13" height="13"><use href="#i-sparkle"/></svg>
+                ولّد المزيد
+              </button>
+            </div>
+
+            <div class="card-body" style="display:flex;flex-direction:column;gap:10px;padding-bottom:16px">
+
+              <!-- Card 1: selected -->
+              <div class="generated-card" data-selected="true" data-card-id="1" onclick="selectCard(this)">
+                <div class="gen-card-head">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="width:20px;height:20px;border-radius:50%;background:var(--accent);display:grid;place-items:center;flex-shrink:0">
+                      <svg width="11" height="11" style="color:#fff"><use href="#i-check"/></svg>
+                    </div>
+                    <span class="gen-card-title">الخيار ١ · حماسي</span>
+                    <span class="badge badge-brand" style="font-size:11px;padding:2px 7px">مختار</span>
+                  </div>
+                  <div style="display:flex;gap:4px">
+                    <button class="btn btn-icon btn-ghost btn-sm" title="نسخ" onclick="event.stopPropagation()">
+                      <svg width="13" height="13"><use href="#i-copy"/></svg>
+                    </button>
+                    <button class="btn btn-icon btn-ghost btn-sm" title="تعديل" onclick="event.stopPropagation()">
+                      <svg width="13" height="13"><use href="#i-edit"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="gen-card-body">بمناسبة اليوم الوطني السعودي، عطيناكم ٣٠٪ خصم على كل المنتجات! 🇸🇦
+فرصة ما تتعوّض — اختاروا اللي يعجبكم والتوصيل على حسابنا.
+
+اضغطوا الرابط في البايو ولا تفوّتون!</div>
+                <div class="gen-card-tags">
+                  <span class="hash-tag">#اليوم_الوطني_السعودي</span>
+                  <span class="hash-tag">#متجر_أنيق</span>
+                  <span class="hash-tag">#ترا_الفرصة_ذهبية</span>
+                </div>
+              </div>
+
+              <!-- Card 2 -->
+              <div class="generated-card" data-card-id="2" onclick="selectCard(this)">
+                <div class="gen-card-head">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div class="card-num-badge" style="width:20px;height:20px;border-radius:50%;background:var(--bg-muted);border:1.5px solid var(--border-default);display:grid;place-items:center;flex-shrink:0">
+                      <span style="font-size:10px;font-weight:800;color:var(--text-muted)">٢</span>
+                    </div>
+                    <span class="gen-card-title">الخيار ٢ · دافئ وعاطفي</span>
+                  </div>
+                  <div style="display:flex;gap:4px">
+                    <button class="btn btn-icon btn-ghost btn-sm" title="نسخ" onclick="event.stopPropagation()">
+                      <svg width="13" height="13"><use href="#i-copy"/></svg>
+                    </button>
+                    <button class="btn btn-icon btn-ghost btn-sm" title="تعديل" onclick="event.stopPropagation()">
+                      <svg width="13" height="13"><use href="#i-edit"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="gen-card-body">في يوم يجمعنا الفخر والوطن 🤍💚
+أهديناكم هدية صغيرة تعبيراً عن شكرنا — ٣٠٪ خصم اليوم فقط.
+
+لأنكم تستاهلون أحلى شيء 🛍️</div>
+                <div class="gen-card-tags">
+                  <span class="hash-tag">#اليوم_الوطني</span>
+                  <span class="hash-tag">#خصم_اليوم_الوطني</span>
+                  <span class="hash-tag">#متجر_أنيق</span>
+                </div>
+              </div>
+
+              <!-- Card 3 -->
+              <div class="generated-card" data-card-id="3" onclick="selectCard(this)">
+                <div class="gen-card-head">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div class="card-num-badge" style="width:20px;height:20px;border-radius:50%;background:var(--bg-muted);border:1.5px solid var(--border-default);display:grid;place-items:center;flex-shrink:0">
+                      <span style="font-size:10px;font-weight:800;color:var(--text-muted)">٣</span>
+                    </div>
+                    <span class="gen-card-title">الخيار ٣ · قصير ومركّز</span>
+                  </div>
+                  <div style="display:flex;gap:4px">
+                    <button class="btn btn-icon btn-ghost btn-sm" title="نسخ" onclick="event.stopPropagation()">
+                      <svg width="13" height="13"><use href="#i-copy"/></svg>
+                    </button>
+                    <button class="btn btn-icon btn-ghost btn-sm" title="تعديل" onclick="event.stopPropagation()">
+                      <svg width="13" height="13"><use href="#i-edit"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="gen-card-body">٩٣ عام ومتجرنا معاكم 🇸🇦
+٣٠٪ على كل شيء — اليوم بس.
+الرابط في البايو ⬆️</div>
+                <div class="gen-card-tags">
+                  <span class="hash-tag">#٩٣</span>
+                  <span class="hash-tag">#اليوم_الوطني_السعودي</span>
+                  <span class="hash-tag">#عرض_محدود</span>
+                </div>
+              </div>
+
+            </div>
+          </div><!-- /generated options card -->
+
+          <!-- Instagram preview card -->
+          <div class="card" id="preview-card">
+            <div class="card-head">
+              <div>
+                <h3 style="margin:0;font-size:15px;font-weight:700">معاينة انستجرام</h3>
+                <div class="sub" style="font-size:12px;color:var(--text-muted);margin-top:2px">كيف سيظهر المنشور للمتابعين</div>
+              </div>
+              <span class="badge badge-neutral" style="display:inline-flex;align-items:center;gap:5px">
+                <svg width="12" height="12"><use href="#i-instagram"/></svg>
+                Instagram
+              </span>
+            </div>
+
+            <div class="insta-preview-wrap">
+              <div class="insta-preview-head">
+                <div class="insta-avatar">أن</div>
+                <div style="flex:1;min-width:0">
+                  <div class="insta-handle">متجر_أنيق</div>
+                  <div class="insta-time">للتو · انستجرام</div>
+                </div>
+                <svg width="18" height="18" style="color:var(--text-muted)"><use href="#i-settings"/></svg>
+              </div>
+              <div class="insta-image-ph">
+                <svg width="36" height="36" style="color:var(--border-default)"><use href="#i-image"/></svg>
+                <span>صورة المنشور</span>
+              </div>
+              <div class="insta-caption" id="preview-caption">
+                بمناسبة اليوم الوطني السعودي، عطيناكم ٣٠٪ خصم على كل المنتجات! 🇸🇦<br>
+                فرصة ما تتعوّض — اختاروا اللي يعجبكم والتوصيل على حسابنا.<br><br>
+                اضغطوا الرابط في البايو ولا تفوّتون!<br><br>
+                <span style="color:var(--accent-text)">#اليوم_الوطني_السعودي #متجر_أنيق #ترا_الفرصة_ذهبية</span>
+              </div>
+              <div class="insta-actions">
+                <svg width="22" height="22"><use href="#i-heart"/></svg>
+                <svg width="22" height="22"><use href="#i-message"/></svg>
+                <svg width="22" height="22"><use href="#i-send"/></svg>
+                <div style="flex:1"></div>
+                <span style="font-size:12px;color:var(--text-muted)">٠ إعجاب</span>
+              </div>
+            </div>
+
+            <div class="action-bar">
+              <button class="btn btn-secondary" style="gap:7px">
+                <svg width="15" height="15"><use href="#i-download"/></svg>
+                حفظ كمسودة
+              </button>
+              <button class="btn btn-secondary" style="gap:7px">
+                <svg width="15" height="15"><use href="#i-calendar"/></svg>
+                جدولة
+              </button>
+              <button class="btn btn-primary" style="gap:7px">
+                <svg width="15" height="15"><use href="#i-send"/></svg>
+                نشر فوري
+              </button>
+            </div>
+          </div><!-- /preview card -->
+
+        </div><!-- /output col -->
+
+      </div><!-- /generate-grid -->
+    </div><!-- /content-area -->
+  </div><!-- /app-main -->
+
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-logo"><div class="mark">ص</div><span>صدى</span></div>
+      <button class="workspace-picker">
+        <div class="avatar">أن</div>
+        <div class="ws-info"><div class="ws-name">متجر أنيق</div><div class="ws-plan">Growth · السعودية</div></div>
+        <svg width="14" height="14" class="chev"><use href="#i-chevrondown"/></svg>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">العمل</div>
+      <a href="home.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-home"/></svg><span>الرئيسية</span>
+      </a>
+      <a href="generate.html" class="nav-item" data-active="true">
+        <svg width="18" height="18" class="icon"><use href="#i-sparkle"/></svg><span>توليد محتوى</span><span class="nav-badge">جديد</span>
+      </a>
+      <a href="calendar.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-calendar"/></svg><span>التقويم</span>
+      </a>
+      <a href="history.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-clock"/></svg><span>سجل المحتوى</span>
+      </a>
+      <a href="campaigns.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-megaphone"/></svg><span>الحملات الإعلانية</span>
+      </a>
+      <a href="seasonal.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-moon"/></svg><span>المواسم</span>
+      </a>
+      <a href="analytics.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-chart"/></svg><span>التحليلات</span>
+      </a>
+      <div class="nav-section" style="margin-top:16px">الحساب</div>
+      <a href="billing.html" class="nav-item"><svg width="18" height="18" class="icon"><use href="#i-credit"/></svg><span>الفوترة</span></a>
+      <a href="billing.html" class="nav-item"><svg width="18" height="18" class="icon"><use href="#i-settings"/></svg><span>الإعدادات</span></a>
+      <a href="components.html" class="nav-item"><svg width="18" height="18" class="icon"><use href="#i-palette"/></svg><span>مكتبة المكونات</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="token-meter">
+        <div class="token-meter-head"><span class="label">التوكنز</span><span class="val">1,240 / 2,000</span></div>
+        <div class="token-bar"><div class="token-bar-fill" style="width:62%"></div></div>
+        <button class="token-refill">شحن المزيد</button>
+      </div>
+      <div class="user-chip">
+        <div class="avatar">أح</div>
+        <div class="user-info"><div class="user-name">أحمد العتيبي</div><div class="user-role">مالك · Admin</div></div>
+        <svg width="14" height="14"><use href="#i-chevrondown"/></svg>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+// Theme toggle
+document.getElementById('theme-btn').addEventListener('click', () => {
+  const html = document.documentElement;
+  html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+});
+
+// Content type selection
+function selectType(btn) {
+  document.querySelectorAll('.type-seg-btn').forEach(b => b.removeAttribute('data-active'));
+  btn.setAttribute('data-active', 'true');
+}
+
+// Platform chip toggle
+function toggleChip(chip) {
+  chip.dataset.selected = chip.dataset.selected === 'true' ? 'false' : 'true';
+}
+
+// Dialect selection (single-select)
+function selectDialect(chip) {
+  document.querySelectorAll('.dialect-chip').forEach(c => c.removeAttribute('data-selected'));
+  chip.setAttribute('data-selected', 'true');
+}
+
+// Advanced settings panel
+function toggleAdvanced() {
+  const body = document.getElementById('adv-body');
+  const chev = document.getElementById('adv-chev');
+  const btn = document.getElementById('adv-toggle');
+  const isOpen = body.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
+  chev.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+// Card content data
+const cardData = {
+  '1': {
+    body: 'بمناسبة اليوم الوطني السعودي، عطيناكم ٣٠٪ خصم على كل المنتجات! 🇸🇦<br>فرصة ما تتعوّض — اختاروا اللي يعجبكم والتوصيل على حسابنا.<br><br>اضغطوا الرابط في البايو ولا تفوّتون!',
+    tags: '#اليوم_الوطني_السعودي #متجر_أنيق #ترا_الفرصة_ذهبية'
+  },
+  '2': {
+    body: 'في يوم يجمعنا الفخر والوطن 🤍💚<br>أهديناكم هدية صغيرة تعبيراً عن شكرنا — ٣٠٪ خصم اليوم فقط.<br><br>لأنكم تستاهلون أحلى شيء 🛍️',
+    tags: '#اليوم_الوطني #خصم_اليوم_الوطني #متجر_أنيق'
+  },
+  '3': {
+    body: '٩٣ عام ومتجرنا معاكم 🇸🇦<br>٣٠٪ على كل شيء — اليوم بس.<br>الرابط في البايو ⬆️',
+    tags: '#٩٣ #اليوم_الوطني_السعودي #عرض_محدود'
+  }
+};
+
+function selectCard(card) {
+  // Remove all selections
+  document.querySelectorAll('.generated-card').forEach(c => {
+    c.removeAttribute('data-selected');
+    // Remove selected badge from head
+    const badge = c.querySelector('.gen-card-head .badge');
+    if (badge) badge.remove();
+    // Reset indicator
+    const indicator = c.querySelector('.gen-card-head > div > div:first-child');
+    if (indicator && !indicator.classList.contains('card-num-badge')) {
+      // It was a check mark indicator — convert back to number badge
+      const id = c.dataset.cardId;
+      const nums = {'1':'١','2':'٢','3':'٣'};
+      indicator.className = 'card-num-badge';
+      indicator.style.cssText = 'width:20px;height:20px;border-radius:50%;background:var(--bg-muted);border:1.5px solid var(--border-default);display:grid;place-items:center;flex-shrink:0';
+      indicator.innerHTML = `<span style="font-size:10px;font-weight:800;color:var(--text-muted)">${nums[id]}</span>`;
+    }
+  });
+
+  // Select this card
+  card.setAttribute('data-selected', 'true');
+
+  // Update indicator to checkmark
+  const indicator = card.querySelector('.gen-card-head > div > div:first-child');
+  if (indicator) {
+    indicator.style.cssText = 'width:20px;height:20px;border-radius:50%;background:var(--accent);display:grid;place-items:center;flex-shrink:0';
+    indicator.innerHTML = `<svg width="11" height="11" style="color:#fff"><use href="#i-check"/></svg>`;
+  }
+
+  // Add selected badge
+  const title = card.querySelector('.gen-card-title');
+  if (title && !title.nextElementSibling?.classList.contains('badge')) {
+    const badge = document.createElement('span');
+    badge.className = 'badge badge-brand';
+    badge.style.cssText = 'font-size:11px;padding:2px 7px';
+    badge.textContent = 'مختار';
+    title.after(badge);
+  }
+
+  // Update preview
+  const id = card.dataset.cardId;
+  const data = cardData[id];
+  if (data) {
+    document.getElementById('preview-caption').innerHTML =
+      data.body + '<br><br><span style="color:var(--accent-text)">' + data.tags + '</span>';
+  }
+}
+
+// Char counter
+function updateCharCount(textarea) {
+  const count = textarea.value.length;
+  document.getElementById('char-count').textContent = count + ' / ٥٠٠';
+}
+
+// Generate button animation
+function triggerGenerate() {
+  const btn = document.getElementById('gen-btn');
+  const label = document.getElementById('gen-label');
+  const icon = document.getElementById('gen-icon');
+  btn.disabled = true;
+  btn.style.opacity = '0.8';
+  icon.style.animation = 'spin 1s linear infinite';
+  label.textContent = 'جاري التوليد...';
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    icon.style.animation = '';
+    label.textContent = 'ولّد المحتوى (٣ خيارات)';
+  }, 2200);
+}
+</script>
+</body>
+</html>
