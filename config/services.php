@@ -65,6 +65,24 @@ return [
         'graph_version' => env('META_GRAPH_VERSION', 'v21.0'),
     ],
 
+    // CON-11: TikTok OAuth + Content Posting API
+    'tiktok' => [
+        'client_key'    => env('TIKTOK_CLIENT_KEY'),
+        'client_secret' => env('TIKTOK_CLIENT_SECRET'),
+    ],
+
+    // CON-12: Snapchat Marketing API (ads only — no organic publishing)
+    'snapchat' => [
+        'client_id'     => env('SNAPCHAT_CLIENT_ID'),
+        'client_secret' => env('SNAPCHAT_CLIENT_SECRET'),
+    ],
+
+    // CON-13: X (Twitter) OAuth 2.0 with PKCE — requires Basic tier ($200/mo)
+    'x' => [
+        'client_id'     => env('X_CLIENT_ID'),
+        'client_secret' => env('X_CLIENT_SECRET'),
+    ],
+
     // AUTH-02: Google OAuth via Socialite
     'google' => [
         'client_id'     => env('GOOGLE_CLIENT_ID'),

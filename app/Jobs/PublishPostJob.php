@@ -8,7 +8,7 @@ use App\Models\Post;
 use App\Models\SocialAccount;
 use App\Notifications\PostFailedNotification;
 use App\Notifications\PostPublishedNotification;
-use App\Services\Meta\MetaPublishingService;
+use App\Services\Publishing\PublishingRouter;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -31,7 +31,7 @@ class PublishPostJob implements ShouldQueue
         public readonly Post $post,
     ) {}
 
-    public function handle(MetaPublishingService $publisher): void
+    public function handle(PublishingRouter $publisher): void
     {
         // Re-fetch fresh state — post may have been edited since dispatch
         $post = $this->post->fresh();
