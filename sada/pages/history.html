@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>صدى — سجل المحتوى</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Rubik:wght@400;500;600;700;800&family=Cairo:wght@400;500;600;700;800&family=Readex+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css"/>
+  <link rel="stylesheet" href="../styles/components.css"/>
+  <style>
+    /* KPI strip */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 1300px) {
+      .kpi-strip { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      height: 36px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      min-width: 220px;
+      flex: 1;
+      max-width: 320px;
+    }
+    .filter-search input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+    .filter-search input::placeholder { color: var(--text-faint); }
+    .filter-search:focus-within {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-focus);
+    }
+    .filter-select-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 12px;
+      height: 36px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all var(--dur-fast);
+    }
+    .filter-select-btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
+    .view-toggle {
+      display: inline-flex;
+      padding: 2px;
+      background: var(--bg-muted);
+      border-radius: var(--radius-sm);
+      gap: 1px;
+    }
+    .view-toggle button {
+      width: 32px; height: 32px;
+      border-radius: calc(var(--radius-sm) - 2px);
+      display: grid; place-items: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all var(--dur-fast);
+    }
+    .view-toggle button[data-active="true"] {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-xs);
+    }
+    .view-toggle button:hover:not([data-active="true"]) { color: var(--text-primary); }
+
+    /* Table */
+    .history-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .history-table th {
+      padding: 10px 14px;
+      text-align: right;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--bg-muted);
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    .history-table th:hover { color: var(--text-secondary); }
+    .history-table th.sorted { color: var(--accent-text); }
+    .history-table th .sort-icon {
+      display: inline-block;
+      margin-right: 4px;
+      vertical-align: middle;
+      opacity: 0.5;
+    }
+    .history-table th.sorted .sort-icon { opacity: 1; }
+    .history-table tbody tr {
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background var(--dur-fast);
+      cursor: pointer;
+    }
+    .history-table tbody tr:hover { background: var(--bg-muted); }
+    .history-table tbody tr[data-selected="true"] { background: var(--accent-soft); }
+    .history-table tbody tr:last-child { border-bottom: none; }
+    .history-table td {
+      padding: 13px 14px;
+      vertical-align: middle;
+      color: var(--text-secondary);
+    }
+    .history-table td:first-child { padding-right: 16px; }
+    .history-table td:last-child { padding-left: 12px; }
+
+    /* Checkbox cell */
+    .row-check {
+      width: 15px; height: 15px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* Content title cell */
+    .content-title-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .content-title-main {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .content-title-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Type badge */
+    .type-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .type-pill.post { background: var(--accent-soft); color: var(--accent-text); }
+    .type-pill.story { background: var(--info-bg); color: var(--info); }
+    .type-pill.reel { background: #f5e6ff; color: #8B5CF6; }
+    [data-theme="dark"] .type-pill.reel { background: #2D1B4A; color: #A78BFA; }
+    .type-pill.ad { background: var(--warning-bg); color: var(--warning); }
+
+    /* Platform badge */
+    .platform-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    /* Status badge */
+    .status-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .status-dot::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .status-dot.published::before { background: var(--success); }
+    .status-dot.published { color: var(--success); }
+    .status-dot.scheduled::before { background: var(--info); }
+    .status-dot.scheduled { color: var(--info); }
+    .status-dot.draft::before { background: var(--warning); }
+    .status-dot.draft { color: var(--warning); }
+    .status-dot.failed::before { background: var(--error); }
+    .status-dot.failed { color: var(--error); }
+
+    /* Metric cell */
+    .metric-val {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .metric-dash {
+      color: var(--text-faint);
+      font-size: 13px;
+    }
+
+    /* Row actions */
+    .row-actions {
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity var(--dur-fast);
+    }
+    .history-table tbody tr:hover .row-actions { opacity: 1; }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .pagination-info {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .pagination-btns {
+      display: flex;
+      gap: 4px;
+    }
+    .page-btn {
+      min-width: 32px; height: 32px;
+      padding: 0 8px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: grid; place-items: center;
+      transition: all var(--dur-fast);
+    }
+    .page-btn:hover { background: var(--bg-muted); border-color: var(--border-subtle); }
+    .page-btn[data-active="true"] {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2V10z"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.5 5.5l2.8 2.8M15.7 15.7l2.8 2.8M5.5 18.5l2.8-2.8M15.7 8.3l2.8-2.8"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+  <symbol id="i-megaphone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a2 2 0 0 0 2 2h2l6 4V5L7 9H5a2 2 0 0 0-2 2z"/><path d="M17 8a5 5 0 0 1 0 8"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5A9 9 0 1 1 11.5 3a7 7 0 0 0 9.5 9.5z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-credit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="1" fill="currentColor"/><circle cx="17.5" cy="10.5" r="1" fill="currentColor"/><circle cx="8.5" cy="7.5" r="1" fill="currentColor"/><circle cx="6.5" cy="12.5" r="1" fill="currentColor"/><path d="M12 22a10 10 0 1 1 10-10c0 2-1 3-3 3h-2a2 2 0 0 0-2 2c0 1 1 2 2 2a2 2 0 0 1 2 2 3 3 0 0 1-3 3z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+  <symbol id="i-chevrondown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-chevronleft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-chevronright" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-arrowleft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14l5-5 5 5"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l5 5 5-5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-instagram" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-facebook" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.5V19l4 2v-8.5L22 3z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-tiktok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></symbol>
+</svg>
+
+<div class="app" data-screen-label="sada-history">
+  <div class="app-main">
+
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1">
+        <div class="topbar-title" style="min-width:0;flex:1">
+          <div class="crumbs">
+            <span>المحتوى</span>
+            <svg width="12" height="12" style="color:var(--text-faint)"><use href="#i-chevronleft"/></svg>
+            <span>الأرشيف</span>
+          </div>
+          <h1>سجل المحتوى</h1>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-search" style="display:flex;align-items:center;gap:8px;padding:0 12px;height:38px;background:var(--bg-muted);border-radius:10px;min-width:260px">
+          <svg width="16" height="16" style="color:var(--text-muted)"><use href="#i-search"/></svg>
+          <input placeholder="ابحث في كل شيء... (⌘K)" style="flex:1;background:transparent;border:none;outline:none;font-size:13px"/>
+        </div>
+        <button class="btn btn-icon btn-ghost" id="theme-btn">
+          <svg width="18" height="18"><use href="#i-moon"/></svg>
+        </button>
+        <button class="btn btn-icon btn-ghost" style="position:relative">
+          <svg width="18" height="18"><use href="#i-bell"/></svg>
+          <span style="position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--error);border:2px solid var(--bg-surface)"></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <div style="display:flex;flex-direction:column;gap:20px">
+
+        <!-- Page header row -->
+        <div class="section-head" style="align-items:center">
+          <div>
+            <h2 style="margin:0;font-size:20px;font-weight:800;letter-spacing:-0.01em">سجل المحتوى</h2>
+            <p style="margin:4px 0 0;font-size:13px;color:var(--text-muted)">كل المحتوى الذي ولّدته وأرشفته في مكان واحد</p>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-secondary" style="gap:7px">
+              <svg width="15" height="15"><use href="#i-download"/></svg>
+              تصدير CSV
+            </button>
+            <a href="generate.html" class="btn btn-primary" style="gap:7px;text-decoration:none">
+              <svg width="15" height="15"><use href="#i-sparkle"/></svg>
+              توليد محتوى
+            </a>
+          </div>
+        </div>
+
+        <!-- KPI strip -->
+        <div class="kpi-strip">
+          <div class="kpi-card">
+            <div class="kpi-label">إجمالي المحتوى</div>
+            <div class="kpi-value">١٥</div>
+            <div class="kpi-delta delta-up">
+              <svg width="13" height="13"><use href="#i-up"/></svg>
+              +٣ هذا الشهر
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">
+              <span style="width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block"></span>
+              منشور
+            </div>
+            <div class="kpi-value" style="color:var(--success)">١٠</div>
+            <div class="kpi-delta" style="color:var(--text-muted);font-size:11px">٦٧٪ من الإجمالي</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">
+              <span style="width:7px;height:7px;border-radius:50%;background:var(--info);display:inline-block"></span>
+              مجدول
+            </div>
+            <div class="kpi-value" style="color:var(--info)">٢</div>
+            <div class="kpi-delta" style="color:var(--text-muted);font-size:11px">قيد الانتظار</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">
+              <span style="width:7px;height:7px;border-radius:50%;background:var(--warning);display:inline-block"></span>
+              مسودات
+            </div>
+            <div class="kpi-value" style="color:var(--warning)">٢</div>
+            <div class="kpi-delta" style="color:var(--text-muted);font-size:11px">غير منشورة</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">
+              <svg width="12" height="12"><use href="#i-eye"/></svg>
+              انطباعات
+            </div>
+            <div class="kpi-value">383K</div>
+            <div class="kpi-delta delta-up">
+              <svg width="13" height="13"><use href="#i-up"/></svg>
+              +١٢٪
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">
+              <svg width="12" height="12"><use href="#i-zap"/></svg>
+              توكنز مستهلكة
+            </div>
+            <div class="kpi-value">٦٨٧</div>
+            <div class="kpi-delta" style="color:var(--text-muted);font-size:11px">من ٢٬٠٠٠</div>
+          </div>
+        </div>
+
+        <!-- Filter bar card -->
+        <div class="card">
+          <div class="card-body" style="padding:14px">
+            <div class="filter-bar">
+              <!-- Search -->
+              <div class="filter-search">
+                <svg width="14" height="14" style="color:var(--text-muted);flex-shrink:0"><use href="#i-search"/></svg>
+                <input placeholder="ابحث بالعنوان أو المحتوى..." id="table-search" oninput="filterTable()"/>
+              </div>
+
+              <!-- Status -->
+              <button class="filter-select-btn" id="status-filter-btn" onclick="cycleStatusFilter()">
+                <span id="status-filter-label">كل الحالات</span>
+                <svg width="14" height="14" style="color:var(--text-faint)"><use href="#i-chevrondown"/></svg>
+              </button>
+
+              <!-- Platform -->
+              <button class="filter-select-btn">
+                <svg width="13" height="13"><use href="#i-instagram"/></svg>
+                المنصة
+                <svg width="14" height="14" style="color:var(--text-faint)"><use href="#i-chevrondown"/></svg>
+              </button>
+
+              <!-- Type -->
+              <button class="filter-select-btn">
+                <svg width="13" height="13"><use href="#i-filter"/></svg>
+                النوع
+                <svg width="14" height="14" style="color:var(--text-faint)"><use href="#i-chevrondown"/></svg>
+              </button>
+
+              <!-- Campaign -->
+              <button class="filter-select-btn">
+                <svg width="13" height="13"><use href="#i-megaphone"/></svg>
+                الحملة
+                <svg width="14" height="14" style="color:var(--text-faint)"><use href="#i-chevrondown"/></svg>
+              </button>
+
+              <!-- Date range -->
+              <button class="filter-select-btn">
+                <svg width="13" height="13"><use href="#i-calendar"/></svg>
+                النطاق الزمني
+                <svg width="14" height="14" style="color:var(--text-faint)"><use href="#i-chevrondown"/></svg>
+              </button>
+
+              <div style="flex:1"></div>
+
+              <!-- View toggle -->
+              <div class="view-toggle">
+                <button data-active="true" title="جدول" onclick="setView(this,'table')">
+                  <svg width="14" height="14"><use href="#i-list"/></svg>
+                </button>
+                <button title="شبكة" onclick="setView(this,'grid')">
+                  <svg width="14" height="14"><use href="#i-grid"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table card -->
+        <div class="card" style="overflow:hidden">
+
+          <!-- Bulk actions bar (hidden by default) -->
+          <div id="bulk-bar" style="display:none;align-items:center;gap:12px;padding:10px 16px;background:var(--accent-soft);border-bottom:1px solid var(--border-brand)">
+            <span style="font-size:13px;font-weight:600;color:var(--accent-text)" id="bulk-count">٠ محدد</span>
+            <div style="flex:1"></div>
+            <button class="btn btn-sm btn-secondary" style="gap:5px;font-size:12px">
+              <svg width="13" height="13"><use href="#i-download"/></svg>
+              تصدير
+            </button>
+            <button class="btn btn-sm btn-secondary" style="gap:5px;font-size:12px">
+              <svg width="13" height="13"><use href="#i-edit"/></svg>
+              تعديل جماعي
+            </button>
+            <button class="btn btn-sm" style="gap:5px;font-size:12px;background:var(--error-bg);color:var(--error);border:1px solid transparent">
+              <svg width="13" height="13"><use href="#i-trash"/></svg>
+              حذف
+            </button>
+          </div>
+
+          <div class="history-table-wrap">
+            <table class="history-table" id="history-table">
+              <thead>
+                <tr>
+                  <th style="width:40px;text-align:center">
+                    <input type="checkbox" id="select-all" class="row-check" onchange="selectAll(this)"/>
+                  </th>
+                  <th class="sorted" style="min-width:200px">
+                    العنوان
+                    <svg class="sort-icon" width="12" height="12"><use href="#i-down"/></svg>
+                  </th>
+                  <th style="min-width:80px">النوع</th>
+                  <th style="min-width:110px">المنصة</th>
+                  <th style="min-width:90px">اللهجة</th>
+                  <th style="min-width:120px">الحملة</th>
+                  <th style="min-width:110px">التاريخ</th>
+                  <th style="min-width:100px">الحالة</th>
+                  <th style="min-width:100px">الانطباعات</th>
+                  <th style="min-width:80px">التفاعل</th>
+                  <th style="min-width:80px;text-align:center">إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="table-body">
+
+                <!-- Row 1 -->
+                <tr onclick="rowClick(event,this)">
+                  <td style="text-align:center"><input type="checkbox" class="row-check row-cb" onchange="rowCheck(this)" onclick="event.stopPropagation()"/></td>
+                  <td>
+                    <div class="content-title-cell">
+                      <div class="content-title-main">عرض نهاية الأسبوع — خصم ٢٠٪</div>
+                      <div class="content-title-sub">منشور · إعلان ترويجي</div>
+                    </div>
+                  </td>
+                  <td><span class="type-pill post">منشور</span></td>
+                  <td>
+                    <div class="platform-badge">
+                      <svg width="14" height="14" style="color:#C13584"><use href="#i-instagram"/></svg>
+                      انستجرام
+                    </div>
+                  </td>
+                  <td><span style="font-size:12px;color:var(--text-secondary)">سعودي</span></td>
+                  <td><span class="badge badge-sand" style="font-size:11px">عروض الربيع</span></td>
+                  <td><span style="font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums">٢٠٢٦-٠٤-١٨</span></td>
+                  <td><span class="status-dot published">منشور</span></td>
+                  <td><span class="metric-val">24,810</span></td>
+                  <td><span class="metric-val" style="color:var(--success)">8.4٪</span></td>
+                  <td>
+                    <div class="row-actions" style="justify-content:center">
+                      <button class="btn btn-icon btn-ghost btn-sm" title="معاينة" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-eye"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="نسخ" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-copy"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="تعديل" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-edit"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 2 -->
+                <tr onclick="rowClick(event,this)">
+                  <td style="text-align:center"><input type="checkbox" class="row-check row-cb" onchange="rowCheck(this)" onclick="event.stopPropagation()"/></td>
+                  <td>
+                    <div class="content-title-cell">
+                      <div class="content-title-main">تشويق رمضاني — عطر الليل</div>
+                      <div class="content-title-sub">قصة · مجدول للنشر</div>
+                    </div>
+                  </td>
+                  <td><span class="type-pill story">قصة</span></td>
+                  <td>
+                    <div class="platform-badge">
+                      <svg width="14" height="14" style="color:#C13584"><use href="#i-instagram"/></svg>
+                      انستجرام
+                    </div>
+                  </td>
+                  <td><span style="font-size:12px;color:var(--text-secondary)">فصحى</span></td>
+                  <td><span class="badge badge-sand" style="font-size:11px">رمضان ٢٠٢٦</span></td>
+                  <td><span style="font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums">٢٠٢٦-٠٤-١٩</span></td>
+                  <td><span class="status-dot scheduled">مجدول</span></td>
+                  <td><span class="metric-dash">—</span></td>
+                  <td><span class="metric-dash">—</span></td>
+                  <td>
+                    <div class="row-actions" style="justify-content:center">
+                      <button class="btn btn-icon btn-ghost btn-sm" title="معاينة" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-eye"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="نسخ" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-copy"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="تعديل" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-edit"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 3 -->
+                <tr onclick="rowClick(event,this)">
+                  <td style="text-align:center"><input type="checkbox" class="row-check row-cb" onchange="rowCheck(this)" onclick="event.stopPropagation()"/></td>
+                  <td>
+                    <div class="content-title-cell">
+                      <div class="content-title-main">كيف تختارين السوار المناسب</div>
+                      <div class="content-title-sub">ريلز · محتوى توعوي</div>
+                    </div>
+                  </td>
+                  <td><span class="type-pill reel">ريلز</span></td>
+                  <td>
+                    <div class="platform-badge">
+                      <svg width="14" height="14" style="color:var(--text-secondary)"><use href="#i-tiktok"/></svg>
+                      تيك توك
+                    </div>
+                  </td>
+                  <td><span style="font-size:12px;color:var(--text-secondary)">إماراتي</span></td>
+                  <td><span class="badge badge-neutral" style="font-size:11px">توعوي</span></td>
+                  <td><span style="font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums">٢٠٢٦-٠٤-١٧</span></td>
+                  <td><span class="status-dot published">منشور</span></td>
+                  <td><span class="metric-val">54,200</span></td>
+                  <td><span class="metric-val" style="color:var(--success)">12.1٪</span></td>
+                  <td>
+                    <div class="row-actions" style="justify-content:center">
+                      <button class="btn btn-icon btn-ghost btn-sm" title="معاينة" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-eye"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="نسخ" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-copy"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="تعديل" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-edit"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 4 -->
+                <tr onclick="rowClick(event,this)">
+                  <td style="text-align:center"><input type="checkbox" class="row-check row-cb" onchange="rowCheck(this)" onclick="event.stopPropagation()"/></td>
+                  <td>
+                    <div class="content-title-cell">
+                      <div class="content-title-main">منتج جديد — عطر شرقي</div>
+                      <div class="content-title-sub">منشور · مسودة غير منشورة</div>
+                    </div>
+                  </td>
+                  <td><span class="type-pill post">منشور</span></td>
+                  <td>
+                    <div class="platform-badge">
+                      <svg width="14" height="14" style="color:#1877F2"><use href="#i-facebook"/></svg>
+                      فيسبوك
+                    </div>
+                  </td>
+                  <td><span style="font-size:12px;color:var(--text-secondary)">سعودي</span></td>
+                  <td><span class="badge badge-sand" style="font-size:11px">إطلاقات</span></td>
+                  <td><span style="font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums">٢٠٢٦-٠٤-١٦</span></td>
+                  <td><span class="status-dot draft">مسودة</span></td>
+                  <td><span class="metric-dash">—</span></td>
+                  <td><span class="metric-dash">—</span></td>
+                  <td>
+                    <div class="row-actions" style="justify-content:center">
+                      <button class="btn btn-icon btn-ghost btn-sm" title="معاينة" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-eye"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="نسخ" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-copy"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="تعديل" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-edit"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 5 -->
+                <tr onclick="rowClick(event,this)">
+                  <td style="text-align:center"><input type="checkbox" class="row-check row-cb" onchange="rowCheck(this)" onclick="event.stopPropagation()"/></td>
+                  <td>
+                    <div class="content-title-cell">
+                      <div class="content-title-main">حملة الجمعة البيضاء</div>
+                      <div class="content-title-sub">إعلان · أعلى أداء هذا الشهر</div>
+                    </div>
+                  </td>
+                  <td><span class="type-pill ad">إعلان</span></td>
+                  <td>
+                    <div class="platform-badge">
+                      <svg width="14" height="14" style="color:#1877F2"><use href="#i-facebook"/></svg>
+                      فيسبوك
+                    </div>
+                  </td>
+                  <td><span style="font-size:12px;color:var(--text-secondary)">فصحى</span></td>
+                  <td><span class="badge badge-sand" style="font-size:11px">الجمعة البيضاء</span></td>
+                  <td><span style="font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums">٢٠٢٦-٠٤-١٥</span></td>
+                  <td><span class="status-dot published">منشور</span></td>
+                  <td><span class="metric-val">128,400</span></td>
+                  <td><span class="metric-val" style="color:var(--success)">6.7٪</span></td>
+                  <td>
+                    <div class="row-actions" style="justify-content:center">
+                      <button class="btn btn-icon btn-ghost btn-sm" title="معاينة" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-eye"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="نسخ" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-copy"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="تعديل" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-edit"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 6 -->
+                <tr onclick="rowClick(event,this)">
+                  <td style="text-align:center"><input type="checkbox" class="row-check row-cb" onchange="rowCheck(this)" onclick="event.stopPropagation()"/></td>
+                  <td>
+                    <div class="content-title-cell">
+                      <div class="content-title-main">قهوة الصباح الخليجية</div>
+                      <div class="content-title-sub">منشور · فشل النشر</div>
+                    </div>
+                  </td>
+                  <td><span class="type-pill post">منشور</span></td>
+                  <td>
+                    <div class="platform-badge">
+                      <svg width="14" height="14" style="color:#C13584"><use href="#i-instagram"/></svg>
+                      انستجرام
+                    </div>
+                  </td>
+                  <td><span style="font-size:12px;color:var(--text-secondary)">كويتي</span></td>
+                  <td><span class="badge badge-neutral" style="font-size:11px">—</span></td>
+                  <td><span style="font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums">٢٠٢٦-٠٤-١٥</span></td>
+                  <td><span class="status-dot failed">فشل</span></td>
+                  <td><span class="metric-dash">—</span></td>
+                  <td><span class="metric-dash">—</span></td>
+                  <td>
+                    <div class="row-actions" style="justify-content:center">
+                      <button class="btn btn-icon btn-ghost btn-sm" title="إعادة النشر" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-zap"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="نسخ" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-copy"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="تعديل" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-edit"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 7 -->
+                <tr onclick="rowClick(event,this)">
+                  <td style="text-align:center"><input type="checkbox" class="row-check row-cb" onchange="rowCheck(this)" onclick="event.stopPropagation()"/></td>
+                  <td>
+                    <div class="content-title-cell">
+                      <div class="content-title-main">إطلاق مجموعة رمضان الجديدة</div>
+                      <div class="content-title-sub">منشور · مجدول</div>
+                    </div>
+                  </td>
+                  <td><span class="type-pill post">منشور</span></td>
+                  <td>
+                    <div class="platform-badge">
+                      <svg width="14" height="14" style="color:#C13584"><use href="#i-instagram"/></svg>
+                      انستجرام
+                    </div>
+                  </td>
+                  <td><span style="font-size:12px;color:var(--text-secondary)">سعودي</span></td>
+                  <td><span class="badge badge-sand" style="font-size:11px">رمضان ٢٠٢٦</span></td>
+                  <td><span style="font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums">٢٠٢٦-٠٤-٢٠</span></td>
+                  <td><span class="status-dot scheduled">مجدول</span></td>
+                  <td><span class="metric-dash">—</span></td>
+                  <td><span class="metric-dash">—</span></td>
+                  <td>
+                    <div class="row-actions" style="justify-content:center">
+                      <button class="btn btn-icon btn-ghost btn-sm" title="معاينة" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-eye"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="نسخ" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-copy"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="تعديل" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-edit"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 8 -->
+                <tr onclick="rowClick(event,this)">
+                  <td style="text-align:center"><input type="checkbox" class="row-check row-cb" onchange="rowCheck(this)" onclick="event.stopPropagation()"/></td>
+                  <td>
+                    <div class="content-title-cell">
+                      <div class="content-title-main">تهنئة عيد الفطر</div>
+                      <div class="content-title-sub">منشور · موسمي</div>
+                    </div>
+                  </td>
+                  <td><span class="type-pill post">منشور</span></td>
+                  <td>
+                    <div class="platform-badge">
+                      <svg width="14" height="14" style="color:#C13584"><use href="#i-instagram"/></svg>
+                      انستجرام
+                    </div>
+                  </td>
+                  <td><span style="font-size:12px;color:var(--text-secondary)">فصحى</span></td>
+                  <td><span class="badge badge-sand" style="font-size:11px">العيد ٢٠٢٦</span></td>
+                  <td><span style="font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums">٢٠٢٦-٠٤-٢٥</span></td>
+                  <td><span class="status-dot draft">مسودة</span></td>
+                  <td><span class="metric-dash">—</span></td>
+                  <td><span class="metric-dash">—</span></td>
+                  <td>
+                    <div class="row-actions" style="justify-content:center">
+                      <button class="btn btn-icon btn-ghost btn-sm" title="معاينة" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-eye"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="نسخ" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-copy"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="تعديل" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-edit"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 9 -->
+                <tr onclick="rowClick(event,this)">
+                  <td style="text-align:center"><input type="checkbox" class="row-check row-cb" onchange="rowCheck(this)" onclick="event.stopPropagation()"/></td>
+                  <td>
+                    <div class="content-title-cell">
+                      <div class="content-title-main">عروض رمضان الكبرى</div>
+                      <div class="content-title-sub">إعلان · حملة رمضان</div>
+                    </div>
+                  </td>
+                  <td><span class="type-pill ad">إعلان</span></td>
+                  <td>
+                    <div class="platform-badge">
+                      <svg width="14" height="14" style="color:#1877F2"><use href="#i-facebook"/></svg>
+                      فيسبوك
+                    </div>
+                  </td>
+                  <td><span style="font-size:12px;color:var(--text-secondary)">سعودي</span></td>
+                  <td><span class="badge badge-sand" style="font-size:11px">رمضان ٢٠٢٦</span></td>
+                  <td><span style="font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums">٢٠٢٦-٠٤-١٠</span></td>
+                  <td><span class="status-dot published">منشور</span></td>
+                  <td><span class="metric-val">89,300</span></td>
+                  <td><span class="metric-val" style="color:var(--success)">9.2٪</span></td>
+                  <td>
+                    <div class="row-actions" style="justify-content:center">
+                      <button class="btn btn-icon btn-ghost btn-sm" title="معاينة" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-eye"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="نسخ" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-copy"/></svg></button>
+                      <button class="btn btn-icon btn-ghost btn-sm" title="تعديل" onclick="event.stopPropagation()"><svg width="13" height="13"><use href="#i-edit"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination">
+            <div class="pagination-info">عرض ١–٩ من أصل ١٥ سجل</div>
+            <div class="pagination-btns">
+              <button class="page-btn" disabled>
+                <svg width="14" height="14"><use href="#i-chevronright"/></svg>
+              </button>
+              <button class="page-btn" data-active="true">١</button>
+              <button class="page-btn">٢</button>
+              <button class="page-btn">
+                <svg width="14" height="14"><use href="#i-chevronleft"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div><!-- /table card -->
+
+      </div><!-- /stack -->
+    </div><!-- /content-area -->
+  </div><!-- /app-main -->
+
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-logo"><div class="mark">ص</div><span>صدى</span></div>
+      <button class="workspace-picker">
+        <div class="avatar">أن</div>
+        <div class="ws-info"><div class="ws-name">متجر أنيق</div><div class="ws-plan">Growth · السعودية</div></div>
+        <svg width="14" height="14" class="chev"><use href="#i-chevrondown"/></svg>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">العمل</div>
+      <a href="home.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-home"/></svg><span>الرئيسية</span>
+      </a>
+      <a href="generate.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-sparkle"/></svg><span>توليد محتوى</span><span class="nav-badge">جديد</span>
+      </a>
+      <a href="calendar.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-calendar"/></svg><span>التقويم</span>
+      </a>
+      <a href="history.html" class="nav-item" data-active="true">
+        <svg width="18" height="18" class="icon"><use href="#i-clock"/></svg><span>سجل المحتوى</span>
+      </a>
+      <a href="campaigns.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-megaphone"/></svg><span>الحملات الإعلانية</span>
+      </a>
+      <a href="seasonal.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-moon"/></svg><span>المواسم</span>
+      </a>
+      <a href="analytics.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-chart"/></svg><span>التحليلات</span>
+      </a>
+      <div class="nav-section" style="margin-top:16px">الحساب</div>
+      <a href="billing.html" class="nav-item"><svg width="18" height="18" class="icon"><use href="#i-credit"/></svg><span>الفوترة</span></a>
+      <a href="billing.html" class="nav-item"><svg width="18" height="18" class="icon"><use href="#i-settings"/></svg><span>الإعدادات</span></a>
+      <a href="components.html" class="nav-item"><svg width="18" height="18" class="icon"><use href="#i-palette"/></svg><span>مكتبة المكونات</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="token-meter">
+        <div class="token-meter-head"><span class="label">التوكنز</span><span class="val">1,240 / 2,000</span></div>
+        <div class="token-bar"><div class="token-bar-fill" style="width:62%"></div></div>
+        <button class="token-refill">شحن المزيد</button>
+      </div>
+      <div class="user-chip">
+        <div class="avatar">أح</div>
+        <div class="user-info"><div class="user-name">أحمد العتيبي</div><div class="user-role">مالك · Admin</div></div>
+        <svg width="14" height="14"><use href="#i-chevrondown"/></svg>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+// Theme toggle
+document.getElementById('theme-btn').addEventListener('click', () => {
+  const html = document.documentElement;
+  html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+});
+
+// Row click: toggle selection highlight
+function rowClick(e, row) {
+  if (e.target.type === 'checkbox') return;
+  const wasSelected = row.dataset.selected === 'true';
+  row.dataset.selected = wasSelected ? 'false' : 'true';
+  // Sync checkbox
+  const cb = row.querySelector('.row-cb');
+  if (cb) cb.checked = !wasSelected;
+  updateBulkBar();
+}
+
+// Individual checkbox change
+function rowCheck(cb) {
+  const row = cb.closest('tr');
+  if (row) row.dataset.selected = cb.checked ? 'true' : 'false';
+  updateBulkBar();
+}
+
+// Select all
+function selectAll(masterCb) {
+  const checkboxes = document.querySelectorAll('.row-cb');
+  checkboxes.forEach(cb => {
+    cb.checked = masterCb.checked;
+    const row = cb.closest('tr');
+    if (row) row.dataset.selected = masterCb.checked ? 'true' : 'false';
+  });
+  updateBulkBar();
+}
+
+// Bulk bar visibility
+function updateBulkBar() {
+  const selected = document.querySelectorAll('.row-cb:checked').length;
+  const bar = document.getElementById('bulk-bar');
+  const count = document.getElementById('bulk-count');
+  if (selected > 0) {
+    bar.style.display = 'flex';
+    const arabicNums = {'0':'٠','1':'١','2':'٢','3':'٣','4':'٤','5':'٥','6':'٦','7':'٧','8':'٨','9':'٩'};
+    const ar = String(selected).replace(/\d/g, d => arabicNums[d]);
+    count.textContent = ar + ' محدد';
+    // Update master checkbox indeterminate state
+    const all = document.querySelectorAll('.row-cb').length;
+    const master = document.getElementById('select-all');
+    master.indeterminate = selected > 0 && selected < all;
+    master.checked = selected === all;
+  } else {
+    bar.style.display = 'none';
+    document.getElementById('select-all').indeterminate = false;
+  }
+}
+
+// View toggle
+function setView(btn, mode) {
+  document.querySelectorAll('.view-toggle button').forEach(b => b.removeAttribute('data-active'));
+  btn.setAttribute('data-active', 'true');
+}
+
+// Status filter cycle (demo)
+const statusOptions = ['كل الحالات', 'منشور', 'مجدول', 'مسودة', 'فشل'];
+let statusIdx = 0;
+function cycleStatusFilter() {
+  statusIdx = (statusIdx + 1) % statusOptions.length;
+  document.getElementById('status-filter-label').textContent = statusOptions[statusIdx];
+}
+
+// Basic search filter
+function filterTable() {
+  const term = document.getElementById('table-search').value.toLowerCase();
+  document.querySelectorAll('#table-body tr').forEach(row => {
+    const title = row.querySelector('.content-title-main');
+    if (!title) return;
+    row.style.display = title.textContent.toLowerCase().includes(term) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>
