@@ -8,12 +8,14 @@ use App\Models\AiGeneration;
 use App\Models\BrandIdentity;
 use App\Models\Workspace;
 use App\Services\Ai\ContentGenerationService;
+use App\Services\TokenService;
 use Illuminate\Support\Facades\Auth;
 
 class GenerateContentAction
 {
     public function __construct(
         private readonly ContentGenerationService $service,
+        private readonly TokenService $tokens,
     ) {}
 
     /**
@@ -34,7 +36,7 @@ class GenerateContentAction
         // CG-10: check token balance before generating
         $tokensRequired = 40;
 
-        if ($user->token_balance < $tokensRequired) {
+        if (! $this->tokens->hasBalance($user, $tokensRequired)) {
             throw new \RuntimeException('رصيد التوكنز غير كافٍ. يرجى شحن المزيد.');
         }
 
@@ -52,8 +54,8 @@ class GenerateContentAction
 
         $variations = $this->service->generate($params);
 
-        // Record token usage
-        AiGeneration::create([
+        // Record usage then deduct atomically via TokenService (BIL-02, BIL-04)
+        $generation = AiGeneration::create([
             'workspace_id'        => $workspace->id,
             'user_id'             => $user->id,
             'agent_type'          => 'content_generator',
@@ -66,7 +68,13 @@ class GenerateContentAction
             'sada_tokens_charged' => $tokensRequired,
         ]);
 
-        $user->decrement('token_balance', $tokensRequired);
+        $this->tokens->deduct(
+            $user,
+            $tokensRequired,
+            'توليد محتوى بالذكاء الاصطناعي',
+            AiGeneration::class,
+            $generation->id,
+        );
 
         return [
             'variations'    => $variations,

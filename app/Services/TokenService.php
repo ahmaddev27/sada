@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\TokenTransaction;
 use App\Models\User;
+use App\Notifications\LowTokenBalanceNotification;
 use Illuminate\Support\Facades\DB;
 
 class TokenService
@@ -15,6 +16,7 @@ class TokenService
     /**
      * BIL-02 / BIL-05: deduct tokens for an action.
      * Returns false immediately if the user lacks sufficient balance (BIL-05).
+     * BIL-04: fires LowTokenBalanceNotification when balance crosses the threshold.
      */
     public function deduct(
         User $user,
@@ -27,28 +29,35 @@ class TokenService
             return false;
         }
 
+        $balanceBefore = $user->token_balance;
+
         DB::transaction(function () use ($user, $amount, $description, $refType, $refId): void {
             // Lock the row to prevent race conditions
-            $user = User::lockForUpdate()->findOrFail($user->id);
+            $locked = User::lockForUpdate()->findOrFail($user->id);
 
             // Re-check inside the transaction after acquiring the lock
-            if ($user->token_balance < $amount) {
+            if ($locked->token_balance < $amount) {
                 throw new \RuntimeException('رصيد التوكنز غير كافٍ.');
             }
 
-            $user->decrement('token_balance', $amount);
-            $user->refresh();
+            $locked->decrement('token_balance', $amount);
 
             TokenTransaction::create([
-                'user_id'        => $user->id,
+                'user_id'        => $locked->id,
                 'type'           => 'deduction',
                 'amount'         => -$amount,
-                'balance_after'  => $user->token_balance,
+                'balance_after'  => $locked->token_balance - $amount,
                 'description'    => $description,
                 'reference_type' => $refType,
                 'reference_id'   => $refId,
             ]);
         });
+
+        // BIL-04: notify once when balance crosses the low threshold
+        $user->refresh();
+        if ($balanceBefore >= self::LOW_BALANCE_THRESHOLD && $user->token_balance < self::LOW_BALANCE_THRESHOLD) {
+            $user->notify(new LowTokenBalanceNotification($user->token_balance));
+        }
 
         return true;
     }

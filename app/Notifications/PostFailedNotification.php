@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Post;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 // SCH-07: notify user when scheduled post fails to publish
@@ -19,7 +20,23 @@ class PostFailedNotification extends Notification
     /** @return string[] */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
+    }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        $mail = (new MailMessage)
+            ->subject('تنبيه: فشل نشر منشورك')
+            ->greeting("مرحباً {$notifiable->name}!")
+            ->line('لم يتم نشر منشورك بسبب خطأ تقني.');
+
+        if ($this->reason) {
+            $mail->line("السبب: {$this->reason}");
+        }
+
+        return $mail
+            ->action('مراجعة المنشورات', url('/posts'))
+            ->salutation('فريق صدى');
     }
 
     /** @return array<string, mixed> */
