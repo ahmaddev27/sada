@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>صدى — التحليلات</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Rubik:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <style>
+    /* ── Tabs bar ── */
+    .analytics-tabs-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .analytics-tabs-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* ── KPI grid override ── */
+    .kpi-grid-6 {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 1400px) {
+      .kpi-grid-6 { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* ── Chart card ── */
+    .chart-legend {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .chart-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .chart-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .chart-x-labels {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 2px;
+      margin-top: 8px;
+    }
+    .chart-x-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ── Two-column layout ── */
+    .analytics-two-col {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 1100px) {
+      .analytics-two-col { grid-template-columns: 1fr; }
+    }
+
+    /* ── Heatmap ── */
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: 60px repeat(7, 1fr);
+      gap: 4px;
+    }
+    .heatmap-cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 4px;
+      min-height: 24px;
+      border: 1px solid var(--border-subtle);
+      cursor: default;
+      transition: transform 0.1s;
+    }
+    .heatmap-cell:hover { transform: scale(1.12); }
+    .heatmap-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-left: 6px;
+      font-weight: 500;
+    }
+    .heatmap-header-cell {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      padding-bottom: 4px;
+      font-weight: 600;
+    }
+    .heatmap-legend {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .heatmap-legend-swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* ── Top posts ── */
+    .post-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background 0.12s;
+      cursor: pointer;
+    }
+    .post-row:last-child { border-bottom: none; }
+    .post-row:hover { background: var(--bg-muted); }
+    .post-rank {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--accent-soft);
+      color: var(--accent-text);
+      font-weight: 800;
+      font-size: 13px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .post-info { flex: 1; min-width: 0; }
+    .post-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .post-stats {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .post-chevron { color: var(--text-muted); flex-shrink: 0; }
+
+    /* ── AI Insights ── */
+    .ai-insights-card {
+      background: linear-gradient(120deg, var(--bg-surface), var(--accent-soft) 120%);
+      border: 1px solid var(--border-brand);
+      border-radius: var(--radius-xl);
+    }
+    .ai-insights-icon-wrap {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--sada-500), var(--sand-500));
+      display: grid;
+      place-items: center;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .insight-card {
+      padding: 18px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+    }
+    .insight-emoji {
+      font-size: 20px;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .insight-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 4px;
+      line-height: 1.4;
+    }
+    .insight-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 0;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<!-- SVG ICONS BLOCK -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2V10z"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.5 5.5l2.8 2.8M15.7 15.7l2.8 2.8M5.5 18.5l2.8-2.8M15.7 8.3l2.8-2.8"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+  <symbol id="i-megaphone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a2 2 0 0 0 2 2h2l6 4V5L7 9H5a2 2 0 0 0-2 2z"/><path d="M17 8a5 5 0 0 1 0 8"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5A9 9 0 1 1 11.5 3a7 7 0 0 0 9.5 9.5z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-credit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="1" fill="currentColor"/><circle cx="17.5" cy="10.5" r="1" fill="currentColor"/><circle cx="8.5" cy="7.5" r="1" fill="currentColor"/><circle cx="6.5" cy="12.5" r="1" fill="currentColor"/><path d="M12 22a10 10 0 1 1 10-10c0 2-1 3-3 3h-2a2 2 0 0 0-2 2c0 1 1 2 2 2a2 2 0 0 1 2 2 3 3 0 0 1-3 3z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+  <symbol id="i-chevrondown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-chevronleft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-chevronright" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-arrowleft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14l5-5 5 5"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l5 5 5-5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+  <symbol id="i-instagram" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-facebook" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/></symbol>
+  <symbol id="i-crown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M5 20l-2-10 5 4 4-8 4 8 5-4-2 10"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.5 10 19 14 21 14 12.5 22 3"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.7 1-1a5.5 5.5 0 0 0 0-7.8z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></symbol>
+</svg>
+
+<div class="app" data-screen-label="sada-analytics">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-logo">
+        <div class="mark">ص</div>
+        <span>صدى</span>
+      </div>
+      <button class="workspace-picker">
+        <div class="avatar">أن</div>
+        <div class="ws-info">
+          <div class="ws-name">متجر أنيق</div>
+          <div class="ws-plan">Growth · السعودية</div>
+        </div>
+        <svg width="14" height="14" class="chev"><use href="#i-chevrondown"/></svg>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">العمل</div>
+      <a href="home.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-home"/></svg>
+        <span>الرئيسية</span>
+      </a>
+      <a href="generate.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-sparkle"/></svg>
+        <span>توليد محتوى</span>
+        <span class="nav-badge">جديد</span>
+      </a>
+      <a href="calendar.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-calendar"/></svg>
+        <span>التقويم</span>
+      </a>
+      <a href="history.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-clock"/></svg>
+        <span>سجل المحتوى</span>
+      </a>
+      <a href="campaigns.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-megaphone"/></svg>
+        <span>الحملات الإعلانية</span>
+      </a>
+      <a href="seasonal.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-moon"/></svg>
+        <span>المواسم</span>
+      </a>
+      <a href="analytics.html" class="nav-item" data-active="true">
+        <svg width="18" height="18" class="icon"><use href="#i-chart"/></svg>
+        <span>التحليلات</span>
+      </a>
+      <div class="nav-section" style="margin-top:16px">الحساب</div>
+      <a href="billing.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-credit"/></svg>
+        <span>الفوترة</span>
+      </a>
+      <a href="billing.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-settings"/></svg>
+        <span>الإعدادات</span>
+      </a>
+      <a href="components.html" class="nav-item">
+        <svg width="18" height="18" class="icon"><use href="#i-palette"/></svg>
+        <span>مكتبة المكونات</span>
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="token-meter">
+        <div class="token-meter-head">
+          <span class="label">التوكنز</span>
+          <span class="val">1,240 / 2,000</span>
+        </div>
+        <div class="token-bar"><div class="token-bar-fill" style="width:62%"></div></div>
+        <button class="token-refill">شحن المزيد</button>
+      </div>
+      <div class="user-chip">
+        <div class="avatar">أح</div>
+        <div class="user-info">
+          <div class="user-name">أحمد العتيبي</div>
+          <div class="user-role">مالك · Admin</div>
+        </div>
+        <svg width="14" height="14"><use href="#i-chevrondown"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="app-main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1">
+        <div class="topbar-title" style="min-width:0;flex:1">
+          <div class="crumbs">
+            <span>التحليلات</span>
+          </div>
+          <h1>التحليلات</h1>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-search" style="display:flex;align-items:center;gap:8px;padding:0 12px;height:38px;background:var(--bg-muted);border-radius:10px;min-width:260px">
+          <svg width="16" height="16" style="color:var(--text-muted)"><use href="#i-search"/></svg>
+          <input placeholder="ابحث في كل شيء... (⌘K)" style="flex:1;background:transparent;border:none;outline:none;font-size:13px;color:var(--text-primary)"/>
+        </div>
+        <button class="btn btn-icon btn-ghost" id="theme-btn" title="تبديل الوضع">
+          <svg width="18" height="18"><use href="#i-moon"/></svg>
+        </button>
+        <button class="btn btn-icon btn-ghost" title="الإشعارات" style="position:relative">
+          <svg width="18" height="18"><use href="#i-bell"/></svg>
+          <span style="position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--error);border:2px solid var(--bg-surface)"></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <div class="stack-lg">
+
+        <!-- ── Tabs Bar ── -->
+        <div class="analytics-tabs-bar">
+          <!-- Left: view tabs -->
+          <div class="segmented" id="view-tabs">
+            <button class="segmented-btn" data-active="true">نظرة عامة</button>
+            <button class="segmented-btn">حسب المنصة</button>
+            <button class="segmented-btn">حسب المنشور</button>
+            <button class="segmented-btn">الجمهور</button>
+            <button class="segmented-btn">التقارير</button>
+          </div>
+          <!-- Right: date range + export -->
+          <div class="analytics-tabs-right">
+            <div class="segmented" id="date-tabs">
+              <button class="segmented-btn">٧ أيام</button>
+              <button class="segmented-btn" data-active="true">٣٠ يوم</button>
+              <button class="segmented-btn">٩٠ يوم</button>
+              <button class="segmented-btn">مخصص</button>
+            </div>
+            <button class="btn btn-sm btn-secondary" style="gap:6px;display:inline-flex;align-items:center">
+              <svg width="14" height="14"><use href="#i-download"/></svg>
+              تصدير تقرير PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- ── KPI Cards (6-column) ── -->
+        <div class="kpi-grid-6">
+
+          <div class="kpi-card card" style="padding:16px">
+            <div class="kpi-label">الوصول</div>
+            <div class="kpi-value">١٢٥,٤٠٠</div>
+            <div class="kpi-delta delta-up">
+              <svg width="12" height="12"><use href="#i-up"/></svg>
+              +18.2%
+            </div>
+          </div>
+
+          <div class="kpi-card card" style="padding:16px">
+            <div class="kpi-label">الانطباعات</div>
+            <div class="kpi-value">٣٢٤,٨٠٠</div>
+            <div class="kpi-delta delta-up">
+              <svg width="12" height="12"><use href="#i-up"/></svg>
+              +22.4%
+            </div>
+          </div>
+
+          <div class="kpi-card card" style="padding:16px">
+            <div class="kpi-label">معدل التفاعل</div>
+            <div class="kpi-value">٤.٨٪</div>
+            <div class="kpi-delta delta-up">
+              <svg width="12" height="12"><use href="#i-up"/></svg>
+              +0.6%
+            </div>
+          </div>
+
+          <div class="kpi-card card" style="padding:16px">
+            <div class="kpi-label">النقرات</div>
+            <div class="kpi-value">٨,٢٤٠</div>
+            <div class="kpi-delta delta-up">
+              <svg width="12" height="12"><use href="#i-up"/></svg>
+              +12.1%
+            </div>
+          </div>
+
+          <div class="kpi-card card" style="padding:16px">
+            <div class="kpi-label">المتابعون الجدد</div>
+            <div class="kpi-value">٥٦٢</div>
+            <div class="kpi-delta delta-up">
+              <svg width="12" height="12"><use href="#i-up"/></svg>
+              +8.3%
+            </div>
+          </div>
+
+          <div class="kpi-card card" style="padding:16px">
+            <div class="kpi-label">ROAS</div>
+            <div class="kpi-value">٤.٠x</div>
+            <div class="kpi-delta delta-up">
+              <svg width="12" height="12"><use href="#i-up"/></svg>
+              +0.4x
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── Engagement Chart ── -->
+        <div class="card">
+          <div class="card-head" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+            <div>
+              <div style="font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:3px">التفاعل عبر الوقت</div>
+              <div class="sub">آخر ٣٠ يوم — تفاعل + وصول</div>
+            </div>
+            <div class="chart-legend">
+              <div class="chart-legend-item">
+                <span class="chart-legend-dot" style="background:var(--sada-500)"></span>
+                التفاعل
+              </div>
+              <div class="chart-legend-item">
+                <span class="chart-legend-dot" style="background:var(--sand-500)"></span>
+                الوصول
+              </div>
+            </div>
+          </div>
+          <div class="card-body" style="padding-top:0">
+            <svg width="100%" height="260" viewBox="0 0 100 40" preserveAspectRatio="none" style="display:block;overflow:visible">
+              <defs>
+                <linearGradient id="brandGrad" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="var(--sada-500)" stop-opacity="0.3"/>
+                  <stop offset="100%" stop-color="var(--sada-500)" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- Grid lines -->
+              <line x1="0" y1="10" x2="100" y2="10" stroke="var(--border-subtle)" stroke-width="0.2" vector-effect="non-scaling-stroke"/>
+              <line x1="0" y1="20" x2="100" y2="20" stroke="var(--border-subtle)" stroke-width="0.2" vector-effect="non-scaling-stroke"/>
+              <line x1="0" y1="30" x2="100" y2="30" stroke="var(--border-subtle)" stroke-width="0.2" vector-effect="non-scaling-stroke"/>
+              <!-- Reach line (dashed) -->
+              <polyline
+                points="0,38 3.4,36 6.9,38 10.3,34 13.8,35 17.2,32 20.7,30 24.1,33 27.6,28 31,25 34.5,29 37.9,26 41.4,23 44.8,27 48.3,21 51.7,24 55.2,18 58.6,22 62.1,16 65.5,19 69,13 72.4,17 75.9,10 79.3,15 82.8,8 86.2,12 89.7,6 93.1,10 96.6,4 100,7"
+                fill="none"
+                stroke="var(--sand-500)"
+                stroke-width="1.5"
+                stroke-dasharray="2,1.5"
+                vector-effect="non-scaling-stroke"
+              />
+              <!-- Engagement area fill -->
+              <polygon
+                points="0,36 3.4,34 6.9,35 10.3,31 13.8,33 17.2,29 20.7,27 24.1,30 27.6,24 31,21 34.5,25 37.9,22 41.4,19 44.8,23 48.3,17 51.7,20 55.2,14 58.6,18 62.1,12 65.5,15 69,9 72.4,13 75.9,7 79.3,11 82.8,5 86.2,9 89.7,3 93.1,7 96.6,2 100,5 100,40 0,40"
+                fill="url(#brandGrad)"
+              />
+              <!-- Engagement line -->
+              <polyline
+                points="0,36 3.4,34 6.9,35 10.3,31 13.8,33 17.2,29 20.7,27 24.1,30 27.6,24 31,21 34.5,25 37.9,22 41.4,19 44.8,23 48.3,17 51.7,20 55.2,14 58.6,18 62.1,12 65.5,15 69,9 72.4,13 75.9,7 79.3,11 82.8,5 86.2,9 89.7,3 93.1,7 96.6,2 100,5"
+                fill="none"
+                stroke="var(--sada-500)"
+                stroke-width="2"
+                vector-effect="non-scaling-stroke"
+              />
+            </svg>
+            <div class="chart-x-labels">
+              <span class="chart-x-label">٢٠ أبريل</span>
+              <span class="chart-x-label">١٠ أبريل</span>
+              <span class="chart-x-label">٣١ مارس</span>
+              <span class="chart-x-label">٢٠ مارس</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Heatmap + Top Posts ── -->
+        <div class="analytics-two-col">
+
+          <!-- Heatmap card -->
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div style="font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:3px">أفضل أوقات النشر</div>
+                <div class="sub">بناءً على تفاعل آخر ٦٠ يوم</div>
+              </div>
+            </div>
+            <div class="card-body" style="padding-top:0">
+              <div class="heatmap-grid">
+                <!-- Header row -->
+                <div></div>
+                <div class="heatmap-header-cell">6:٠٠</div>
+                <div class="heatmap-header-cell">9:٠٠</div>
+                <div class="heatmap-header-cell">12:٠٠</div>
+                <div class="heatmap-header-cell">15:٠٠</div>
+                <div class="heatmap-header-cell">18:٠٠</div>
+                <div class="heatmap-header-cell">21:٠٠</div>
+                <div class="heatmap-header-cell">24:٠٠</div>
+
+                <!-- أحد (Sunday) -->
+                <div class="heatmap-label">أحد</div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 10%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 25%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 35%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 30%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 60%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 70%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 15%,var(--bg-muted))"></div>
+
+                <!-- اثن (Monday) -->
+                <div class="heatmap-label">اثن</div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 8%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 30%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 40%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 35%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 65%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 75%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 12%,var(--bg-muted))"></div>
+
+                <!-- ثلا (Tuesday) — brightest -->
+                <div class="heatmap-label">ثلا</div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 12%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 45%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 55%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 50%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 80%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 85%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 20%,var(--bg-muted))"></div>
+
+                <!-- أرب (Wednesday) -->
+                <div class="heatmap-label">أرب</div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 8%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 28%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 38%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 33%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 58%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 68%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 10%,var(--bg-muted))"></div>
+
+                <!-- خمي (Thursday) — bright -->
+                <div class="heatmap-label">خمي</div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 10%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 40%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 50%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 45%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 75%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 80%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 18%,var(--bg-muted))"></div>
+
+                <!-- جمع (Friday) -->
+                <div class="heatmap-label">جمع</div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 5%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 15%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 20%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 18%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 55%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 65%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 25%,var(--bg-muted))"></div>
+
+                <!-- سبت (Saturday) -->
+                <div class="heatmap-label">سبت</div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 7%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 20%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 28%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 22%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 50%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 60%,var(--bg-muted))"></div>
+                <div class="heatmap-cell" style="background:color-mix(in oklab,var(--sada-500) 20%,var(--bg-muted))"></div>
+              </div>
+
+              <!-- Legend -->
+              <div class="heatmap-legend">
+                <span>أقل تفاعلاً</span>
+                <div class="heatmap-legend-swatch" style="background:color-mix(in oklab,var(--sada-500) 10%,var(--bg-muted))"></div>
+                <div class="heatmap-legend-swatch" style="background:color-mix(in oklab,var(--sada-500) 25%,var(--bg-muted))"></div>
+                <div class="heatmap-legend-swatch" style="background:color-mix(in oklab,var(--sada-500) 45%,var(--bg-muted))"></div>
+                <div class="heatmap-legend-swatch" style="background:color-mix(in oklab,var(--sada-500) 65%,var(--bg-muted))"></div>
+                <div class="heatmap-legend-swatch" style="background:color-mix(in oklab,var(--sada-500) 85%,var(--bg-muted))"></div>
+                <span>أعلى تفاعلاً</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Posts card -->
+          <div class="card">
+            <div class="card-head">
+              <div style="font-size:16px;font-weight:700;color:var(--text-primary)">أفضل المنشورات</div>
+            </div>
+            <div style="margin-top:-8px">
+
+              <div class="post-row">
+                <div class="post-rank">١</div>
+                <div class="post-info">
+                  <div class="post-title">إفطار اليوم: وجبات من متجرنا</div>
+                  <div class="post-stats">تفاعل ٨.٢٪ · وصول ٢٤٬٠٠٠</div>
+                </div>
+                <div class="post-chevron">
+                  <svg width="14" height="14"><use href="#i-chevronleft"/></svg>
+                </div>
+              </div>
+
+              <div class="post-row">
+                <div class="post-rank">٢</div>
+                <div class="post-info">
+                  <div class="post-title">قصة ليلة القدر — دعاء خاص</div>
+                  <div class="post-stats">تفاعل ٧.١٪ · وصول ١٨٬٥٠٠</div>
+                </div>
+                <div class="post-chevron">
+                  <svg width="14" height="14"><use href="#i-chevronleft"/></svg>
+                </div>
+              </div>
+
+              <div class="post-row">
+                <div class="post-rank">٣</div>
+                <div class="post-info">
+                  <div class="post-title">خصم ٣٠٪ — عرض محدود</div>
+                  <div class="post-stats">تفاعل ٦.٤٪ · وصول ١٥٬٢٠٠</div>
+                </div>
+                <div class="post-chevron">
+                  <svg width="14" height="14"><use href="#i-chevronleft"/></svg>
+                </div>
+              </div>
+
+              <div class="post-row">
+                <div class="post-rank">٤</div>
+                <div class="post-info">
+                  <div class="post-title">خلف الكواليس في متجرنا</div>
+                  <div class="post-stats">تفاعل ٥.٩٪ · وصول ١٢٬٤٠٠</div>
+                </div>
+                <div class="post-chevron">
+                  <svg width="14" height="14"><use href="#i-chevronleft"/></svg>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── AI Insights ── -->
+        <div class="card ai-insights-card">
+          <div class="card-head" style="display:flex;align-items:center;gap:12px">
+            <div class="ai-insights-icon-wrap">
+              <svg width="16" height="16"><use href="#i-sparkle"/></svg>
+            </div>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:2px">رؤى ذكية من Sada AI</div>
+              <div class="sub">تحليلات تلقائية مبنية على بياناتك</div>
+            </div>
+          </div>
+          <div class="card-body" style="padding-top:4px">
+            <div class="grid-3">
+
+              <div class="insight-card">
+                <span class="insight-emoji">🎯</span>
+                <p class="insight-title">منشورات بأسئلة مباشرة تحقق تفاعلاً أعلى بـ ٦٢٪</p>
+                <p class="insight-sub">آخر ٣٠ يوم — مقارنة بالمنشورات العادية</p>
+              </div>
+
+              <div class="insight-card">
+                <span class="insight-emoji">📅</span>
+                <p class="insight-title">أفضل يوم للنشر: الثلاثاء ٨:٣٠م</p>
+                <p class="insight-sub">متوسط تفاعل ٦.٢٪ في هذه النافذة</p>
+              </div>
+
+              <div class="insight-card">
+                <span class="insight-emoji">⚠️</span>
+                <p class="insight-title">الوصول انخفض ١٥٪ في آخر ٣ أيام</p>
+                <p class="insight-sub">قد يكون بسبب تغيير في خوارزمية انستجرام</p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Theme toggle
+  const themeBtn = document.getElementById('theme-btn');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeBtn.querySelector('use').setAttribute('href', isDark ? '#i-moon' : '#i-sun');
+    });
+  }
+
+  // Segmented controls — toggle active state
+  document.querySelectorAll('.segmented').forEach(function(seg) {
+    seg.addEventListener('click', function(e) {
+      const btn = e.target.closest('.segmented-btn');
+      if (!btn) return;
+      seg.querySelectorAll('.segmented-btn').forEach(function(b) {
+        b.removeAttribute('data-active');
+      });
+      btn.setAttribute('data-active', 'true');
+    });
+  });
+</script>
+</body>
+</html>
