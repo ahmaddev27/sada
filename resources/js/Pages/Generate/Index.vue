@@ -212,10 +212,36 @@ function savePost(action: 'draft' | 'publish') {
     })
 }
 
-function copyToClipboard() {
-    const text = (isEditing.value ? editingBody.value : selectedVariation.value?.body) ?? ''
-    const tags  = selectedVariation.value?.tags.join(' ') ?? ''
-    navigator.clipboard.writeText(text + (tags ? '\n\n' + tags : ''))
+const copied = ref(false)
+
+function copyToClipboard(variation: Variation) {
+    const body = variation.id === selectedVariation.value?.id && isEditing.value
+        ? editingBody.value
+        : variation.body
+    const tags = variation.tags.join(' ')
+    const full = body + (tags ? '\n\n' + tags : '')
+
+    const done = () => {
+        copied.value = true
+        setTimeout(() => { copied.value = false }, 2000)
+    }
+
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(full).then(done).catch(() => fallbackCopy(full, done))
+    } else {
+        fallbackCopy(full, done)
+    }
+}
+
+function fallbackCopy(text: string, onDone: () => void) {
+    const el = document.createElement('textarea')
+    el.value = text
+    el.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0'
+    document.body.appendChild(el)
+    el.focus()
+    el.select()
+    try { document.execCommand('copy'); onDone() } catch {}
+    document.body.removeChild(el)
 }
 
 // ── Consts ───────────────────────────────────────────────────
@@ -601,8 +627,9 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
                             <div class="variation-actions" @click.stop>
                                 <span style="font-size:11px; color:var(--text-faint);">{{ v.char_count }} حرف</span>
                                 <div style="display:flex; gap:4px;">
-                                    <button class="btn btn-sm btn-ghost" @click="copyToClipboard">
-                                        <Icon name="copy" :size="14" /> نسخ
+                                    <button class="btn btn-sm btn-ghost" @click.stop="copyToClipboard(v)">
+                                        <Icon name="copy" :size="14" />
+                                        {{ copied && selectedIdx === i ? 'تم النسخ ✓' : 'نسخ' }}
                                     </button>
                                     <template v-if="selectedIdx === i">
                                         <button v-if="!isEditing" class="btn btn-sm btn-ghost" @click.stop="startEdit">
