@@ -65,6 +65,12 @@ return [
         'graph_version' => env('META_GRAPH_VERSION', 'v21.0'),
     ],
 
+    // CON-11: TikTok OAuth + Content Posting API
+    'tiktok' => [
+        'client_key'    => env('TIKTOK_CLIENT_KEY'),
+        'client_secret' => env('TIKTOK_CLIENT_SECRET'),
+    ],
+
     // AUTH-02: Google OAuth via Socialite
     'google' => [
         'client_id'     => env('GOOGLE_CLIENT_ID'),

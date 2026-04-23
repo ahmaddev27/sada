@@ -9,6 +9,7 @@ use App\Actions\Social\DisconnectSocialAccountAction;
 use App\Actions\Social\RefreshSocialTokenAction;
 use App\Models\SocialAccount;
 use App\Services\Meta\MetaOAuthService;
+use App\Services\TikTok\TikTokOAuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -49,39 +50,40 @@ class SocialAccountController extends Controller
         ]);
     }
 
-    // CON-01, CON-02: initiate Meta OAuth flow
-    public function redirect(Request $request, MetaOAuthService $meta): RedirectResponse
-    {
+    // CON-01, CON-02, CON-11: initiate OAuth flow for Meta or TikTok
+    public function redirect(
+        Request $request,
+        MetaOAuthService $meta,
+        TikTokOAuthService $tiktok,
+    ): RedirectResponse {
         $provider = $request->route('provider');
 
-        if (! in_array($provider, ['meta', 'instagram', 'facebook'], true)) {
-            abort(404);
-        }
-
-        // CSRF state includes current workspace ID
         $state = base64_encode((string) json_encode([
             'csrf'         => Str::random(40),
             'workspace_id' => session('current_workspace_id'),
         ]));
 
-        session(['meta_oauth_state' => $state]);
+        if (in_array($provider, ['meta', 'instagram', 'facebook'], true)) {
+            session(['meta_oauth_state' => $state]);
+            return redirect($meta->redirectUrl($state));
+        }
 
-        return redirect($meta->redirectUrl($state));
+        if ($provider === 'tiktok') {
+            session(['tiktok_oauth_state' => $state]);
+            return redirect($tiktok->redirectUrl($state));
+        }
+
+        abort(404);
     }
 
-    // CON-01, CON-02: handle OAuth callback from Meta
+    // CON-01, CON-02, CON-11: handle OAuth callback from Meta or TikTok
     public function callback(
         Request $request,
         MetaOAuthService $meta,
+        TikTokOAuthService $tiktok,
         ConnectSocialAccountAction $connect,
     ): RedirectResponse {
-        // Validate CSRF state
-        $state = $request->query('state', '');
-        if ($state !== session('meta_oauth_state')) {
-            return redirect()->route('social.index')
-                ->with('flash', ['error' => 'فشل التحقق من الهوية. حاول مرة أخرى.']);
-        }
-        session()->forget('meta_oauth_state');
+        $provider = $request->route('provider');
 
         if ($request->has('error')) {
             return redirect()->route('social.index')
@@ -94,12 +96,30 @@ class SocialAccountController extends Controller
                 ->with('flash', ['error' => 'اختر مساحة عمل أولاً.']);
         }
 
-        // Exchange code for long-lived token
-        $token    = $meta->exchangeCode($request->query('code', ''));
+        if ($provider === 'tiktok') {
+            return $this->handleTikTokCallback($request, $tiktok, $connect, $workspace);
+        }
+
+        return $this->handleMetaCallback($request, $meta, $connect, $workspace);
+    }
+
+    private function handleMetaCallback(
+        Request $request,
+        MetaOAuthService $meta,
+        ConnectSocialAccountAction $connect,
+        \App\Models\Workspace $workspace,
+    ): RedirectResponse {
+        $state = $request->query('state', '');
+        if ($state !== session('meta_oauth_state')) {
+            return redirect()->route('social.index')
+                ->with('flash', ['error' => 'فشل التحقق من الهوية. حاول مرة أخرى.']);
+        }
+        session()->forget('meta_oauth_state');
+
+        $token     = $meta->exchangeCode($request->query('code', ''));
         $longToken = $token['access_token'];
         $expiresIn = $token['expires_in'];
 
-        // Connect all Instagram Business accounts
         $igAccounts = $meta->instagramAccounts($longToken);
         foreach ($igAccounts as $ig) {
             $connect->execute($workspace, [
@@ -115,7 +135,6 @@ class SocialAccountController extends Controller
             ]);
         }
 
-        // Connect all Facebook Pages
         $pages = $meta->facebookPages($longToken);
         foreach ($pages as $page) {
             $connect->execute($workspace, [
@@ -133,7 +152,6 @@ class SocialAccountController extends Controller
 
         $count = count($igAccounts) + count($pages);
 
-        // If came from onboarding step 2, clear the flag and go to dashboard
         if ($request->session()->get('onboarding_step') === 2) {
             $request->session()->forget('onboarding_step');
             return redirect()->route('dashboard')
@@ -142,6 +160,38 @@ class SocialAccountController extends Controller
 
         return redirect()->route('social.index')
             ->with('flash.success', "تم ربط {$count} حساب بنجاح.");
+    }
+
+    private function handleTikTokCallback(
+        Request $request,
+        TikTokOAuthService $tiktok,
+        ConnectSocialAccountAction $connect,
+        \App\Models\Workspace $workspace,
+    ): RedirectResponse {
+        $state = $request->query('state', '');
+        if ($state !== session('tiktok_oauth_state')) {
+            return redirect()->route('social.index')
+                ->with('flash', ['error' => 'فشل التحقق من الهوية. حاول مرة أخرى.']);
+        }
+        session()->forget('tiktok_oauth_state');
+
+        $token  = $tiktok->exchangeCode($request->query('code', ''));
+        $user   = $tiktok->userInfo($token['access_token']);
+
+        $connect->execute($workspace, [
+            'provider'            => 'tiktok',
+            'provider_account_id' => $token['open_id'],
+            'account_name'        => $user['display_name'],
+            'account_picture_url' => $user['avatar_url'] ?? null,
+            'access_token'        => $token['access_token'],
+            'refresh_token'       => $token['refresh_token'],
+            'expires_in'          => $token['expires_in'],
+            'scopes'              => ['user.info.basic', 'video.upload', 'video.publish'],
+            'metadata'            => ['open_id' => $token['open_id']],
+        ]);
+
+        return redirect()->route('social.index')
+            ->with('flash.success', "تم ربط حساب تيك توك {$user['display_name']} بنجاح.");
     }
 
     // CON-08: disconnect a social account
