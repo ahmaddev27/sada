@@ -144,3 +144,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // ── Payment gateway webhooks (no CSRF, no auth) ────────────────────────────
 Route::post('/webhooks/moyasar', [BillingController::class, 'webhook'])->name('billing.webhook');
+
+// ── Artisan helper — protected by secret key (cPanel deployments) ──────────
+Route::get('/up/storage-link', function () {
+    abort_unless(request('secret') === config('app.artisan_secret'), 403);
+    Illuminate\Support\Facades\Artisan::call('storage:link');
+    return response('✓ ' . trim(Illuminate\Support\Facades\Artisan::output()));
+});
