@@ -38,7 +38,19 @@ class AdminUserController extends Controller
 
         $users = $query->paginate(25)->withQueryString();
 
-        return Inertia::render('Admin/Users/Index', ['users' => $users, 'filters' => $request->only('search', 'status')]);
+        $stats = [
+            'total'   => User::count(),
+            'active'  => User::whereNull('banned_at')->where('is_admin', false)->count(),
+            'banned'  => User::whereNotNull('banned_at')->count(),
+            'admins'  => User::where('is_admin', true)->count(),
+            'today'   => User::whereDate('created_at', today())->count(),
+        ];
+
+        return Inertia::render('Admin/Users/Index', [
+            'users'   => $users,
+            'filters' => $request->only('search', 'status'),
+            'stats'   => $stats,
+        ]);
     }
 
     public function show(User $user): Response

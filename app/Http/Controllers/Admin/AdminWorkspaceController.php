@@ -35,9 +35,18 @@ class AdminWorkspaceController extends Controller
 
         $workspaces = $query->paginate(25)->withQueryString();
 
+        $stats = [
+            'total'     => Workspace::count(),
+            'active'    => Workspace::whereNull('suspended_at')->whereNull('archived_at')->count(),
+            'suspended' => Workspace::whereNotNull('suspended_at')->count(),
+            'archived'  => Workspace::whereNotNull('archived_at')->count(),
+            'today'     => Workspace::whereDate('created_at', today())->count(),
+        ];
+
         return Inertia::render('Admin/Workspaces/Index', [
             'workspaces' => $workspaces,
             'filters'    => $request->only('search', 'status'),
+            'stats'      => $stats,
         ]);
     }
 
