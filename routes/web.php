@@ -147,17 +147,18 @@ Route::post('/webhooks/moyasar', [BillingController::class, 'webhook'])->name('b
 
 // ── Admin Dashboard (Phase 0.6 — M8) ──────────────────────────────────────
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
-    Route::get('/',                                  [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/users',                             [\App\Http\Controllers\Admin\AdminUserController::class, 'index'])->name('users.index');
-    Route::get('/users/{user}',                      [\App\Http\Controllers\Admin\AdminUserController::class, 'show'])->name('users.show');
-    Route::post('/users/{user}/ban',                 [\App\Http\Controllers\Admin\AdminUserController::class, 'ban'])->name('users.ban');
-    Route::post('/users/{user}/unban',               [\App\Http\Controllers\Admin\AdminUserController::class, 'unban'])->name('users.unban');
-    Route::post('/users/{user}/grant-tokens',        [\App\Http\Controllers\Admin\AdminUserController::class, 'grantTokens'])->name('users.grant-tokens');
-    Route::post('/users/{user}/impersonate',         [\App\Http\Controllers\Admin\AdminImpersonateController::class, 'impersonate'])->name('users.impersonate');
-    Route::post('/impersonate/stop',                 [\App\Http\Controllers\Admin\AdminImpersonateController::class, 'stop'])->name('impersonate.stop');
-    Route::get('/workspaces',                        [\App\Http\Controllers\Admin\AdminWorkspaceController::class, 'index'])->name('workspaces.index');
-    Route::post('/workspaces/{workspace}/suspend',   [\App\Http\Controllers\Admin\AdminWorkspaceController::class, 'suspend'])->name('workspaces.suspend');
-    Route::post('/workspaces/{workspace}/restore',   [\App\Http\Controllers\Admin\AdminWorkspaceController::class, 'restore'])->name('workspaces.restore');
+    Route::get('/',                                  [\App\Http\Controllers\Admin\AdminDashboardController::class,    'index'])->name('dashboard');
+    Route::get('/users',                             [\App\Http\Controllers\Admin\AdminUserController::class,         'index'])->name('users.index');
+    Route::get('/users/{user}',                      [\App\Http\Controllers\Admin\AdminUserController::class,         'show'])->name('users.show');
+    Route::post('/users/{user}/ban',                 [\App\Http\Controllers\Admin\AdminUserController::class,         'ban'])->name('users.ban');
+    Route::post('/users/{user}/unban',               [\App\Http\Controllers\Admin\AdminUserController::class,         'unban'])->name('users.unban');
+    Route::post('/users/{user}/grant-tokens',        [\App\Http\Controllers\Admin\AdminUserController::class,         'grantTokens'])->name('users.grant-tokens');
+    Route::get('/workspaces',                        [\App\Http\Controllers\Admin\AdminWorkspaceController::class,    'index'])->name('workspaces.index');
+    Route::post('/workspaces/{workspace}/suspend',   [\App\Http\Controllers\Admin\AdminWorkspaceController::class,   'suspend'])->name('workspaces.suspend');
+    Route::post('/workspaces/{workspace}/restore',   [\App\Http\Controllers\Admin\AdminWorkspaceController::class,   'restore'])->name('workspaces.restore');
+    Route::get('/posts',                             [\App\Http\Controllers\Admin\AdminPostsController::class,        'index'])->name('posts.index');
+    Route::get('/social-accounts',                   [\App\Http\Controllers\Admin\AdminSocialAccountsController::class, 'index'])->name('social-accounts.index');
+    Route::get('/ai-generations',                    [\App\Http\Controllers\Admin\AdminAiGenerationsController::class, 'index'])->name('ai-generations.index');
 });
 
 // ── Artisan helper — protected by secret key (cPanel deployments) ──────────

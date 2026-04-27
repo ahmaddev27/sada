@@ -19,8 +19,9 @@ class Workspace extends Model
     use HasFactory;
 
     protected $casts = [
-        'countries'   => 'array',
-        'archived_at' => 'datetime',
+        'countries'    => 'array',
+        'archived_at'  => 'datetime',
+        'suspended_at' => 'datetime',
     ];
 
     /** @return BelongsTo<User, $this> */
@@ -45,6 +46,18 @@ class Workspace extends Model
     public function campaigns(): HasMany
     {
         return $this->hasMany(Campaign::class);
+    }
+
+    /** @return HasMany<Post, $this> */
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    /** @return HasMany<AiGeneration, $this> */
+    public function aiGenerations(): HasMany
+    {
+        return $this->hasMany(AiGeneration::class);
     }
 
     // WS-05: archived workspaces are excluded from normal queries

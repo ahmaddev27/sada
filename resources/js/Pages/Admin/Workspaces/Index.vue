@@ -34,7 +34,7 @@ function applyFilter() {
 }
 
 function suspend(ws: Workspace) {
-    if (! confirm(`تعليق workspace "${ws.name}"؟`)) return
+    if (! confirm(`تعليق "${ws.name}"؟`)) return
     router.post(`/admin/workspaces/${ws.id}/suspend`, {})
 }
 
@@ -46,8 +46,8 @@ function restore(ws: Workspace) {
 <template>
     <AdminLayout>
         <div class="admin-page">
-            <div class="admin-page-header">
-                <h1 class="admin-page-title">Workspaces</h1>
+            <div class="page-header">
+                <h1 class="page-title">Workspaces</h1>
                 <span class="total-badge">{{ workspaces.total }} workspace</span>
             </div>
 
@@ -62,7 +62,7 @@ function restore(ws: Workspace) {
                 <button class="admin-btn" @click="applyFilter">بحث</button>
             </div>
 
-            <div class="admin-table-wrap">
+            <div class="table-wrap">
                 <table class="admin-table">
                     <thead>
                         <tr>
@@ -114,42 +114,43 @@ function restore(ws: Workspace) {
 </template>
 
 <style scoped>
-.admin-page { padding: 28px 32px; }
-.admin-page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-.admin-page-title  { font-size: 20px; font-weight: 700; color: #f1f5f9; margin: 0; }
-.total-badge { font-size: 12px; background: #1e2535; color: #64748b; padding: 3px 10px; border-radius: 99px; }
+.admin-page  { padding: 24px 28px; }
+.page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.page-title  { font-size: 20px; font-weight: 700; color: var(--text-primary); margin: 0; }
+.total-badge { font-size: 12px; background: var(--bg-muted); color: var(--text-muted); padding: 3px 10px; border-radius: 99px; }
 
 .filters-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-.admin-input  { height: 36px; padding: 0 12px; border-radius: 8px; background: #1e2535; border: 1px solid #2d3748; color: #e2e8f0; font-size: 13px; min-width: 220px; }
-.admin-select { height: 36px; padding: 0 10px; border-radius: 8px; background: #1e2535; border: 1px solid #2d3748; color: #e2e8f0; font-size: 13px; }
-.admin-btn    { height: 36px; padding: 0 16px; border-radius: 8px; background: #0F6F5C; color: #fff; font-size: 13px; font-weight: 600; border: none; cursor: pointer; }
+.admin-input  { height: 36px; padding: 0 12px; border-radius: var(--radius-md); background: var(--bg-surface); border: 1px solid var(--border-default); color: var(--text-primary); font-size: 13px; font-family: var(--font-arabic); min-width: 220px; }
+.admin-select { height: 36px; padding: 0 10px; border-radius: var(--radius-md); background: var(--bg-surface); border: 1px solid var(--border-default); color: var(--text-primary); font-size: 13px; font-family: var(--font-arabic); }
+.admin-btn    { height: 36px; padding: 0 18px; border-radius: var(--radius-md); background: var(--sada-500); color: #fff; font-size: 13px; font-weight: 600; border: none; cursor: pointer; font-family: var(--font-arabic); transition: background .15s; }
+.admin-btn:hover { background: var(--sada-600); }
 
-.admin-table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid #1e2535; }
+.table-wrap  { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border-default); }
 .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.admin-table th { padding: 10px 14px; background: #161b27; color: #64748b; font-weight: 600; text-align: right; border-bottom: 1px solid #1e2535; white-space: nowrap; }
-.admin-table td { padding: 10px 14px; border-bottom: 1px solid #1e2535; color: #cbd5e1; vertical-align: middle; }
+.admin-table th { padding: 10px 14px; background: var(--bg-muted); color: var(--text-muted); font-weight: 600; text-align: right; border-bottom: 1px solid var(--border-default); white-space: nowrap; }
+.admin-table td { padding: 10px 14px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); vertical-align: middle; }
 .admin-table tr:last-child td { border-bottom: none; }
-.admin-table tr:hover td { background: #161b27; }
-.muted  { color: #64748b !important; }
+.admin-table tr:hover td { background: var(--bg-muted); }
+.muted  { color: var(--text-muted) !important; }
 .bold   { font-weight: 600; }
 .center { text-align: center; }
 
-.user-link   { color: #93c5fd; text-decoration: none; font-size: 13px; font-weight: 600; }
+.user-link { color: var(--sada-500); text-decoration: none; font-size: 13px; font-weight: 600; }
 .user-link:hover { text-decoration: underline; }
-.sub-email   { font-size: 11px; color: #475569; direction: ltr; }
+.sub-email { font-size: 11px; color: var(--text-muted); }
 
 .status-dot { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 99px; }
-.status-dot--active    { background: color-mix(in oklab, #10b981 15%, transparent); color: #10b981; }
-.status-dot--suspended { background: color-mix(in oklab, #f59e0b 15%, transparent); color: #f59e0b; }
-.status-dot--archived  { background: color-mix(in oklab, #64748b 15%, transparent); color: #64748b; }
+.status-dot--active    { background: color-mix(in oklab, #10b981 14%, transparent); color: #10b981; }
+.status-dot--suspended { background: color-mix(in oklab, #f59e0b 14%, transparent); color: #f59e0b; }
+.status-dot--archived  { background: color-mix(in oklab, #64748b 14%, transparent); color: #64748b; }
 
 .row-actions { display: flex; gap: 4px; }
-.action-btn  { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; cursor: pointer; border: 1px solid #2d3748; background: #1e2535; color: #94a3b8; transition: all .15s; }
-.action-btn--warn:hover  { background: color-mix(in oklab, #ef4444 15%, transparent); color: #ef4444; border-color: #ef4444; }
-.action-btn--green:hover { background: color-mix(in oklab, #10b981 15%, transparent); color: #10b981; border-color: #10b981; }
+.action-btn  { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border-default); background: var(--bg-surface); color: var(--text-muted); transition: all .15s; font-family: var(--font-arabic); }
+.action-btn--warn:hover  { background: color-mix(in oklab, #ef4444 12%, transparent); color: #ef4444; border-color: #ef4444; }
+.action-btn--green:hover { background: color-mix(in oklab, #10b981 12%, transparent); color: #10b981; border-color: #10b981; }
 
 .pagination { display: flex; gap: 4px; margin-top: 16px; flex-wrap: wrap; }
-.page-btn { min-width: 34px; height: 34px; display: grid; place-items: center; padding: 0 10px; border-radius: 7px; font-size: 12px; font-weight: 600; background: #1e2535; border: 1px solid #2d3748; color: #94a3b8; text-decoration: none; cursor: pointer; }
-.page-btn--active   { background: #0F6F5C; color: #fff; border-color: #0F6F5C; }
+.page-btn { min-width: 34px; height: 34px; display: grid; place-items: center; padding: 0 10px; border-radius: var(--radius-md); font-size: 12px; font-weight: 600; background: var(--bg-surface); border: 1px solid var(--border-default); color: var(--text-muted); text-decoration: none; cursor: pointer; }
+.page-btn--active   { background: var(--sada-500); color: #fff; border-color: var(--sada-500); }
 .page-btn--disabled { opacity: .3; cursor: not-allowed; }
 </style>
