@@ -14,14 +14,15 @@ class GenerateContentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'content_type'   => ['required', 'in:post,reel,story,ad,thread,snap_caption'],
-            'platform'       => ['required', 'in:instagram,facebook,tiktok,snapchat,x'],
-            'dialect'        => ['required', 'in:fos,sa,ae,kw,qa,bh,om'],
-            'prompt'         => ['required', 'string', 'min:5', 'max:500'],   // CG-04
-            'use_brand'      => ['boolean'],
-            'include_emojis' => ['boolean'],
-            'length'         => ['in:short,med,long'],
-            'cta'            => ['nullable', 'string', 'max:100'],
+            'content_type'      => ['required', 'in:post,reel,story,ad,thread,snap_caption'],
+            'platform'          => ['required', 'in:instagram,facebook,tiktok,snapchat,x,linkedin'],
+            'dialect'           => ['required', 'in:fos,sa,ae,kw,qa,bh,om'],
+            'prompt'            => ['required', 'string', 'min:5', 'max:500'],
+            'use_brand'         => ['boolean'],
+            'include_emojis'    => ['boolean'],
+            'include_hashtags'  => ['boolean'],
+            'length'            => ['in:short,med,long'],
+            'cta'               => ['nullable', 'string', 'max:100'],
         ];
     }
 

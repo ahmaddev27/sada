@@ -12,7 +12,7 @@ class AdminPostsController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Post::with(['workspace:id,name', 'user:id,name'])
+        $query = Post::with(['workspace:id,name', 'user:id,name', 'socialAccount:id,provider'])
             ->orderByDesc('created_at');
 
         if ($search = $request->string('search')->toString()) {

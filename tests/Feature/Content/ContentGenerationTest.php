@@ -211,7 +211,7 @@ it('يرفض حفظ منشور بمنصة غير مدعومة', function () {
     $response = $this->actingAs($user)
         ->post('/generate/save', [
             'content'      => 'نص المنشور',
-            'platform'     => 'linkedin',
+            'platform'     => 'twitter',
             'content_type' => 'post',
             'dialect'      => 'fos',
             'action'       => 'draft',

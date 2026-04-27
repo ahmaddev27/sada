@@ -22,6 +22,25 @@ class ContentGenerationService
         'tiktok'    => 2200,
         'snapchat'  => 250,
         'x'         => 280,
+        'linkedin'  => 3000,
+    ];
+
+    // Platform-specific formatting constraints
+    private const PLATFORM_FORMAT = [
+        'instagram' => 'اكتب النص كفقرات متدفقة طبيعية. لا تستخدم عناوين أو قوائم bullets. النص يبدأ مباشرة بالفكرة الرئيسية.',
+        'facebook'  => 'اكتب بفقرات واضحة. يمكن أن يكون النص أطول. أسلوب ودّي ومحادثاتي.',
+        'tiktok'    => 'ابدأ بـ hook صادم في أول سطر يجذب الانتباه فوراً. النص خفيف وعامي وسريع الإيقاع. مناسب لسكريبت فيديو قصير.',
+        'snapchat'  => 'نص مباشر جداً لا يتجاوز 3 أسطر. أسلوب مرح وعفوي. لا تفاصيل زائدة.',
+        'x'         => 'نص مضغوط لا يتجاوز 280 حرفاً. جملة قوية ومباشرة. يمكن hashtag واحد أو اثنان فقط.',
+        'linkedin'  => 'نص احترافي بفقرات منظمة. أسلوب رسمي يناسب المهنيين. يمكن البدء بسؤال أو insight يستقطب الاهتمام. يجوز استخدام فقرات قصيرة.',
+    ];
+
+    // Workspace business type context
+    private const WORKSPACE_TYPE_CONTEXT = [
+        'product'  => 'الـ workspace يمثل علامة تجارية تبيع منتجات ملموسة. ركّز على المنتج ومميزاته وقيمته للمشتري.',
+        'service'  => 'الـ workspace يقدم خدمات. ركّز على القيمة المقدمة والنتيجة التي يحصل عليها العميل.',
+        'personal' => 'الـ workspace يمثل شخصية شخصية (personal brand). أسلوب المحتوى شخصي وأصيل يعكس هوية صاحب الحساب.',
+        'persona'  => 'الـ workspace يمثل شخصية شخصية (personal brand). أسلوب المحتوى شخصي وأصيل يعكس هوية صاحب الحساب.',
     ];
 
     // CG-03: dialect system instructions
@@ -126,14 +145,19 @@ class ContentGenerationService
     /** @param array<string, mixed> $params */
     private function buildSystemPrompt(array $params): string
     {
-        $dialect   = self::DIALECT_INSTRUCTIONS[$params['dialect']] ?? self::DIALECT_INSTRUCTIONS['fos'];
-        $type      = self::CONTENT_TYPE_INSTRUCTIONS[$params['content_type']] ?? self::CONTENT_TYPE_INSTRUCTIONS['post'];
-        $limit     = self::PLATFORM_LIMITS[$params['platform']] ?? 2200;
-        $platform  = $params['platform'];
-        $emojiLine = $params['include_emojis'] ? 'أضف إيموجيات مناسبة للسياق الخليجي بشكل طبيعي.' : 'لا تستخدم إيموجيات.';
+        $dialect         = self::DIALECT_INSTRUCTIONS[$params['dialect']] ?? self::DIALECT_INSTRUCTIONS['fos'];
+        $type            = self::CONTENT_TYPE_INSTRUCTIONS[$params['content_type']] ?? self::CONTENT_TYPE_INSTRUCTIONS['post'];
+        $limit           = self::PLATFORM_LIMITS[$params['platform']] ?? 2200;
+        $platform        = $params['platform'];
+        $platformFormat  = self::PLATFORM_FORMAT[$platform] ?? '';
+        $emojiLine       = ($params['include_emojis'] ?? true) ? 'أضف إيموجيات مناسبة للسياق الخليجي بشكل طبيعي.' : 'لا تستخدم إيموجيات.';
+        $includeHashtags = $params['include_hashtags'] ?? true;
+        $hashtagRule     = $includeHashtags
+            ? '- أضف 5-7 هاشتاقات ذات صلة في حقل TAGS لكل خيار (عربية أو إنجليزية حسب المنصة)'
+            : '- اترك حقل TAGS فارغاً — المستخدم أوقف الهاشتاقات';
 
         $brandSection = '';
-        if ($params['use_brand'] && ! empty($params['brand_identity'])) {
+        if (($params['use_brand'] ?? true) && ! empty($params['brand_identity'])) {
             $brand        = $params['brand_identity'];
             $brandSection = "\n\nهوية العلامة التجارية:\n" .
                 "- الوصف: {$brand['description']}\n" .
@@ -143,20 +167,28 @@ class ContentGenerationService
                     : '');
         }
 
+        $wsTypeSection = '';
+        if (! empty($params['workspace_type'])) {
+            $wsCtx        = self::WORKSPACE_TYPE_CONTEXT[$params['workspace_type']] ?? '';
+            if ($wsCtx) {
+                $wsTypeSection = "\n\nسياق مساحة العمل: {$wsCtx}";
+            }
+        }
+
         return <<<SYSTEM
 أنت كاتب محتوى خليجي محترف متخصص في التسويق الرقمي.
 
 اللهجة: {$dialect}
 نوع المحتوى: {$type}
 المنصة: {$platform} (الحد الأقصى للحروف: {$limit})
-{$emojiLine}{$brandSection}
+متطلبات تنسيق المنصة: {$platformFormat}
+{$emojiLine}{$brandSection}{$wsTypeSection}
 
 قواعد صارمة:
 - لا تتجاوز الحد الأقصى للحروف للمنصة
 - اكتب دائماً من اليمين إلى اليسار
-- الهاشتاقات دائماً بالعربية ما لم تكن المنصة تستوجب الإنجليزية
-- CG-09: أضف 5-7 هاشتاقات ذات صلة لكل خيار
-- اكتب نصاً عادياً فقط — ممنوع منعاً باتاً استخدام أي تنسيق Markdown مثل ** أو __ أو * أو _ أو # أو ``` — المستخدم يرى النص كما هو مباشرةً
+- اكتب نصاً عادياً فقط — ممنوع استخدام Markdown مثل ** أو __ أو * أو # أو ```
+{$hashtagRule}
 SYSTEM;
     }
 

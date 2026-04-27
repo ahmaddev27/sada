@@ -158,6 +158,8 @@ const form = useForm({
     social_account_id:  null as number | null,
     post_id:            null as number | null,
     ad_copy:            '',
+    ad_headline:        '',
+    ad_description:     '',
     target_countries:   [] as string[],
     target_age_min:     18,
     target_age_max:     45,
@@ -375,13 +377,52 @@ const filteredPosts = computed(() =>
 
                         <!-- New ad copy -->
                         <template v-if="adCreativeMode === 'new'">
+                            <!-- Headline -->
                             <div class="input-group">
-                                <label class="input-label">نص الإعلان</label>
+                                <label class="input-label">
+                                    العنوان الرئيسي (Headline)
+                                    <span class="input-hint">مطلوب لإعلانات Meta</span>
+                                </label>
+                                <input
+                                    v-model="form.ad_headline"
+                                    type="text"
+                                    class="input"
+                                    placeholder="مثلاً: خصم 50% على جميع المنتجات"
+                                    maxlength="40"
+                                />
+                                <div class="input-hint" style="display:flex;justify-content:space-between;">
+                                    <span>يظهر بخط كبير تحت صورة الإعلان · الحد 40 حرفاً</span>
+                                    <span :style="form.ad_headline.length > 35 ? 'color:var(--error)' : ''">{{ form.ad_headline.length }}/40</span>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="input-group">
+                                <label class="input-label">
+                                    الوصف (Description)
+                                    <span class="input-hint">اختياري</span>
+                                </label>
+                                <input
+                                    v-model="form.ad_description"
+                                    type="text"
+                                    class="input"
+                                    placeholder="مثلاً: تسوّق الآن واحصل على شحن مجاني"
+                                    maxlength="30"
+                                />
+                                <div class="input-hint" style="display:flex;justify-content:space-between;">
+                                    <span>يظهر تحت العنوان · الحد 30 حرفاً</span>
+                                    <span :style="form.ad_description.length > 27 ? 'color:var(--error)' : ''">{{ form.ad_description.length }}/30</span>
+                                </div>
+                            </div>
+
+                            <!-- Ad body copy -->
+                            <div class="input-group">
+                                <label class="input-label">نص الإعلان (Body Copy)</label>
                                 <textarea
                                     v-model="form.ad_copy"
                                     class="textarea"
                                     rows="5"
-                                    placeholder="اكتب نص إعلانك هنا... كن محدداً وجذاباً"
+                                    placeholder="اكتب نص إعلانك الرئيسي هنا... كن محدداً وجذاباً"
                                     style="min-height:140px;"
                                 />
                                 <div class="input-hint" style="display:flex;justify-content:flex-end;">

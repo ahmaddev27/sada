@@ -26,15 +26,16 @@ const page = usePage<PageProps>()
 const wsDialect = page.props.currentWorkspace?.default_dialect ?? 'sa'
 
 // ── Form state ─────────────────────────────────────────────
-const contentType   = ref<string>('post')
-const platform      = ref<string>('instagram')
-const dialect       = ref<string>(wsDialect)
-const prompt        = ref<string>('')
-const useBrand      = ref<boolean>(true)
-const includeEmojis = ref<boolean>(true)
-const length        = ref<string>('med')
-const cta           = ref<string>('')
-const advancedOpen  = ref<boolean>(false)
+const contentType      = ref<string>('post')
+const platform         = ref<string>('instagram')
+const dialect          = ref<string>(wsDialect)
+const prompt           = ref<string>('')
+const useBrand         = ref<boolean>(true)
+const includeEmojis    = ref<boolean>(true)
+const includeHashtags  = ref<boolean>(true)
+const length           = ref<string>('med')
+const cta              = ref<string>('')
+const advancedOpen     = ref<boolean>(false)
 
 // ── Occasion context (from seasonal redirect) ───────────────
 const occasionName  = ref<string>('')
@@ -125,7 +126,7 @@ const selectedVariation = computed(() => variations.value[selectedIdx.value] ?? 
 // ── Platform limits (CG-11) ─────────────────────────────────
 const PLATFORM_LIMITS: Record<string, number> = {
     instagram: 2200, facebook: 63206,
-    tiktok: 2200, snapchat: 250, x: 280,
+    tiktok: 2200, snapchat: 250, x: 280, linkedin: 3000,
 }
 const charLimit = computed(() => PLATFORM_LIMITS[platform.value] ?? 2200)
 
@@ -169,14 +170,15 @@ async function generate() {
                 'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '',
             },
             body: JSON.stringify({
-                content_type:   contentType.value,
-                platform:       platform.value,
-                dialect:        dialect.value,
-                prompt:         prompt.value,
-                use_brand:      useBrand.value,
-                include_emojis: includeEmojis.value,
-                length:         length.value,
-                cta:            cta.value,
+                content_type:     contentType.value,
+                platform:         platform.value,
+                dialect:          dialect.value,
+                prompt:           prompt.value,
+                use_brand:        useBrand.value,
+                include_emojis:   includeEmojis.value,
+                include_hashtags: includeHashtags.value,
+                length:           length.value,
+                cta:              cta.value,
             }),
         })
 
@@ -254,7 +256,11 @@ const CONTENT_TYPES = [
 
 const PLATFORMS = [
     { id: 'instagram', label: 'انستجرام', icon: 'instagram' },
-    { id: 'facebook',  label: 'فيسبوك',   icon: 'facebook' },
+    { id: 'facebook',  label: 'فيسبوك',   icon: 'facebook'  },
+    { id: 'tiktok',    label: 'تيك توك',  icon: 'tiktok'    },
+    { id: 'snapchat',  label: 'سناب شات', icon: 'snapchat'  },
+    { id: 'x',         label: 'X',         icon: 'x-brand'   },
+    { id: 'linkedin',  label: 'لينكدإن',  icon: 'linkedin'  },
 ]
 
 const DIALECTS = [
@@ -427,16 +433,15 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
                     <!-- Platform (CG-02) -->
                     <div class="input-group">
                         <label class="input-label">المنصة</label>
-                        <div style="display:flex; gap:8px;">
+                        <div class="platform-grid">
                             <button
                                 v-for="p in PLATFORMS"
                                 :key="p.id"
-                                class="chip"
+                                class="chip platform-chip"
                                 :data-selected="platform === p.id"
-                                style="flex:1; justify-content:center; height:40px; font-size:14px; border-radius:var(--radius-md);"
                                 @click="platform = p.id"
                             >
-                                <Icon :name="p.icon" :size="16" />
+                                <Icon :name="p.icon" :size="15" />
                                 {{ p.label }}
                             </button>
                         </div>
@@ -466,24 +471,21 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
                                 <div class="toggle-label">استخدام هوية العلامة</div>
                                 <div class="toggle-hint">يطبّق نبرة العلامة والكلمات المحظورة</div>
                             </div>
-                            <button
-                                class="toggle"
-                                :data-on="useBrand"
-                                @click="useBrand = !useBrand"
-                                type="button"
-                            />
+                            <button class="toggle" :data-on="useBrand" @click="useBrand = !useBrand" type="button" />
                         </div>
                         <div class="toggle-row">
                             <div>
                                 <div class="toggle-label">إيموجيات في المحتوى</div>
                                 <div class="toggle-hint">مناسبة للسياق الخليجي</div>
                             </div>
-                            <button
-                                class="toggle"
-                                :data-on="includeEmojis"
-                                @click="includeEmojis = !includeEmojis"
-                                type="button"
-                            />
+                            <button class="toggle" :data-on="includeEmojis" @click="includeEmojis = !includeEmojis" type="button" />
+                        </div>
+                        <div class="toggle-row">
+                            <div>
+                                <div class="toggle-label">تضمين هاشتاقات</div>
+                                <div class="toggle-hint">{{ includeHashtags ? '5-7 هاشتاقات مضافة تلقائياً' : 'بدون هاشتاقات' }}</div>
+                            </div>
+                            <button class="toggle" :data-on="includeHashtags" @click="includeHashtags = !includeHashtags" type="button" />
                         </div>
                     </div>
 
@@ -968,4 +970,18 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
 /* Fade transition */
 .fade-enter-active, .fade-leave-active { transition: opacity .2s, transform .2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(4px); }
+
+/* ── Platform grid (6 platforms) ── */
+.platform-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+.platform-chip {
+    justify-content: center;
+    height: 38px;
+    font-size: 12px;
+    border-radius: var(--radius-md);
+    gap: 5px;
+}
 </style>

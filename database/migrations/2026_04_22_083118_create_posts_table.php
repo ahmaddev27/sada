@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('content');
             $table->json('hashtags')->nullable();
 
-            $table->enum('platform', ['instagram', 'facebook', 'tiktok', 'snapchat', 'x']);
+            $table->enum('platform', ['instagram', 'facebook', 'tiktok', 'snapchat', 'x', 'linkedin']);
             $table->enum('content_type', ['post', 'reel', 'story', 'ad', 'thread', 'snap_caption']);
             $table->string('dialect', 10)->default('fos');
 

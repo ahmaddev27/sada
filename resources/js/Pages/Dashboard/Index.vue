@@ -191,13 +191,13 @@ function formatScheduled(iso: string | null): string {
                     :href="k.href"
                     class="kpi-card"
                 >
-                    <div class="kpi-icon" :style="`background:${k.bg};color:${k.color}`">
-                        <Icon :name="k.icon" :size="20" />
-                    </div>
-                    <div class="kpi-body">
+                    <div class="kpi-top">
                         <div class="kpi-value">{{ k.value }}</div>
-                        <div class="kpi-label">{{ k.label }}</div>
+                        <div class="kpi-icon" :style="`background:${k.bg};color:${k.color}`">
+                            <Icon :name="k.icon" :size="20" />
+                        </div>
                     </div>
+                    <div class="kpi-label">{{ k.label }}</div>
                 </Link>
             </div>
 
@@ -468,9 +468,9 @@ function formatScheduled(iso: string | null): string {
 
 .kpi-card {
     display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 16px 18px;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px 20px;
     background: var(--bg-surface);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
@@ -483,24 +483,29 @@ function formatScheduled(iso: string | null): string {
     transform: translateY(-1px);
 }
 
+.kpi-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
 .kpi-icon {
-    width: 46px; height: 46px;
+    width: 44px; height: 44px;
     border-radius: 12px;
     display: grid; place-items: center;
     flex-shrink: 0;
 }
 
-.kpi-body { flex: 1; min-width: 0; }
 .kpi-value {
-    font-size: 26px;
+    font-size: 28px;
     font-weight: 800;
     color: var(--text-primary);
-    line-height: 1.1;
+    line-height: 1;
 }
 .kpi-label {
     font-size: 12px;
     color: var(--text-muted);
-    margin-top: 2px;
 }
 
 /* ── Bottom grid ── */

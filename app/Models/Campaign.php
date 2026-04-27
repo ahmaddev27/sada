@@ -17,6 +17,8 @@ class Campaign extends Model
         'social_account_id',
         'post_id',
         'ad_copy',
+        'ad_headline',
+        'ad_description',
         'name',
         'objective',
         'platform',

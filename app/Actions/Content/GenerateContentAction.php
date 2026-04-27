@@ -46,11 +46,12 @@ class GenerateContentAction
             $brandIdentity = BrandIdentity::where('workspace_id', $workspace->id)->first();
         }
 
-        $params['brand_identity'] = $brandIdentity ? [
+        $params['brand_identity']   = $brandIdentity ? [
             'description' => $brandIdentity->description,
             'tone'        => $brandIdentity->tone,
             'banned_words'=> $brandIdentity->banned_words ?? [],
         ] : null;
+        $params['workspace_type'] = $workspace->business_type ?? null;
 
         $variations = $this->service->generate($params);
 

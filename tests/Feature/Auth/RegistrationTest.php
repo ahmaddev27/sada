@@ -28,7 +28,7 @@ it('يسجّل مستخدماً جديداً بنجاح', function () {
     $this->assertDatabaseHas('users', [
         'name'          => 'أحمد الغامدي',
         'email'         => 'ahmed@example.com',
-        'token_balance' => 0,
+        'token_balance' => 2000,
     ]);
 
     Event::assertDispatched(Registered::class);

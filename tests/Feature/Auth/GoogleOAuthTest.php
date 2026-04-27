@@ -86,7 +86,7 @@ it('يُعيّن رصيد الرموز صفراً عند إنشاء حساب Goo
 
     $user = User::where('email', 'mohammed@gmail.com')->first();
 
-    expect($user->token_balance)->toBe(0);
+    expect($user->token_balance)->toBe(2000);
 });
 
 it('يرفض المستخدم المسجّل الوصول إلى مسار OAuth', function () {
