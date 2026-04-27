@@ -167,3 +167,9 @@ Route::get('/up/storage-link', function () {
     Illuminate\Support\Facades\Artisan::call('storage:link');
     return response('✓ ' . trim(Illuminate\Support\Facades\Artisan::output()));
 });
+
+Route::get('/up/migrate', function () {
+    abort_unless(request('secret') === config('app.artisan_secret'), 403);
+    Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    return response('✓ ' . trim(Illuminate\Support\Facades\Artisan::output()));
+});
