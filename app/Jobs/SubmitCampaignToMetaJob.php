@@ -1,15 +1,15 @@
 <?php
 
-// ADS-07: submits campaign to Meta Marketing API
-// Stubbed — pending Meta App Review approval
-// When approved, implement MetaAdsClient here
+// ADS-07: submit campaign to Meta Marketing API
 
 namespace App\Jobs;
 
 use App\Models\Campaign;
+use App\Services\Meta\MetaAdsService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 use Throwable;
 
 class SubmitCampaignToMetaJob implements ShouldQueue
@@ -24,14 +24,26 @@ class SubmitCampaignToMetaJob implements ShouldQueue
         public readonly Campaign $campaign,
     ) {}
 
-    public function handle(): void
+    public function handle(MetaAdsService $meta): void
     {
-        // TODO: implement MetaAdsClient once Meta App Review is approved
-        Log::info("Campaign {$this->campaign->id} queued for Meta submission", [
-            'campaign_name' => $this->campaign->name,
-            'platform'      => $this->campaign->platform,
-            'objective'     => $this->campaign->objective,
-        ]);
+        $campaign = $this->campaign->fresh(['socialAccount']);
+
+        if (! $campaign) {
+            Log::warning('SubmitCampaignToMetaJob: campaign not found', ['id' => $this->campaign->id]);
+            return;
+        }
+
+        if (! $campaign->socialAccount) {
+            throw new RuntimeException(
+                "الحملة #{$campaign->id} لا تحتوي على حساب اجتماعي مرتبط."
+            );
+        }
+
+        $ids = $meta->submit($campaign, $campaign->socialAccount);
+
+        $campaign->update(array_merge($ids, ['status' => 'active']));
+
+        Log::info("Campaign {$campaign->id} submitted to Meta successfully", $ids);
     }
 
     public function failed(Throwable $exception): void

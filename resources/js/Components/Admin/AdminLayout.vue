@@ -26,6 +26,7 @@ const nav = [
     { href: '/admin/posts',          label: 'المنشورات',                icon: 'clock',     exact: false },
     { href: '/admin/social-accounts',label: 'الحسابات المرتبطة',        icon: 'instagram', exact: false },
     { href: '/admin/ai-generations', label: 'توليدات الذكاء الاصطناعي', icon: 'sparkle',   exact: false },
+    { href: '/admin/campaigns',      label: 'الحملات الإعلانية',         icon: 'megaphone', exact: false },
 ]
 
 function isActive(href: string, exact: boolean) {

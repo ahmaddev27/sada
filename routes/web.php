@@ -158,7 +158,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', \App\Htt
     Route::post('/workspaces/{workspace}/restore',   [\App\Http\Controllers\Admin\AdminWorkspaceController::class,   'restore'])->name('workspaces.restore');
     Route::get('/posts',                             [\App\Http\Controllers\Admin\AdminPostsController::class,        'index'])->name('posts.index');
     Route::get('/social-accounts',                   [\App\Http\Controllers\Admin\AdminSocialAccountsController::class, 'index'])->name('social-accounts.index');
-    Route::get('/ai-generations',                    [\App\Http\Controllers\Admin\AdminAiGenerationsController::class, 'index'])->name('ai-generations.index');
+    Route::get('/ai-generations',                    [\App\Http\Controllers\Admin\AdminAiGenerationsController::class,  'index'])->name('ai-generations.index');
+    Route::get('/campaigns',                         [\App\Http\Controllers\Admin\AdminCampaignController::class,       'index'])->name('campaigns.index');
+    Route::post('/campaigns/{campaign}/force-status', [\App\Http\Controllers\Admin\AdminCampaignController::class,      'forceStatus'])->name('campaigns.force-status');
 });
 
 // ── Artisan helper — protected by secret key (cPanel deployments) ──────────

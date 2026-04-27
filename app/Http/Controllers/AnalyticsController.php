@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AnalyticsSnapshot;
 use App\Models\Workspace;
+use App\Services\Ai\AnalyticsInsightsService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -15,6 +16,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class AnalyticsController extends Controller
 {
+    public function __construct(private readonly AnalyticsInsightsService $insightsService) {}
+
     // ANL-01, ANL-02, ANL-03, ANL-04
     public function index(Request $request): Response|\Illuminate\Http\RedirectResponse
     {
@@ -27,17 +30,19 @@ class AnalyticsController extends Controller
 
         $filters = $this->resolveFilters($request);
 
-        $kpis              = $this->buildKpis($workspace, $filters);
+        $kpis               = $this->buildKpis($workspace, $filters);
         $engagementOverTime = $this->buildEngagementOverTime($workspace, $filters);
-        $topPosts          = $this->buildTopPosts($workspace, $filters);
-        $platformBreakdown = $this->buildPlatformBreakdown($workspace, $filters);
+        $topPosts           = $this->buildTopPosts($workspace, $filters);
+        $platformBreakdown  = $this->buildPlatformBreakdown($workspace, $filters);
 
-        // ANL-03: AI insights in Arabic — TODO: replace with real laravel/ai call
-        $aiInsights = [
-            'أفضل أداء للمنشورات في أيام الثلاثاء والأربعاء بين الساعة 7 و9 مساءً بتوقيت الرياض.',
-            'انستجرام يحقق أعلى معدل تفاعل بنسبة تفوق باقي المنصات بمقدار الضعف — يُنصح بتركيز الميزانية عليه.',
-            'المنشورات التي تحتوي على صور المنتج الفعلي تحصل على وصول أعلى بنسبة 34% مقارنةً بالمنشورات النصية.',
-        ];
+        // ANL-03: AI insights in Arabic — cached 6h per workspace+filters
+        $aiInsights = $this->insightsService->insights(
+            $workspace->id,
+            $kpis,
+            $platformBreakdown,
+            $topPosts,
+            $filters,
+        );
 
         $hasData = AnalyticsSnapshot::withoutWorkspaceScope()
             ->where('workspace_id', $workspace->id)
