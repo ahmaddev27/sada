@@ -56,6 +56,8 @@ const PLATFORM_META: Record<string, { label: string; cls: string }> = {
     tiktok:    { label: 'تيك توك',  cls: 'plat--dark'   },
     snapchat:  { label: 'سناب شات', cls: 'plat--yellow' },
     twitter:   { label: 'X',         cls: 'plat--gray'   },
+    x:         { label: 'X',         cls: 'plat--gray'   },
+    linkedin:  { label: 'لينكدإن',   cls: 'plat--linkedin' },
 }
 
 const DIALECT_LABELS: Record<string, string> = {
@@ -424,7 +426,8 @@ function truncate(text: string, len = 80) {
 .plat--blue   { background: color-mix(in oklab, #1877f2 12%, transparent); color: #1877f2; }
 .plat--dark   { background: color-mix(in oklab, #69c9d0 10%, transparent); color: #2d9fa6; }
 .plat--yellow { background: color-mix(in oklab, #fffc00 20%, transparent); color: #a38900; }
-.plat--gray   { background: var(--bg-muted); color: var(--text-muted); }
+.plat--gray     { background: var(--bg-muted); color: var(--text-muted); }
+.plat--linkedin { background: color-mix(in oklab, #0a66c2 12%, transparent); color: #0a66c2; }
 
 /* Status pill */
 .status-pill {

@@ -69,6 +69,8 @@ const PLATFORM_META: Record<string, { label: string; cls: string }> = {
     tiktok:    { label: 'تيك توك',  cls: 'plat--teal'   },
     snapchat:  { label: 'سناب شات', cls: 'plat--yellow' },
     twitter:   { label: 'X',         cls: 'plat--gray'   },
+    x:         { label: 'X',         cls: 'plat--gray'   },
+    linkedin:  { label: 'لينكدإن',   cls: 'plat--linkedin' },
 }
 const AGENT_META: Record<string, { label: string; cls: string }> = {
     content_generation: { label: 'توليد محتوى', cls: 'agent--green'  },
@@ -396,7 +398,8 @@ const cacheRate = props.stats.total ? Math.round((props.stats.cached_count / pro
 .plat--blue   { background: color-mix(in oklab, #1877f2 12%, transparent); color: #1877f2; }
 .plat--teal   { background: color-mix(in oklab, #69c9d0 14%, transparent); color: #2d9fa6; }
 .plat--yellow { background: color-mix(in oklab, #fffc00 20%, transparent); color: #a38900; }
-.plat--gray   { background: var(--bg-muted); color: var(--text-muted); }
+.plat--gray     { background: var(--bg-muted); color: var(--text-muted); }
+.plat--linkedin { background: color-mix(in oklab, #0a66c2 12%, transparent); color: #0a66c2; }
 
 /* Tokens cell */
 .td-tokens { min-width: 130px; }

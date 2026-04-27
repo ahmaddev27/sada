@@ -20,6 +20,8 @@ class StoreCampaignRequest extends FormRequest
             'social_account_id'  => ['nullable', 'integer'],
             'post_id'            => ['nullable', 'integer'],
             'ad_copy'            => ['nullable', 'string', 'max:5000'],
+            'ad_headline'        => ['nullable', 'string', 'max:255'],
+            'ad_description'     => ['nullable', 'string', 'max:500'],
             'target_countries'   => ['required', 'array', 'min:1'],
             'target_countries.*' => ['in:sa,ae,kw,qa,bh,om'],
             'target_age_min'     => ['required', 'integer', 'min:13', 'max:65'],
