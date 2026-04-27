@@ -110,7 +110,12 @@ export interface Campaign {
     budget_currency: string;
     starts_at: string;
     ends_at: string;
+    ad_copy: string | null;
+    ad_headline: string | null;
+    ad_description: string | null;
     meta_campaign_id: string | null;
+    meta_adset_id: string | null;
+    meta_ad_id: string | null;
     insights: {
         spend?: number;
         reach?: number;

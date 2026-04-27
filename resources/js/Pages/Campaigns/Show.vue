@@ -201,8 +201,8 @@ function formatDate(d: string) {
                         </div>
                     </div>
 
-                    <!-- Creative (ADS-03) -->
-                    <div class="card" v-if="campaign.post">
+                    <!-- Creative (ADS-03, ADS-06) -->
+                    <div class="card" v-if="campaign.post || campaign.ad_copy || campaign.ad_headline">
                         <div class="card-head"><h3>المحتوى الإبداعي</h3></div>
                         <div class="card-body">
                             <div class="creative-box">
@@ -210,7 +210,12 @@ function formatDate(d: string) {
                                     <span class="platform-dot" :style="campaign.platform === 'instagram' ? 'background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)' : 'background:#1877f2'" />
                                     {{ campaign.platform === 'instagram' ? 'انستجرام' : 'فيسبوك' }}
                                 </div>
-                                <p class="creative-text">{{ campaign.post.content }}</p>
+                                <!-- ad_headline -->
+                                <p v-if="campaign.ad_headline" class="creative-headline">{{ campaign.ad_headline }}</p>
+                                <!-- ad_copy or linked post -->
+                                <p class="creative-text">{{ campaign.ad_copy || campaign.post?.content }}</p>
+                                <!-- ad_description -->
+                                <p v-if="campaign.ad_description" class="creative-desc">{{ campaign.ad_description }}</p>
                             </div>
                         </div>
                     </div>
@@ -380,7 +385,9 @@ function formatDate(d: string) {
     margin-bottom: 10px;
 }
 .platform-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.creative-text { margin: 0; font-size: 14px; line-height: 1.7; color: var(--text-primary); white-space: pre-line; }
+.creative-headline { margin: 0 0 6px; font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.creative-text     { margin: 0; font-size: 14px; line-height: 1.7; color: var(--text-primary); white-space: pre-line; }
+.creative-desc     { margin: 8px 0 0; font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
 /* Detail list */
 .detail-list { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; }
