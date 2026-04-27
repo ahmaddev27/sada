@@ -15,8 +15,8 @@ class AdminCampaignController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Campaign::with(['workspace:id,name', 'socialAccount:id,provider,account_name'])
-            ->withoutWorkspaceScope()
+        $query = Campaign::withoutWorkspaceScope()
+            ->with(['workspace:id,name', 'socialAccount:id,provider,account_name'])
             ->orderByDesc('created_at');
 
         if ($search = $request->string('search')->toString()) {

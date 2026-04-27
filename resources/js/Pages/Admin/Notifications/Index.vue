@@ -167,7 +167,7 @@ function fmt(n: number) {
 </template>
 
 <style scoped>
-.admin-page { padding: 28px 32px; max-width: 1100px; }
+.admin-page { padding: 28px 32px; }
 .page-header { margin-bottom: 24px; }
 .page-title  { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
 .page-subtitle { font-size: 13px; color: var(--text-muted); }

@@ -5,6 +5,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminLog;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +56,41 @@ class AdminSystemController extends Controller
             ],
             'info' => $info,
         ]);
+    }
+
+    public function clearCache(Request $request): RedirectResponse
+    {
+        $what = $request->string('what', 'app')->toString();
+
+        $cleared = match ($what) {
+            'config' => tap('إعدادات', fn () => Artisan::call('config:clear')),
+            'view'   => tap('عروض',    fn () => Artisan::call('view:clear')),
+            'route'  => tap('مسارات',  fn () => Artisan::call('route:clear')),
+            default  => tap('التطبيق', fn () => Artisan::call('cache:clear')),
+        };
+
+        AdminLog::create([
+            'admin_id' => $request->user()->id,
+            'action'   => 'clear_cache',
+            'payload'  => ['type' => $what],
+        ]);
+
+        return back()->with('success', "تم مسح كاش {$cleared} بنجاح.");
+    }
+
+    public function optimize(Request $request): RedirectResponse
+    {
+        Artisan::call('config:cache');
+        Artisan::call('route:cache');
+        Artisan::call('view:cache');
+
+        AdminLog::create([
+            'admin_id' => $request->user()->id,
+            'action'   => 'optimize',
+            'payload'  => [],
+        ]);
+
+        return back()->with('success', 'تم تحسين الأداء: config + route + view cached.');
     }
 
     private function checkDb(): array

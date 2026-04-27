@@ -167,6 +167,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', \App\Htt
     Route::get('/notifications',                      [\App\Http\Controllers\Admin\AdminNotificationController::class,   'index'])->name('notifications.index');
     Route::post('/notifications/broadcast',           [\App\Http\Controllers\Admin\AdminNotificationController::class,   'broadcast'])->name('notifications.broadcast');
     Route::get('/system',                             [\App\Http\Controllers\Admin\AdminSystemController::class,         'index'])->name('system.index');
+    Route::post('/system/clear-cache',                [\App\Http\Controllers\Admin\AdminSystemController::class,         'clearCache'])->name('system.clear-cache');
+    Route::post('/system/optimize',                   [\App\Http\Controllers\Admin\AdminSystemController::class,         'optimize'])->name('system.optimize');
     Route::get('/settings',                           [\App\Http\Controllers\Admin\AdminSettingsController::class,       'index'])->name('settings.index');
     Route::post('/settings/flags',                    [\App\Http\Controllers\Admin\AdminSettingsController::class,       'updateFlags'])->name('settings.flags');
     Route::post('/settings/packages/{package}',       [\App\Http\Controllers\Admin\AdminSettingsController::class,       'updatePackage'])->name('settings.packages.update');

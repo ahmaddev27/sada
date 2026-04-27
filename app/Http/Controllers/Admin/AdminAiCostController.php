@@ -15,8 +15,8 @@ class AdminAiCostController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = AiGeneration::with(['workspace:id,name', 'user:id,name'])
-            ->withoutWorkspaceScope()
+        $query = AiGeneration::withoutWorkspaceScope()
+            ->with(['workspace:id,name', 'user:id,name'])
             ->orderByDesc('created_at');
 
         if ($search = $request->string('search')->toString()) {
