@@ -146,7 +146,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::post('/webhooks/moyasar', [BillingController::class, 'webhook'])->name('billing.webhook');
 
 // ── Admin Dashboard (Phase 0.6 — M8) ──────────────────────────────────────
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
     Route::get('/',                                  [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('/users',                             [\App\Http\Controllers\Admin\AdminUserController::class, 'index'])->name('users.index');
     Route::get('/users/{user}',                      [\App\Http\Controllers\Admin\AdminUserController::class, 'show'])->name('users.show');
