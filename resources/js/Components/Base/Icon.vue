@@ -240,6 +240,34 @@ const icons: Record<string, { paths: string[]; fill?: boolean }> = {
             'M4 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
         ],
     },
+    'credit-card': {
+        paths: [
+            'M2 5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5z',
+            'M2 10h20',
+            'M7 15h2M15 15h2',
+        ],
+    },
+    coins: {
+        paths: [
+            'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+            'M16 8c1.1 0 2 .9 2 2s-.9 2-2 2',
+            'M8 20c0-2.2 1.8-4 4-4s4 1.8 4 4',
+            'M4 16c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z',
+        ],
+    },
+    cpu: {
+        paths: [
+            'M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M9 21H5a2 2 0 0 1-2-2v-4',
+            'M9 9h6v6H9z',
+            'M9 3v2M15 3v2M9 19v2M15 19v2M3 9h2M3 15h2M19 9h2M19 15h2',
+        ],
+    },
+    server: {
+        paths: [
+            'M2 3h20v6H2zM2 15h20v6H2z',
+            'M6 6h.01M6 18h.01',
+        ],
+    },
 };
 
 const icon = computed(() => icons[props.name] ?? icons['x']);

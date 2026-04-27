@@ -161,6 +161,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', \App\Htt
     Route::get('/ai-generations',                    [\App\Http\Controllers\Admin\AdminAiGenerationsController::class,  'index'])->name('ai-generations.index');
     Route::get('/campaigns',                         [\App\Http\Controllers\Admin\AdminCampaignController::class,       'index'])->name('campaigns.index');
     Route::post('/campaigns/{campaign}/force-status', [\App\Http\Controllers\Admin\AdminCampaignController::class,      'forceStatus'])->name('campaigns.force-status');
+    Route::get('/billing',                            [\App\Http\Controllers\Admin\AdminBillingController::class,        'index'])->name('billing.index');
+    Route::get('/tokens',                             [\App\Http\Controllers\Admin\AdminTokenAuditController::class,     'index'])->name('tokens.index');
+    Route::get('/ai-costs',                           [\App\Http\Controllers\Admin\AdminAiCostController::class,         'index'])->name('ai-costs.index');
+    Route::get('/notifications',                      [\App\Http\Controllers\Admin\AdminNotificationController::class,   'index'])->name('notifications.index');
+    Route::post('/notifications/broadcast',           [\App\Http\Controllers\Admin\AdminNotificationController::class,   'broadcast'])->name('notifications.broadcast');
+    Route::get('/system',                             [\App\Http\Controllers\Admin\AdminSystemController::class,         'index'])->name('system.index');
+    Route::get('/settings',                           [\App\Http\Controllers\Admin\AdminSettingsController::class,       'index'])->name('settings.index');
+    Route::post('/settings/flags',                    [\App\Http\Controllers\Admin\AdminSettingsController::class,       'updateFlags'])->name('settings.flags');
+    Route::post('/settings/packages/{package}',       [\App\Http\Controllers\Admin\AdminSettingsController::class,       'updatePackage'])->name('settings.packages.update');
 });
 
 // ── Artisan helper — protected by secret key (cPanel deployments) ──────────

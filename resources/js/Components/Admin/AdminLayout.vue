@@ -20,13 +20,19 @@ watch(flash, (val) => {
 }, { immediate: true })
 
 const nav = [
-    { href: '/admin',                label: 'لوحة التحكم',              icon: 'home',      exact: true  },
-    { href: '/admin/users',          label: 'المستخدمون',               icon: 'users',     exact: false },
-    { href: '/admin/workspaces',     label: 'Workspaces',               icon: 'grid',      exact: false },
-    { href: '/admin/posts',          label: 'المنشورات',                icon: 'clock',     exact: false },
-    { href: '/admin/social-accounts',label: 'الحسابات المرتبطة',        icon: 'instagram', exact: false },
-    { href: '/admin/ai-generations', label: 'توليدات الذكاء الاصطناعي', icon: 'sparkle',   exact: false },
-    { href: '/admin/campaigns',      label: 'الحملات الإعلانية',         icon: 'megaphone', exact: false },
+    { href: '/admin',                 label: 'لوحة التحكم',              icon: 'home',      exact: true  },
+    { href: '/admin/users',           label: 'المستخدمون',               icon: 'users',     exact: false },
+    { href: '/admin/workspaces',      label: 'Workspaces',               icon: 'grid',      exact: false },
+    { href: '/admin/posts',           label: 'المنشورات',                icon: 'clock',     exact: false },
+    { href: '/admin/social-accounts', label: 'الحسابات المرتبطة',        icon: 'instagram', exact: false },
+    { href: '/admin/ai-generations',  label: 'توليدات الذكاء الاصطناعي', icon: 'sparkle',   exact: false },
+    { href: '/admin/campaigns',       label: 'الحملات الإعلانية',         icon: 'megaphone', exact: false },
+    { href: '/admin/billing',         label: 'الفواتير والإيرادات',       icon: 'credit-card', exact: false },
+    { href: '/admin/tokens',          label: 'سجل الرصيد',               icon: 'coins',     exact: false },
+    { href: '/admin/ai-costs',        label: 'تكاليف الذكاء الاصطناعي',  icon: 'cpu',       exact: false },
+    { href: '/admin/notifications',   label: 'الإشعارات',                icon: 'bell',      exact: false },
+    { href: '/admin/system',          label: 'صحة النظام',               icon: 'server',    exact: false },
+    { href: '/admin/settings',        label: 'الإعدادات',                icon: 'settings',  exact: false },
 ]
 
 function isActive(href: string, exact: boolean) {
