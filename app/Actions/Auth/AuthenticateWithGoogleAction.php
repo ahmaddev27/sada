@@ -30,7 +30,7 @@ class AuthenticateWithGoogleAction
             'google_id'          => $googleUser->getId(),
             'password'           => null,
             'email_verified_at'  => Carbon::now(), // Google guarantees verified email
-            'token_balance'      => 0,
+            'token_balance'      => 2000,
         ]);
     }
 }

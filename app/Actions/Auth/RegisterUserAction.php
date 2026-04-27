@@ -14,7 +14,7 @@ class RegisterUserAction
             'name'          => $name,
             'email'         => $email,
             'password'      => $password,
-            'token_balance' => 0,
+            'token_balance' => 2000,
         ]);
 
         event(new Registered($user));

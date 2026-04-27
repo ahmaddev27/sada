@@ -145,6 +145,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // ── Payment gateway webhooks (no CSRF, no auth) ────────────────────────────
 Route::post('/webhooks/moyasar', [BillingController::class, 'webhook'])->name('billing.webhook');
 
+// ── Admin Dashboard (Phase 0.6 — M8) ──────────────────────────────────────
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin'])->group(function () {
+    Route::get('/',                                  [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/users',                             [\App\Http\Controllers\Admin\AdminUserController::class, 'index'])->name('users.index');
+    Route::get('/users/{user}',                      [\App\Http\Controllers\Admin\AdminUserController::class, 'show'])->name('users.show');
+    Route::post('/users/{user}/ban',                 [\App\Http\Controllers\Admin\AdminUserController::class, 'ban'])->name('users.ban');
+    Route::post('/users/{user}/unban',               [\App\Http\Controllers\Admin\AdminUserController::class, 'unban'])->name('users.unban');
+    Route::post('/users/{user}/grant-tokens',        [\App\Http\Controllers\Admin\AdminUserController::class, 'grantTokens'])->name('users.grant-tokens');
+    Route::post('/users/{user}/impersonate',         [\App\Http\Controllers\Admin\AdminImpersonateController::class, 'impersonate'])->name('users.impersonate');
+    Route::post('/impersonate/stop',                 [\App\Http\Controllers\Admin\AdminImpersonateController::class, 'stop'])->name('impersonate.stop');
+    Route::get('/workspaces',                        [\App\Http\Controllers\Admin\AdminWorkspaceController::class, 'index'])->name('workspaces.index');
+    Route::post('/workspaces/{workspace}/suspend',   [\App\Http\Controllers\Admin\AdminWorkspaceController::class, 'suspend'])->name('workspaces.suspend');
+    Route::post('/workspaces/{workspace}/restore',   [\App\Http\Controllers\Admin\AdminWorkspaceController::class, 'restore'])->name('workspaces.restore');
+});
+
 // ── Artisan helper — protected by secret key (cPanel deployments) ──────────
 Route::get('/up/storage-link', function () {
     abort_unless(request('secret') === config('app.artisan_secret'), 403);

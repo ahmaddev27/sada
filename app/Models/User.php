@@ -27,6 +27,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
             'token_balance'     => 'integer',
+            'is_admin'          => 'boolean',
         ];
     }
 
