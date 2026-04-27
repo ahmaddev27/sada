@@ -54,6 +54,8 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    'artisan_secret' => env('ARTISAN_SECRET', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
