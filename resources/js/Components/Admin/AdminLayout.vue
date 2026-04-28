@@ -30,6 +30,7 @@ const nav = [
     { href: '/admin/billing',         label: 'الفواتير والإيرادات',       icon: 'credit-card', exact: false },
     { href: '/admin/tokens',          label: 'سجل الرصيد',               icon: 'coins',     exact: false },
     { href: '/admin/ai-costs',        label: 'تكاليف الذكاء الاصطناعي',  icon: 'cpu',       exact: false },
+    { href: '/admin/seasonal',         label: 'المناسبات الموسمية',        icon: 'moon',      exact: false },
     { href: '/admin/notifications',   label: 'الإشعارات',                icon: 'bell',      exact: false },
     { href: '/admin/system',          label: 'صحة النظام',               icon: 'server',    exact: false },
     { href: '/admin/settings',        label: 'الإعدادات',                icon: 'settings',  exact: false },
