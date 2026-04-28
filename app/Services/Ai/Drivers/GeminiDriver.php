@@ -13,7 +13,7 @@ class GeminiDriver implements AiDriverInterface
         private readonly int    $maxTokens = 8192,
     ) {}
 
-    public function complete(string $system, string $user): string
+    public function complete(string $system, string $user): array
     {
         if (empty($this->apiKey)) {
             throw new RuntimeException('Gemini API key is not configured.');
@@ -34,8 +34,15 @@ class GeminiDriver implements AiDriverInterface
             ]
         )->throw()->json();
 
-        return $response['candidates'][0]['content']['parts'][0]['text'] ?? '';
+        $usageMeta = $response['usageMetadata'] ?? [];
+
+        return [
+            'content'       => $response['candidates'][0]['content']['parts'][0]['text'] ?? '',
+            'input_tokens'  => $usageMeta['promptTokenCount']     ?? 0,
+            'output_tokens' => $usageMeta['candidatesTokenCount'] ?? 0,
+        ];
     }
 
-    public function name(): string { return 'gemini'; }
+    public function name(): string  { return 'gemini'; }
+    public function model(): string { return $this->model; }
 }

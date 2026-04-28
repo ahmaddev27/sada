@@ -24,6 +24,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             TokenPackageSeeder::class,
+            SiteSettingsSeeder::class,
+            SeasonalOccasionSeeder::class,
         ]);
     }
 }

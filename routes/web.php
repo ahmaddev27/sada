@@ -175,6 +175,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', \App\Htt
     Route::get('/tokens',                             [\App\Http\Controllers\Admin\AdminTokenAuditController::class,     'index'])->name('tokens.index');
     Route::get('/tokens/export',                     [\App\Http\Controllers\Admin\AdminTokenAuditController::class,     'export'])->name('tokens.export');
     Route::get('/ai-costs',                           [\App\Http\Controllers\Admin\AdminAiCostController::class,         'index'])->name('ai-costs.index');
+    Route::get('/ai-models',                          [\App\Http\Controllers\Admin\AdminAiModelsController::class,        'index'])->name('ai-models.index');
     Route::get('/notifications',                      [\App\Http\Controllers\Admin\AdminNotificationController::class,   'index'])->name('notifications.index');
     Route::post('/notifications/broadcast',           [\App\Http\Controllers\Admin\AdminNotificationController::class,   'broadcast'])->name('notifications.broadcast');
     Route::get('/system',                             [\App\Http\Controllers\Admin\AdminSystemController::class,         'index'])->name('system.index');
@@ -183,6 +184,20 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', \App\Htt
     Route::get('/settings',                           [\App\Http\Controllers\Admin\AdminSettingsController::class,       'index'])->name('settings.index');
     Route::post('/settings/flags',                    [\App\Http\Controllers\Admin\AdminSettingsController::class,       'updateFlags'])->name('settings.flags');
     Route::post('/settings/packages/{package}',       [\App\Http\Controllers\Admin\AdminSettingsController::class,       'updatePackage'])->name('settings.packages.update');
+    Route::get('/site-settings',                      [\App\Http\Controllers\Admin\AdminSiteSettingsController::class,   'index'])->name('site-settings.index');
+    Route::post('/site-settings',                     [\App\Http\Controllers\Admin\AdminSiteSettingsController::class,   'update'])->name('site-settings.update');
+    Route::post('/site-settings/image/{key}',         [\App\Http\Controllers\Admin\AdminSiteSettingsController::class,   'uploadImage'])->name('site-settings.image');
+
+    // SE-01→SE-08: Seasonal Engine Admin (Phase 0.7 — M9 S17)
+    Route::get('/seasonal',                                                  [\App\Http\Controllers\Admin\AdminSeasonalController::class, 'index'])->name('seasonal.index');
+    Route::post('/seasonal',                                                 [\App\Http\Controllers\Admin\AdminSeasonalController::class, 'store'])->name('seasonal.store');
+    Route::patch('/seasonal/{occasion}',                                     [\App\Http\Controllers\Admin\AdminSeasonalController::class, 'update'])->name('seasonal.update');
+    Route::post('/seasonal/{occasion}/toggle',                               [\App\Http\Controllers\Admin\AdminSeasonalController::class, 'toggleActive'])->name('seasonal.toggle');
+    Route::delete('/seasonal/{occasion}',                                    [\App\Http\Controllers\Admin\AdminSeasonalController::class, 'destroy'])->name('seasonal.destroy');
+    Route::get('/seasonal/{occasion}/templates',                             [\App\Http\Controllers\Admin\AdminSeasonalController::class, 'templates'])->name('seasonal.templates');
+    Route::post('/seasonal/{occasion}/templates',                            [\App\Http\Controllers\Admin\AdminSeasonalController::class, 'storeTemplate'])->name('seasonal.templates.store');
+    Route::patch('/seasonal/{occasion}/templates/{template}',                [\App\Http\Controllers\Admin\AdminSeasonalController::class, 'updateTemplate'])->name('seasonal.templates.update');
+    Route::delete('/seasonal/{occasion}/templates/{template}',               [\App\Http\Controllers\Admin\AdminSeasonalController::class, 'destroyTemplate'])->name('seasonal.templates.destroy');
 });
 
 // ── Artisan helper — protected by secret key (cPanel deployments) ──────────

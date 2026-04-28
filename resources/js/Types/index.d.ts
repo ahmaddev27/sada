@@ -56,6 +56,33 @@ export interface AppNotification {
     created_at: string;
 }
 
+export interface SiteSettings {
+    site_name?: string
+    site_slogan?: string
+    site_description?: string
+    registration_open?: boolean
+    logo_path?: string | null
+    logo_dark_path?: string | null
+    favicon_path?: string | null
+    og_image_path?: string | null
+    contact_email?: string
+    support_email?: string
+    phone?: string | null
+    whatsapp?: string | null
+    address?: string | null
+    meta_title?: string
+    meta_description?: string
+    meta_keywords?: string
+    social_facebook?: string | null
+    social_instagram?: string | null
+    social_twitter?: string | null
+    social_tiktok?: string | null
+    social_snapchat?: string | null
+    social_linkedin?: string | null
+    social_youtube?: string | null
+    [key: string]: unknown
+}
+
 export interface PageProps extends Record<string, unknown> {
     auth: {
         user: User | null;
@@ -73,6 +100,7 @@ export interface PageProps extends Record<string, unknown> {
         recent: AppNotification[];
     } | null;
     impersonating: { active: boolean; stop_url: string } | null;
+    siteSettings: SiteSettings;
 }
 
 // ADS-01 → ADS-11
