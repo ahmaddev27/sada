@@ -5,6 +5,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\SeasonalOccasion;
+use App\Services\FeatureFlagService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -15,8 +16,13 @@ class SeasonalController extends Controller
 {
     private const CACHE_TTL = 3600; // 1 hour
 
-    public function index(Request $request): Response
+    public function index(Request $request): Response|\Illuminate\Http\RedirectResponse
     {
+        if (! app(FeatureFlagService::class)->isEnabled('seasonal_engine')) {
+            return redirect()->route('dashboard')
+                ->with('flash', ['error' => 'محرك الحملات الموسمية معطّل مؤقتاً.']);
+        }
+
         $country = $request->query('country', 'all');
 
         $occasions = $this->loadOccasions($country);

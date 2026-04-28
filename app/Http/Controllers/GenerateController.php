@@ -9,6 +9,7 @@ use App\Actions\Content\SavePostAction;
 use App\Http\Requests\Content\GenerateContentRequest;
 use App\Http\Requests\Content\SavePostRequest;
 use App\Models\SocialAccount;
+use App\Services\FeatureFlagService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,8 +19,13 @@ use Inertia\Response;
 class GenerateController extends Controller
 {
     // CG-01→CG-04: generation page
-    public function index(Request $request): Response
+    public function index(Request $request): Response|\Illuminate\Http\RedirectResponse
     {
+        if (! app(FeatureFlagService::class)->isEnabled('ai_generation')) {
+            return redirect()->route('dashboard')
+                ->with('flash', ['error' => 'ميزة توليد المحتوى معطّلة مؤقتاً.']);
+        }
+
         $workspace = $request->attributes->get('current_workspace');
 
         $socialAccounts = $workspace
@@ -39,6 +45,10 @@ class GenerateController extends Controller
         GenerateContentRequest $request,
         GenerateContentAction $action,
     ): JsonResponse {
+        if (! app(FeatureFlagService::class)->isEnabled('ai_generation')) {
+            return response()->json(['error' => 'ميزة توليد المحتوى معطّلة مؤقتاً.'], 403);
+        }
+
         $workspace = $request->attributes->get('current_workspace');
 
         if (! $workspace) {

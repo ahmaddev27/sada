@@ -203,7 +203,7 @@ function deleteTemplate(t: Template) {
 .page-subtitle { font-size: 13px; color: var(--text-muted); margin: 0; }
 
 .templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-.template-card  { background: var(--bg-card); border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.template-card  { background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 
 .tc-header   { display: flex; align-items: center; gap: 8px; }
 .tc-platform { font-weight: 700; font-size: 13px; }
@@ -218,7 +218,7 @@ function deleteTemplate(t: Template) {
 
 /* Modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 24px; }
-.modal-panel   { background: var(--bg-card); border-radius: var(--radius-lg); width: 100%; max-width: 560px; box-shadow: 0 20px 60px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; }
+.modal-panel   { background: var(--bg-surface); border-radius: var(--radius-lg); width: 100%; max-width: 560px; box-shadow: 0 20px 60px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; }
 .modal-header  { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px; border-bottom: 1px solid var(--border-default); }
 .modal-header h2 { font-size: 17px; font-weight: 700; margin: 0; }
 .modal-body    { padding: 20px 24px; }

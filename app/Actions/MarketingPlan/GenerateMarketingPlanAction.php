@@ -210,7 +210,7 @@ MSG;
 
     private function resolveDriver(): \App\Services\Ai\Drivers\AiDriverInterface
     {
-        $all = [
+        $drivers = [
             'anthropic' => fn () => new AnthropicDriver(
                 apiKey: (string) config('services.anthropic.api_key', ''),
                 model:  (string) config('services.anthropic.model', 'claude-3-5-haiku-20241022'),
@@ -230,8 +230,15 @@ MSG;
         ];
 
         $primary = (string) config('services.ai.provider', 'anthropic');
+        $order   = array_unique([$primary, ...array_keys($drivers)]);
 
-        return isset($all[$primary]) ? ($all[$primary])() : ($all['anthropic'])();
+        foreach ($order as $name) {
+            if (! empty(config("services.{$name}.api_key", ''))) {
+                return ($drivers[$name])();
+            }
+        }
+
+        throw new \RuntimeException('No AI provider is configured. Please set at least one API key in .env.');
     }
 
     private function calculateCost(string $model, int $inputTokens, int $outputTokens): float

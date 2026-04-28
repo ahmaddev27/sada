@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
+            \App\Http\Middleware\MaintenanceModeMiddleware::class,
             \App\Http\Middleware\SetCurrentWorkspace::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);

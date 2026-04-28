@@ -9,6 +9,7 @@ use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Services\SiteSettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,6 +30,10 @@ class AuthController extends Controller
     // AUTH-01, AUTH-03
     public function register(RegisterRequest $request, RegisterUserAction $action): RedirectResponse
     {
+        if (! app(SiteSettingsService::class)->get('registration_open', true)) {
+            return back()->withErrors(['email' => 'التسجيل مغلق مؤقتاً. يرجى التواصل مع الدعم.']);
+        }
+
         $user = $action->execute(
             name:     $request->string('name')->trim()->toString(),
             email:    $request->string('email')->lower()->toString(),

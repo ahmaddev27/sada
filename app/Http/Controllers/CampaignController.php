@@ -13,6 +13,7 @@ use App\Models\Campaign;
 use App\Models\Post;
 use App\Models\SocialAccount;
 use App\Models\Workspace;
+use App\Services\FeatureFlagService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,6 +24,11 @@ class CampaignController extends Controller
     // ADS-01: create campaign page
     public function create(Request $request): Response|\Illuminate\Http\RedirectResponse
     {
+        if (! app(FeatureFlagService::class)->isEnabled('paid_campaigns')) {
+            return redirect()->route('dashboard')
+                ->with('flash', ['error' => 'ميزة الحملات الإعلانية المدفوعة معطّلة مؤقتاً.']);
+        }
+
         /** @var Workspace|null $workspace */
         $workspace = $request->attributes->get('current_workspace');
 

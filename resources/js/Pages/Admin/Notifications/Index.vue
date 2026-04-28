@@ -173,7 +173,7 @@ function fmt(n: number) {
 .page-subtitle { font-size: 13px; color: var(--text-muted); }
 
 .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-.kpi-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+.kpi-card { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
 .kpi-top { display: flex; align-items: center; justify-content: space-between; width: 100%; }
 .kpi-value { font-size: 22px; font-weight: 700; color: var(--text-primary); }
 .kpi-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -182,7 +182,7 @@ function fmt(n: number) {
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
 .compose-card,
-.history-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 24px; }
+.history-card { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 24px; }
 .section-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; }
 
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }

@@ -8,6 +8,7 @@ use App\Actions\MarketingPlan\GenerateMarketingPlanAction;
 use App\Models\MarketingPlan;
 use App\Models\SeasonalOccasion;
 use App\Models\Workspace;
+use App\Services\FeatureFlagService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,6 +18,11 @@ class MarketingPlanController extends Controller
 {
     public function index(Request $request): Response|RedirectResponse
     {
+        if (! app(FeatureFlagService::class)->isEnabled('ai_generation')) {
+            return redirect()->route('dashboard')
+                ->with('flash', ['error' => 'ميزة توليد المحتوى بالذكاء الاصطناعي معطّلة مؤقتاً.']);
+        }
+
         /** @var Workspace|null $workspace */
         $workspace = $request->attributes->get('current_workspace');
 

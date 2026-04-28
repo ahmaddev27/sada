@@ -12,10 +12,20 @@ const props = defineProps<{ title?: string; crumbs?: string[] }>()
 const page = usePage<PageProps>()
 const ui   = useUiStore()
 
-const user       = computed(() => page.props.auth?.user)
-const ws         = computed(() => page.props.currentWorkspace)
-const workspaces = computed(() => page.props.workspaces ?? [])
-const flash      = computed(() => page.props.flash)
+const user         = computed(() => page.props.auth?.user)
+const ws           = computed(() => page.props.currentWorkspace)
+const workspaces   = computed(() => page.props.workspaces ?? [])
+const flash        = computed(() => page.props.flash)
+const siteSettings = computed(() => page.props.siteSettings)
+
+const logoSrc = computed(() => {
+    if (ui.theme === 'dark') {
+        return siteSettings.value?.logo_dark_path
+            || '/images/logo/sada-horizontal-ar-dark.svg'
+    }
+    return siteSettings.value?.logo_path
+        || '/images/logo/sada-horizontal-ar.svg'
+})
 
 const mobileOpen   = ref(false)
 const wsDropOpen   = ref(false)
@@ -153,9 +163,7 @@ onUnmounted(() => {
             <div class="sidebar-top">
                 <div class="sidebar-logo">
                     <img
-                        :src="ui.theme === 'dark'
-                            ? '/images/logo/sada-horizontal-ar-dark.svg'
-                            : '/images/logo/sada-horizontal-ar.svg'"
+                        :src="logoSrc"
                         class="logo-horizontal"
                         alt="صدى"
                     />

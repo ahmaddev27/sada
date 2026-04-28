@@ -375,7 +375,7 @@ function deleteOccasion(o: Occasion) {
 .page-subtitle { font-size: 13px; color: var(--text-muted); margin: 0; }
 
 .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-.kpi-card { background: var(--bg-card); border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: 18px 20px; }
+.kpi-card { background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: 18px 20px; }
 .kpi-value { font-size: 26px; font-weight: 700; color: var(--text-primary); }
 .kpi-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 .text-green { color: #16a34a; }
@@ -414,7 +414,7 @@ function deleteOccasion(o: Occasion) {
 
 /* Modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 24px; }
-.modal-panel   { background: var(--bg-card); border-radius: var(--radius-lg); width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; }
+.modal-panel   { background: var(--bg-surface); border-radius: var(--radius-lg); width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; }
 .modal-header  { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px; border-bottom: 1px solid var(--border-default); }
 .modal-header h2 { font-size: 17px; font-weight: 700; margin: 0; }
 .modal-body    { padding: 20px 24px; }

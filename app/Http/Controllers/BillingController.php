@@ -10,6 +10,7 @@ use App\Models\Invoice;
 use App\Models\TokenPackage;
 use App\Models\TokenTransaction;
 use App\Models\User;
+use App\Services\FeatureFlagService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -22,8 +23,13 @@ use Inertia\Response;
 class BillingController extends Controller
 {
     // BIL-01: billing overview — packages, balance, history
-    public function index(Request $request): Response
+    public function index(Request $request): Response|\Illuminate\Http\RedirectResponse
     {
+        if (! app(FeatureFlagService::class)->isEnabled('billing')) {
+            return redirect()->route('dashboard')
+                ->with('flash', ['error' => 'نظام الفواتير والدفع معطّل مؤقتاً.']);
+        }
+
         /** @var User $user */
         $user = $request->user();
 
