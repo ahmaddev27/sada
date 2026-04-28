@@ -1,7 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { useUiStore } from '@/Stores/ui';
+import type { PageProps } from '@/Types';
+
+const page = usePage<PageProps>();
+const s    = computed(() => page.props.siteSettings)
+
+const ogTitle = computed(() =>
+    `${s.value?.site_name ?? 'صدى'} — ${s.value?.site_slogan ?? 'منصة التسويق الذكي للسوق الخليجي'}`
+)
+const ogDesc = computed(() =>
+    s.value?.meta_description ?? 'منصة صدى للتسويق الرقمي بالذكاء الاصطناعي — توليد محتوى خليجي بـ 7 لهجات، حملات موسمية، جدولة Meta، وإعلانات ممولة.'
+)
+const ogImage = computed(() => s.value?.og_image_path ?? null)
 
 const ui = useUiStore();
 const mobileMenuOpen = ref(false);
@@ -41,7 +53,20 @@ const navLinks = [
 </script>
 
 <template>
-    <Head title="صدى — منصة التسويق الذكي للسوق الخليجي" />
+    <Head>
+        <title>{{ ogTitle }}</title>
+        <meta head-key="description"       name="description"       :content="ogDesc" />
+        <meta head-key="og:title"          property="og:title"       :content="ogTitle" />
+        <meta head-key="og:description"    property="og:description" :content="ogDesc" />
+        <meta head-key="og:type"           property="og:type"        content="website" />
+        <meta head-key="twitter:title"     name="twitter:title"      :content="ogTitle" />
+        <meta head-key="twitter:description" name="twitter:description" :content="ogDesc" />
+        <template v-if="ogImage">
+            <meta head-key="og:image"      property="og:image"       :content="ogImage" />
+            <meta head-key="twitter:image" name="twitter:image"       :content="ogImage" />
+            <meta head-key="twitter:card"  name="twitter:card"        content="summary_large_image" />
+        </template>
+    </Head>
 
     <div class="landing" dir="rtl">
 
