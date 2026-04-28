@@ -306,8 +306,8 @@ const navLinks = [
                     <span>© ٢٠٢٦ — جميع الحقوق محفوظة</span>
                 </div>
                 <div class="footer-links">
-                    <a href="#" class="footer-link">الخصوصية</a>
-                    <a href="#" class="footer-link">الشروط</a>
+                    <a href="/privacy" class="footer-link">الخصوصية</a>
+                    <a href="/terms" class="footer-link">الشروط</a>
                     <a href="#" class="footer-link">الدعم</a>
                     <a href="#" class="footer-link">تواصل</a>
                 </div>

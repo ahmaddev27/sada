@@ -35,6 +35,17 @@ class OnboardingController extends Controller
         'أخرى',
     ];
 
+    private const PERSONA_NICHES = [
+        'نمط الحياة والفاشون',
+        'طبخ وأكل',
+        'رياضة ولياقة بدنية',
+        'تقنية وتكنولوجيا',
+        'ترفيه وكوميديا',
+        'سفر وسياحة',
+        'تعليم وتطوير الذات',
+        'أخرى',
+    ];
+
     public function show(Request $request): Response|RedirectResponse
     {
         $user      = $request->user();
@@ -48,6 +59,7 @@ class OnboardingController extends Controller
                     'step'          => 2,
                     'dialects'      => self::DIALECTS,
                     'businessTypes' => self::BUSINESS_TYPES,
+                    'personaNiches' => self::PERSONA_NICHES,
                 ]);
             }
 
@@ -56,6 +68,7 @@ class OnboardingController extends Controller
                     'step'          => 3,
                     'dialects'      => self::DIALECTS,
                     'businessTypes' => self::BUSINESS_TYPES,
+                    'personaNiches' => self::PERSONA_NICHES,
                 ]);
             }
 
@@ -67,6 +80,7 @@ class OnboardingController extends Controller
             'step'          => 1,
             'dialects'      => self::DIALECTS,
             'businessTypes' => self::BUSINESS_TYPES,
+            'personaNiches' => self::PERSONA_NICHES,
         ]);
     }
 
@@ -76,6 +90,7 @@ class OnboardingController extends Controller
         $workspace = $action->execute(
             user:           $user,
             name:           $request->string('name')->trim()->toString(),
+            entityType:     $request->string('entity_type')->toString() ?: 'business',
             businessType:   $request->string('business_type')->toString() ?: null,
             countries:      $request->array('countries') ?: ['sa'],
             defaultDialect: $request->string('default_dialect')->toString() ?: 'sa',

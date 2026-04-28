@@ -122,10 +122,16 @@
     --color-border-subtle:   var(--border-subtle);
     --color-ink-800:         var(--ink-800);
 
-    --accent:      var(--sada-500);
-    --accent-hover:var(--sada-600);
-    --accent-soft: var(--sada-100);
-    --accent-text: var(--sada-700);
+    --accent:       var(--sada-500);
+    --accent-hover: var(--sada-600);
+    --accent-soft:  var(--sada-100);
+    --accent-text:  var(--sada-700);
+
+    /* Aliases used across admin pages */
+    --primary:       var(--sada-500);
+    --primary-hover: var(--sada-600);
+    --bg-card:       var(--bg-surface);
+    --border-hover:  var(--border-strong);
 
     /* Radii */
     --radius-sm:   6px;
@@ -182,10 +188,14 @@
     --border-strong:  #42504A;
     --border-brand:   #0A5A4B;
 
-    --accent:       #2A9080;
-    --accent-hover: #3DA898;
-    --accent-soft:  #0A2B26;
-    --accent-text:  #8DCDBE;
+    --accent:        #2A9080;
+    --accent-hover:  #3DA898;
+    --accent-soft:   #0A2B26;
+    --accent-text:   #8DCDBE;
+    --primary:       #2A9080;
+    --primary-hover: #3DA898;
+    --bg-card:       var(--bg-surface);
+    --border-hover:  var(--border-strong);
 
     --success-bg: #08261B;
     --warning-bg: #2B1F0D;

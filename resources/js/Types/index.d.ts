@@ -72,6 +72,7 @@ export interface PageProps extends Record<string, unknown> {
         unread_count: number;
         recent: AppNotification[];
     } | null;
+    impersonating: { active: boolean; stop_url: string } | null;
 }
 
 // ADS-01 → ADS-11

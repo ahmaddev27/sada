@@ -26,6 +26,9 @@ Route::get('/', function () {
     return Inertia::render('Landing');
 })->name('landing');
 
+Route::get('/terms',   fn () => Inertia::render('Terms'))->name('terms');
+Route::get('/privacy', fn () => Inertia::render('Privacy'))->name('privacy');
+
 // ── Guest routes ───────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
     // AUTH-01
@@ -145,6 +148,11 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\RedirectAdminToPanel
 // ── Payment gateway webhooks (no CSRF, no auth) ────────────────────────────
 Route::post('/webhooks/moyasar', [BillingController::class, 'webhook'])->name('billing.webhook');
 
+// ── Stop impersonation — accessible while logged in as non-admin user ────────
+Route::post('/admin/impersonate/stop', [\App\Http\Controllers\Admin\AdminUserController::class, 'stopImpersonating'])
+    ->middleware(['auth'])
+    ->name('admin.impersonate.stop');
+
 // ── Admin Dashboard (Phase 0.6 — M8) ──────────────────────────────────────
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
     Route::get('/',                                  [\App\Http\Controllers\Admin\AdminDashboardController::class,    'index'])->name('dashboard');
@@ -153,6 +161,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', \App\Htt
     Route::post('/users/{user}/ban',                 [\App\Http\Controllers\Admin\AdminUserController::class,         'ban'])->name('users.ban');
     Route::post('/users/{user}/unban',               [\App\Http\Controllers\Admin\AdminUserController::class,         'unban'])->name('users.unban');
     Route::post('/users/{user}/grant-tokens',        [\App\Http\Controllers\Admin\AdminUserController::class,         'grantTokens'])->name('users.grant-tokens');
+    Route::post('/users/{user}/impersonate',         [\App\Http\Controllers\Admin\AdminUserController::class,         'impersonate'])->name('users.impersonate');
     Route::get('/workspaces',                        [\App\Http\Controllers\Admin\AdminWorkspaceController::class,    'index'])->name('workspaces.index');
     Route::post('/workspaces/{workspace}/suspend',   [\App\Http\Controllers\Admin\AdminWorkspaceController::class,   'suspend'])->name('workspaces.suspend');
     Route::post('/workspaces/{workspace}/restore',   [\App\Http\Controllers\Admin\AdminWorkspaceController::class,   'restore'])->name('workspaces.restore');
@@ -162,7 +171,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', \App\Htt
     Route::get('/campaigns',                         [\App\Http\Controllers\Admin\AdminCampaignController::class,       'index'])->name('campaigns.index');
     Route::post('/campaigns/{campaign}/force-status', [\App\Http\Controllers\Admin\AdminCampaignController::class,      'forceStatus'])->name('campaigns.force-status');
     Route::get('/billing',                            [\App\Http\Controllers\Admin\AdminBillingController::class,        'index'])->name('billing.index');
+    Route::get('/billing/export',                    [\App\Http\Controllers\Admin\AdminBillingController::class,        'export'])->name('billing.export');
     Route::get('/tokens',                             [\App\Http\Controllers\Admin\AdminTokenAuditController::class,     'index'])->name('tokens.index');
+    Route::get('/tokens/export',                     [\App\Http\Controllers\Admin\AdminTokenAuditController::class,     'export'])->name('tokens.export');
     Route::get('/ai-costs',                           [\App\Http\Controllers\Admin\AdminAiCostController::class,         'index'])->name('ai-costs.index');
     Route::get('/notifications',                      [\App\Http\Controllers\Admin\AdminNotificationController::class,   'index'])->name('notifications.index');
     Route::post('/notifications/broadcast',           [\App\Http\Controllers\Admin\AdminNotificationController::class,   'broadcast'])->name('notifications.broadcast');

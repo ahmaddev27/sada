@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\Admin\AdminLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -69,7 +70,8 @@ class AdminUserController extends Controller
     {
         abort_if($user->is_admin, 403, 'لا يمكن حظر مدير.');
 
-        $user->update(['banned_at' => now()]);
+        $user->banned_at = now();
+        $user->save();
 
         $this->log->log(
             $request->user()->id,
@@ -84,7 +86,8 @@ class AdminUserController extends Controller
 
     public function unban(User $user, Request $request): RedirectResponse
     {
-        $user->update(['banned_at' => null]);
+        $user->banned_at = null;
+        $user->save();
 
         $this->log->log($request->user()->id, 'unban_user', User::class, $user->id);
 
@@ -98,9 +101,10 @@ class AdminUserController extends Controller
         $user->increment('token_balance', $data['amount']);
 
         $user->tokenTransactions()->create([
-            'type'          => 'admin_grant',
+            'type'          => 'bonus',
             'amount'        => $data['amount'],
             'balance_after' => $user->fresh()->token_balance,
+            'description'   => 'منحة إدارية',
         ]);
 
         $this->log->log(
@@ -112,5 +116,44 @@ class AdminUserController extends Controller
         );
 
         return back()->with('success', "تم منح {$data['amount']} توكن.");
+    }
+
+    public function impersonate(User $user, Request $request): RedirectResponse
+    {
+        abort_if($user->is_admin, 403, 'لا يمكن الانتقال لحساب مدير.');
+        abort_if($request->session()->has('impersonating_admin_id'), 403, 'أنت بالفعل في وضع الانتقال.');
+
+        $this->log->log(
+            $request->user()->id,
+            'impersonate_start',
+            User::class,
+            $user->id,
+        );
+
+        $request->session()->put('impersonating_admin_id', $request->user()->id);
+        Auth::loginUsingId($user->id);
+
+        return redirect('/dashboard')->with('flash.success', "أنت الآن تتصفح كـ {$user->name}");
+    }
+
+    public function stopImpersonating(Request $request): RedirectResponse
+    {
+        $adminId = $request->session()->pull('impersonating_admin_id');
+
+        if (! $adminId) {
+            return redirect('/admin');
+        }
+
+        $admin = User::find($adminId);
+        if (! $admin) {
+            Auth::logout();
+            return redirect('/login');
+        }
+
+        $this->log->log($adminId, 'impersonate_stop', User::class, $request->user()->id);
+
+        Auth::loginUsingId($adminId);
+
+        return redirect('/admin/users')->with('flash.success', 'تم إنهاء وضع الانتقال.');
     }
 }

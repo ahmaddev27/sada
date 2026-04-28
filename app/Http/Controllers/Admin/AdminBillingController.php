@@ -8,9 +8,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\TokenPackage;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminBillingController extends Controller
 {
@@ -47,8 +49,11 @@ class AdminBillingController extends Controller
             ->sum('total_amount');
 
         // Monthly revenue — last 6 months
+        $monthExpr   = DB::getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', paid_at)"
+            : "DATE_FORMAT(paid_at, '%Y-%m')";
         $revenueChart = Invoice::select(
-            DB::raw("DATE_FORMAT(paid_at, '%Y-%m') as month"),
+            DB::raw("{$monthExpr} as month"),
             DB::raw('SUM(total_amount) as total'),
             DB::raw('COUNT(*) as count'),
         )
@@ -76,5 +81,37 @@ class AdminBillingController extends Controller
             'revenueChart' => $revenueChart,
             'packages'     => $packages,
         ]);
+    }
+
+    public function export(): StreamedResponse
+    {
+        $filename = 'billing-' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () {
+            $out = fopen('php://output', 'w');
+            // UTF-8 BOM for Excel Arabic support
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, ['رقم الفاتورة', 'المستخدم', 'البريد', 'المبلغ', 'ضريبة', 'الإجمالي', 'العملة', 'الرصيد', 'البوابة', 'الحالة', 'تاريخ الدفع', 'تاريخ الإنشاء']);
+
+            Invoice::with('user:id,name,email')->orderByDesc('created_at')->cursor()
+                ->each(function (Invoice $inv) use ($out) {
+                    fputcsv($out, [
+                        $inv->invoice_number,
+                        $inv->user->name ?? '',
+                        $inv->user->email ?? '',
+                        $inv->amount,
+                        $inv->vat_amount,
+                        $inv->total_amount,
+                        $inv->currency,
+                        $inv->tokens_purchased,
+                        $inv->payment_gateway,
+                        $inv->status,
+                        $inv->paid_at ? \Carbon\Carbon::parse($inv->paid_at)->format('Y-m-d H:i') : '',
+                        \Carbon\Carbon::parse($inv->created_at)->format('Y-m-d H:i'),
+                    ]);
+                });
+
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 }

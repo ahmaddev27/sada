@@ -10,7 +10,7 @@ class AnthropicDriver implements AiDriverInterface
     public function __construct(
         private readonly string $apiKey,
         private readonly string $model = 'claude-3-5-haiku-20241022',
-        private readonly int    $maxTokens = 2048,
+        private readonly int    $maxTokens = 8192,
     ) {}
 
     public function complete(string $system, string $user): string

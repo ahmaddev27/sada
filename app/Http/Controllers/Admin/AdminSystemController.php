@@ -60,6 +60,10 @@ class AdminSystemController extends Controller
 
     public function clearCache(Request $request): RedirectResponse
     {
+        $request->validate([
+            'what' => ['nullable', 'string', 'in:app,config,view,route'],
+        ]);
+
         $what = $request->string('what', 'app')->toString();
 
         $cleared = match ($what) {
@@ -129,7 +133,7 @@ class AdminSystemController extends Controller
                 return [
                     'driver'    => 'horizon',
                     'status'    => 'ok',
-                    'processed' => $metrics->throughput() ?? 0,
+                    'processed' => $metrics->throughput(),
                 ];
             }
 

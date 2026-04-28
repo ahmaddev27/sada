@@ -61,11 +61,23 @@ function resetFilters() {
 }
 
 const agentLabels: Record<string, string> = {
-    content_generator: 'توليد المحتوى',
-    caption_writer:    'كتابة التعليقات',
-    hashtag_generator: 'توليد الهاشتاقات',
-    analytics:         'تحليلات',
-    seasonal:          'موسمي',
+    content_generator:  'كاتب المحتوى',
+    content_generation: 'توليد المحتوى',
+    caption_writer:     'كتابة التعليقات',
+    hashtag_generator:  'توليد الهاشتاقات',
+    analytics:          'تحليلات',
+    seasonal:           'موسمي',
+    campaign:           'حملة',
+}
+
+const platformLabels: Record<string, string> = {
+    instagram: 'انستجرام',
+    facebook:  'فيسبوك',
+    tiktok:    'تيك توك',
+    snapchat:  'سناب شات',
+    x:         'X',
+    twitter:   'X',
+    linkedin:  'لينكدإن',
 }
 
 function fmt(n: number) {
@@ -137,7 +149,7 @@ function cacheRate(stat: AgentStat) {
                         <div class="breakdown-stats">
                             <span class="stat-chip">{{ fmt(stat.count) }} توليد</span>
                             <span class="stat-chip accent">{{ fmt(stat.tokens) }} رصيد</span>
-                            <span class="stat-chip green">{{ cacheRate(stat) }} cache</span>
+                            <span class="stat-chip green">{{ cacheRate(stat) }} مخزّن</span>
                         </div>
                     </div>
                 </div>
@@ -152,12 +164,12 @@ function cacheRate(stat: AgentStat) {
                 </select>
                 <select v-model="platform" class="inp inp--sm" @change="applyFilters">
                     <option value="">كل المنصات</option>
-                    <option value="instagram">Instagram</option>
-                    <option value="facebook">Facebook</option>
-                    <option value="tiktok">TikTok</option>
-                    <option value="snapchat">Snapchat</option>
+                    <option value="instagram">انستجرام</option>
+                    <option value="facebook">فيسبوك</option>
+                    <option value="tiktok">تيك توك</option>
+                    <option value="snapchat">سناب شات</option>
                     <option value="x">X</option>
-                    <option value="linkedin">LinkedIn</option>
+                    <option value="linkedin">لينكدإن</option>
                 </select>
                 <button class="btn btn-ghost btn--sm" @click="resetFilters">إعادة تعيين</button>
             </div>
@@ -188,7 +200,7 @@ function cacheRate(stat: AgentStat) {
                             <td class="ws-cell">{{ g.workspace?.name ?? '—' }}</td>
                             <td class="ws-cell">{{ g.user?.name ?? '—' }}</td>
                             <td><span class="pill pill--purple">{{ agentLabels[g.agent_type] ?? g.agent_type }}</span></td>
-                            <td><span class="pill pill--gray">{{ g.platform ?? '—' }}</span></td>
+                            <td><span class="pill pill--gray">{{ g.platform ? (platformLabels[g.platform] ?? g.platform) : '—' }}</span></td>
                             <td class="num-cell">{{ fmt(g.input_tokens) }}</td>
                             <td class="num-cell">{{ fmt(g.output_tokens) }}</td>
                             <td class="amount">{{ fmt(g.sada_tokens_charged) }}</td>

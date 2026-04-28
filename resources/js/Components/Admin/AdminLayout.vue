@@ -22,7 +22,7 @@ watch(flash, (val) => {
 const nav = [
     { href: '/admin',                 label: 'لوحة التحكم',              icon: 'home',      exact: true  },
     { href: '/admin/users',           label: 'المستخدمون',               icon: 'users',     exact: false },
-    { href: '/admin/workspaces',      label: 'Workspaces',               icon: 'grid',      exact: false },
+    { href: '/admin/workspaces',      label: 'مساحات العمل',              icon: 'grid',      exact: false },
     { href: '/admin/posts',           label: 'المنشورات',                icon: 'clock',     exact: false },
     { href: '/admin/social-accounts', label: 'الحسابات المرتبطة',        icon: 'instagram', exact: false },
     { href: '/admin/ai-generations',  label: 'توليدات الذكاء الاصطناعي', icon: 'sparkle',   exact: false },
@@ -90,13 +90,8 @@ function logout() {
                 </Link>
             </nav>
 
-            <!-- Bottom: user + actions -->
+            <!-- Bottom: user -->
             <div class="sidebar-bottom">
-                <Link href="/dashboard" class="admin-back-btn">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                    العودة للتطبيق
-                </Link>
-
                 <button class="user-chip" @click="logout">
                     <div class="uc-avatar">
                         <span>{{ userInitials }}</span>
@@ -150,6 +145,20 @@ function logout() {
 </template>
 
 <style scoped>
+/* ── Match user panel: stronger border for visible separation ─── */
+.sidebar {
+    border-left: 1px solid var(--border-default);
+}
+.sidebar-top {
+    border-bottom: 1px solid var(--border-default);
+}
+.sidebar-bottom {
+    border-top: 1px solid var(--border-default);
+}
+.topbar {
+    border-bottom: 1px solid var(--border-default);
+}
+
 /* Admin badge in sidebar under logo */
 .admin-badge {
     display: inline-flex;
@@ -178,27 +187,4 @@ function logout() {
     border-radius: var(--radius-full);
 }
 
-/* Back button — matches nav-item style but subtler */
-.admin-back-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    padding: 8px 10px;
-    border-radius: var(--radius-md);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-muted);
-    text-decoration: none;
-    border: 1px solid var(--border-subtle);
-    background: transparent;
-    transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
-    margin-bottom: 4px;
-    font-family: var(--font-arabic);
-}
-.admin-back-btn:hover {
-    background: var(--bg-muted);
-    color: var(--text-primary);
-    border-color: var(--border-default);
-}
 </style>

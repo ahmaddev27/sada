@@ -16,6 +16,8 @@ interface SocialAccount {
 interface Variation {
     title: string
     body: string
+    headline?: string
+    description?: string
     tags: string[]
     char_count: number
 }
@@ -24,6 +26,11 @@ defineProps<{ socialAccounts: SocialAccount[] }>()
 
 const page = usePage<PageProps>()
 const wsDialect = page.props.currentWorkspace?.default_dialect ?? 'sa'
+
+const ws         = computed(() => page.props.currentWorkspace)
+const wsName     = computed(() => ws.value?.name ?? '')
+const wsInitials = computed(() => wsName.value.slice(0, 2) || 'ص')
+const wsLogo     = computed(() => ws.value?.logo_path ? `/storage/${ws.value.logo_path}` : null)
 
 // ── Form state ─────────────────────────────────────────────
 const contentType      = ref<string>('post')
@@ -620,6 +627,24 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
                             </template>
                             <p v-else class="variation-body">{{ v.body }}</p>
 
+                            <!-- Ad card preview: headline + description -->
+                            <div v-if="contentType === 'ad' && (v.headline || v.description)" class="ad-preview-card">
+                                <div class="ad-preview-body">
+                                    <div v-if="v.headline" class="ad-preview-headline">{{ v.headline }}</div>
+                                    <div v-if="v.description" class="ad-preview-desc">{{ v.description }}</div>
+                                </div>
+                                <button class="ad-cta-btn" tabindex="-1">تسوق الآن</button>
+                                <!-- Char-limit indicators -->
+                                <div class="ad-limits-row">
+                                    <span v-if="v.headline" :class="['ad-limit-chip', v.headline.length > 40 ? 'ad-limit--warn' : 'ad-limit--ok']">
+                                        العنوان {{ v.headline.length }}/40
+                                    </span>
+                                    <span v-if="v.description" :class="['ad-limit-chip', v.description.length > 30 ? 'ad-limit--warn' : 'ad-limit--ok']">
+                                        الوصف {{ v.description.length }}/30
+                                    </span>
+                                </div>
+                            </div>
+
                             <!-- Hashtags -->
                             <div class="tags-row">
                                 <span v-for="(tag, ti) in v.tags" :key="ti" class="tag-chip">{{ tag }}</span>
@@ -651,17 +676,20 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
                         <div class="card-head">
                             <div>
                                 <h3>معاينة مباشرة</h3>
-                                <div class="sub">كيف سيبدو على {{ platform === 'instagram' ? 'انستجرام' : 'فيسبوك' }}</div>
+                                <div class="sub">كيف سيبدو على {{ PLATFORMS.find(p => p.id === platform)?.label ?? platform }}</div>
                             </div>
                         </div>
                         <div class="card-body" style="background:var(--bg-muted);">
                             <div class="ig-preview">
                                 <!-- Header -->
                                 <div class="ig-header">
-                                    <div class="ig-avatar">أن</div>
+                                    <div class="ig-avatar">
+                                        <img v-if="wsLogo" :src="wsLogo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" :alt="wsName" />
+                                        <template v-else>{{ wsInitials }}</template>
+                                    </div>
                                     <div>
-                                        <div style="font-size:13px; font-weight:700;">متجر_أنيق</div>
-                                        <div style="font-size:11px; color:var(--text-muted);">الرياض، السعودية</div>
+                                        <div style="font-size:13px; font-weight:700;">{{ wsName }}</div>
+                                        <div style="font-size:11px; color:var(--text-muted);">{{ ws?.countries?.[0] ?? 'المملكة العربية السعودية' }}</div>
                                     </div>
                                 </div>
                                 <!-- Image placeholder -->
@@ -673,7 +701,7 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
                                 </div>
                                 <!-- Caption -->
                                 <div class="ig-caption">
-                                    <span style="font-weight:700; margin-left:6px;">متجر_أنيق</span>
+                                    <span style="font-weight:700; margin-left:6px;">{{ wsName }}</span>
                                     <span style="white-space:pre-line;">{{ selectedVariation?.body }}</span>
                                     <div style="margin-top:6px; color:var(--info);">{{ selectedVariation?.tags.join(' ') }}</div>
                                 </div>
@@ -817,6 +845,74 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
     margin-top: 14px; padding-top: 10px;
     border-top: 1px solid var(--border-subtle);
 }
+
+/* ── Ad card preview (Facebook/Instagram ad format) ── */
+.ad-preview-card {
+    margin-top: 14px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg-muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+}
+.ad-preview-body { flex: 1; min-width: 0; }
+.ad-preview-headline {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ad-preview-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ad-cta-btn {
+    flex-shrink: 0;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: var(--font-arabic);
+    cursor: default;
+    white-space: nowrap;
+}
+.ad-limits-row {
+    display: none; /* shown on row below via restructure */
+}
+/* override — show limits as a full-width sub-row */
+.ad-preview-card {
+    flex-wrap: wrap;
+}
+.ad-limits-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-subtle);
+    margin-top: 4px;
+}
+.ad-limit-chip {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+}
+.ad-limit--ok   { background: color-mix(in oklab, #10b981 12%, transparent); color: #059669; }
+.ad-limit--warn { background: color-mix(in oklab, #f59e0b 12%, transparent); color: #d97706; }
 
 /* ── Instagram preview ── */
 .ig-preview {
@@ -970,6 +1066,27 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
 /* Fade transition */
 .fade-enter-active, .fade-leave-active { transition: opacity .2s, transform .2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(4px); }
+
+/* ── Ad fields ── */
+.ad-fields {
+    margin-top: 10px; margin-bottom: 2px;
+    display: flex; flex-direction: column; gap: 6px;
+}
+.ad-field {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 8px 10px;
+    background: color-mix(in oklab, var(--accent) 6%, transparent);
+    border: 1px solid color-mix(in oklab, var(--accent) 20%, transparent);
+    border-radius: var(--radius-sm);
+}
+.ad-field-label {
+    font-size: 10px; font-weight: 700; letter-spacing: .04em;
+    color: var(--accent-text); white-space: nowrap; padding-top: 1px;
+    min-width: 72px;
+}
+.ad-field-value {
+    font-size: 13px; color: var(--text-primary); line-height: 1.5;
+}
 
 /* ── Platform grid (6 platforms) ── */
 .platform-grid {

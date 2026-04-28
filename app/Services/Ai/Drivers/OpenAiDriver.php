@@ -10,7 +10,7 @@ class OpenAiDriver implements AiDriverInterface
     public function __construct(
         private readonly string $apiKey,
         private readonly string $model = 'gpt-4o-mini',
-        private readonly int    $maxTokens = 2048,
+        private readonly int    $maxTokens = 8192,
     ) {}
 
     public function complete(string $system, string $user): string

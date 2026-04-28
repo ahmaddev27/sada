@@ -139,7 +139,7 @@ function initials(name: string) {
                                     <div>
                                         <div class="user-name">
                                             {{ u.name }}
-                                            <span v-if="u.is_admin" class="badge badge--admin">Admin</span>
+                                            <span v-if="u.is_admin" class="badge badge--admin">إداري</span>
                                         </div>
                                         <div class="user-email" dir="ltr">{{ u.email }}</div>
                                     </div>

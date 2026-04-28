@@ -411,6 +411,15 @@ onUnmounted(() => {
                 </div>
             </header>
 
+            <!-- Impersonation banner -->
+            <div v-if="page.props.impersonating" class="impersonate-banner">
+                <Icon name="user-switch" :size="14" />
+                <span>وضع الانتقال الإداري — أنت تتصفح كـ <strong>{{ user?.name }}</strong></span>
+                <button class="impersonate-stop" @click="router.post('/admin/impersonate/stop')">
+                    إنهاء الانتقال
+                </button>
+            </div>
+
             <!-- Page content -->
             <main class="content-area">
                 <slot />
@@ -670,4 +679,26 @@ onUnmounted(() => {
 .notif-item-title { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
 .notif-item-body { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
 .notif-time { font-size: 10px; color: var(--text-muted); flex-shrink: 0; padding-top: 2px; }
+
+/* ── Impersonation banner ── */
+.impersonate-banner {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 20px;
+    background: #7c3aed;
+    color: #fff;
+    font-size: 13px; font-weight: 500;
+    position: sticky; top: 0; z-index: 80;
+}
+.impersonate-banner strong { font-weight: 700; }
+.impersonate-stop {
+    margin-right: auto;
+    padding: 4px 14px;
+    border-radius: 6px;
+    background: rgba(255,255,255,.2);
+    color: #fff; font-size: 12px; font-weight: 700;
+    border: 1px solid rgba(255,255,255,.35);
+    cursor: pointer; font-family: var(--font-arabic);
+    transition: background .15s;
+}
+.impersonate-stop:hover { background: rgba(255,255,255,.3); }
 </style>

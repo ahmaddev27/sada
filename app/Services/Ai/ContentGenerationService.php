@@ -116,7 +116,7 @@ class ContentGenerationService
      * CG-05: generate 3 variations — tries each driver in order until one succeeds.
      *
      * @param array<string, mixed> $params
-     * @return array<int, array{title: string, body: string, tags: string[], char_count: int}>
+     * @return array<int, array{title: string, body: string, headline?: string, description?: string, tags: string[], char_count: int}>
      */
     public function generate(array $params): array
     {
@@ -128,7 +128,7 @@ class ContentGenerationService
         foreach ($drivers as $driver) {
             try {
                 $raw = $driver->complete($system, $user);
-                return $this->parseVariations($raw, (string) ($params['platform'] ?? 'instagram'));
+                return $this->parseVariations($raw, (string) ($params['platform'] ?? 'instagram'), (string) ($params['content_type'] ?? 'post'));
             } catch (Throwable $e) {
                 Log::warning("AI driver [{$driver->name()}] failed: {$e->getMessage()}");
                 $last = $e;
@@ -150,7 +150,9 @@ class ContentGenerationService
         $limit           = self::PLATFORM_LIMITS[$params['platform']] ?? 2200;
         $platform        = $params['platform'];
         $platformFormat  = self::PLATFORM_FORMAT[$platform] ?? '';
-        $emojiLine       = ($params['include_emojis'] ?? true) ? 'أضف إيموجيات مناسبة للسياق الخليجي بشكل طبيعي.' : 'لا تستخدم إيموجيات.';
+        $emojiLine       = ($params['include_emojis'] ?? true)
+            ? 'أضف 3-5 إيموجيات Unicode حقيقية في كل نص (مثال: 🌟 ✨ 🎯 💎 🛍️). ادمجها بشكل طبيعي داخل النص — لا تضعها كلها في نهاية النص.'
+            : 'لا تستخدم إيموجيات نهائياً.';
         $includeHashtags = $params['include_hashtags'] ?? true;
         $hashtagRule     = $includeHashtags
             ? '- أضف 5-7 هاشتاقات ذات صلة في حقل TAGS لكل خيار (عربية أو إنجليزية حسب المنصة)'
@@ -168,8 +170,14 @@ class ContentGenerationService
         }
 
         $wsTypeSection = '';
-        if (! empty($params['workspace_type'])) {
-            $wsCtx        = self::WORKSPACE_TYPE_CONTEXT[$params['workspace_type']] ?? '';
+        if (($params['entity_type'] ?? 'business') === 'persona') {
+            $niche         = ! empty($params['workspace_type']) ? " المجال: {$params['workspace_type']}." : '';
+            $wsTypeSection = "\n\nنوع الحساب: بيرسونة شخصية / مؤثر.{$niche}" .
+                "\n- اكتب بضمير المتكلم ('أنا'، 'شاركتكم'، 'اليوم جربت'، 'رأيي الشخصي')" .
+                "\n- الأسلوب شخصي وحقيقي يعكس تجارب وشخصية صاحب الحساب" .
+                "\n- لا تستخدم ضمير الجمع مثل 'متجرنا' أو 'خدماتنا' أو 'منتجاتنا'";
+        } elseif (! empty($params['workspace_type'])) {
+            $wsCtx = self::WORKSPACE_TYPE_CONTEXT[$params['workspace_type']] ?? '';
             if ($wsCtx) {
                 $wsTypeSection = "\n\nسياق مساحة العمل: {$wsCtx}";
             }
@@ -195,9 +203,51 @@ SYSTEM;
     /** @param array<string, mixed> $params */
     private function buildUserPrompt(array $params): string
     {
-        $lengthMap = ['short' => '50-100', 'med' => '150-250', 'long' => '300+'];
-        $length    = $lengthMap[$params['length'] ?? 'med'] ?? '150-250';
-        $cta       = ! empty($params['cta']) ? "\nCTA المطلوب: {$params['cta']}" : '';
+        $lengthMap   = ['short' => '50-100', 'med' => '150-250', 'long' => '300-600'];
+        $length      = $lengthMap[$params['length'] ?? 'med'] ?? '150-250';
+        $cta         = ! empty($params['cta']) ? "\nCTA المطلوب: {$params['cta']}" : '';
+        $isAd        = ($params['content_type'] ?? '') === 'ad';
+
+        if ($isAd) {
+            return <<<PROMPT
+الفكرة: {$params['prompt']}
+الطول المطلوب للـ body: {$length} حرف تقريباً{$cta}
+
+اكتب 3 نصوص إعلانية مختلفة. كل خيار يحتوي على:
+- HEADLINE: جملة قصيرة جذابة (لا تتجاوز 40 حرفاً) — عنوان الإعلان كما يظهر تحت الصورة في فيسبوك/انستجرام
+- DESCRIPTION: جملة واحدة مختصرة جداً (لا تتجاوز 30 حرفاً) — نص مكمّل يظهر تحت الهيدلاين
+- BODY: النص الإعلاني الكامل المقنع مع CTA
+
+استخدم هذا التنسيق بالضبط:
+
+===OPTION_1===
+TITLE: الخيار ١ · [وصف الأسلوب]
+HEADLINE: [عنوان الإعلان الجذاب]
+DESCRIPTION: [الوصف المكمّل]
+BODY:
+[النص الإعلاني الكامل]
+TAGS: [هاشتاق١] [هاشتاق٢] [هاشتاق٣] [هاشتاق٤] [هاشتاق٥]
+===END===
+
+===OPTION_2===
+TITLE: الخيار ٢ · [وصف الأسلوب]
+HEADLINE: [عنوان الإعلان الجذاب]
+DESCRIPTION: [الوصف المكمّل]
+BODY:
+[النص الإعلاني الكامل]
+TAGS: [هاشتاق١] [هاشتاق٢] [هاشتاق٣] [هاشتاق٤] [هاشتاق٥]
+===END===
+
+===OPTION_3===
+TITLE: الخيار ٣ · [وصف الأسلوب]
+HEADLINE: [عنوان الإعلان الجذاب]
+DESCRIPTION: [الوصف المكمّل]
+BODY:
+[النص الإعلاني الكامل]
+TAGS: [هاشتاق١] [هاشتاق٢] [هاشتاق٣] [هاشتاق٤] [هاشتاق٥]
+===END===
+PROMPT;
+        }
 
         return <<<PROMPT
 الفكرة: {$params['prompt']}
@@ -231,11 +281,12 @@ PROMPT;
     }
 
     /**
-     * @return array<int, array{title: string, body: string, tags: string[], char_count: int}>
+     * @return array<int, array{title: string, body: string, headline?: string, description?: string, tags: string[], char_count: int}>
      */
-    private function parseVariations(string $raw, string $platform): array
+    private function parseVariations(string $raw, string $platform, string $contentType = 'post'): array
     {
         $results = [];
+        $isAd    = $contentType === 'ad';
         $limit   = self::PLATFORM_LIMITS[$platform] ?? 2200;
 
         preg_match_all('/===OPTION_\d+===(.*?)===END===/s', $raw, $matches);
@@ -244,7 +295,7 @@ PROMPT;
             $block = trim($block);
 
             preg_match('/TITLE:\s*(.+)/u', $block, $titleM);
-            preg_match('/BODY:\s*(.*?)(?=TAGS:)/su', $block, $bodyM);
+            preg_match('/BODY:\s*(.*?)(?=TAGS:|$)/su', $block, $bodyM);
             preg_match('/TAGS:\s*(.+)/u', $block, $tagsM);
 
             $title = trim($titleM[1] ?? 'خيار');
@@ -257,12 +308,21 @@ PROMPT;
                 fn (string $t) => str_starts_with($t, '#')
             ));
 
-            $results[] = [
+            $variation = [
                 'title'      => $title,
                 'body'       => $body,
                 'tags'       => array_slice($tags, 0, 10),
                 'char_count' => mb_strlen($body),
             ];
+
+            if ($isAd) {
+                preg_match('/HEADLINE:\s*(.+)/u', $block, $headlineM);
+                preg_match('/DESCRIPTION:\s*(.+)/u', $block, $descM);
+                $variation['headline']    = trim($headlineM[1] ?? '');
+                $variation['description'] = trim($descM[1] ?? '');
+            }
+
+            $results[] = $variation;
         }
 
         if (empty($results)) {
@@ -277,13 +337,20 @@ PROMPT;
         // **bold** و __bold__
         $text = preg_replace('/\*\*(.+?)\*\*/su', '$1', $text) ?? $text;
         $text = preg_replace('/__(.+?)__/su', '$1', $text) ?? $text;
-        // *italic* و _italic_  (single — not part of Arabic punctuation)
+        // *italic* و _italic_ (single — not part of Arabic punctuation)
         $text = preg_replace('/(?<!\w)\*([^*\n]+)\*(?!\w)/su', '$1', $text) ?? $text;
         $text = preg_replace('/(?<!\w)_([^_\n]+)_(?!\w)/su', '$1', $text) ?? $text;
-        // ## headers
-        $text = preg_replace('/^#{1,6}\s+/mu', '', $text) ?? $text;
+        // ## headers at start of line — double+ # stripped even without space (##word)
+        // Single # with space only (preserve #hashtag)
+        $text = preg_replace('/^#{2,6}\s*/mu', '', $text) ?? $text;
+        $text = preg_replace('/^#\s+/mu', '', $text) ?? $text;
         // `code`
         $text = preg_replace('/`([^`]+)`/su', '$1', $text) ?? $text;
+        // Orphaned ** / __ left after pair-stripping above
+        $text = preg_replace('/\*{2,}/', '', $text) ?? $text;
+        $text = preg_replace('/_{2,}/', '', $text) ?? $text;
+        // Unicode directional/zero-width control chars that render as broken symbols
+        $text = preg_replace('/[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{FEFF}]/u', '', $text) ?? $text;
 
         return trim($text);
     }

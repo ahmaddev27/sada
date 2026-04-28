@@ -45,6 +45,23 @@ function barH(val: number, max: number) {
     return `${Math.max(6, Math.round((val / Math.max(max, 1)) * 100))}%`
 }
 
+const AGENT_LABELS: Record<string, string> = {
+    content_generator:  'كاتب المحتوى',
+    content_generation: 'توليد المحتوى',
+    seasonal:           'موسمي',
+    campaign:           'حملة',
+    analytics:          'تحليلات',
+}
+const PLATFORM_LABELS: Record<string, string> = {
+    instagram: 'انستجرام',
+    facebook:  'فيسبوك',
+    tiktok:    'تيك توك',
+    snapchat:  'سناب شات',
+    x:         'X',
+    twitter:   'X',
+    linkedin:  'لينكدإن',
+}
+
 const userGrowthMax    = computed(() => Math.max(...props.userGrowth.map(x => x.count), 1))
 const genChartMax      = computed(() => Math.max(...props.generationsChart.map(x => x.count), 1))
 const revenueChartMax  = computed(() => Math.max(...props.revenueChart.map(x => x.total), 1))
@@ -343,7 +360,7 @@ const socialHealthPct = computed(() => {
                                             <Link :href="`/admin/users/${u.id}`" class="cell-name">{{ u.name }}</Link>
                                             <div class="cell-email">{{ u.email }}</div>
                                         </div>
-                                        <span v-if="u.is_admin" class="pill pill--gold">Admin</span>
+                                        <span v-if="u.is_admin" class="pill pill--gold">إداري</span>
                                     </div>
                                 </td>
                                 <td class="cell-num">{{ fmt(u.token_balance) }}</td>
@@ -379,7 +396,7 @@ const socialHealthPct = computed(() => {
                         <tbody>
                             <tr v-for="g in recentGenerations" :key="g.id">
                                 <td class="cell-muted">{{ g.workspace?.name ?? '—' }}</td>
-                                <td><span class="pill pill--ghost">{{ g.agent_type }}</span></td>
+                                <td><span class="pill pill--ghost">{{ AGENT_LABELS[g.agent_type] ?? g.agent_type }}</span></td>
                                 <td>
                                     <span :class="g.cached ? 'green' : ''">{{ fmt(g.sada_tokens_charged) }}</span>
                                     <span v-if="g.cached" class="pill pill--muted" style="margin-right:4px">مخزن</span>
@@ -415,7 +432,7 @@ const socialHealthPct = computed(() => {
                     <tbody>
                         <tr v-for="p in recentFailedPosts" :key="p.id">
                             <td class="cell-muted">{{ p.workspace?.name ?? '—' }}</td>
-                            <td><span class="pill pill--ghost">{{ p.platform }}</span></td>
+                            <td><span class="pill pill--ghost">{{ PLATFORM_LABELS[p.platform] ?? p.platform }}</span></td>
                             <td class="cell-muted">{{ p.scheduled_for ? dt(p.scheduled_for) : '—' }}</td>
                             <td class="cell-date">{{ dt(p.created_at) }}</td>
                         </tr>
@@ -429,7 +446,7 @@ const socialHealthPct = computed(() => {
 
 <style scoped>
 /* ── Page shell ─────────────────────────────────── */
-.adm-page { padding: 28px 32px; max-width: 1280px; }
+.adm-page { padding: 28px 32px; }
 
 /* ── Header ─────────────────────────────────────── */
 .adm-header {

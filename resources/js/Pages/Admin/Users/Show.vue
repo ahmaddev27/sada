@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { router, Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Components/Admin/AdminLayout.vue'
+import Icon from '@/Components/Base/Icon.vue'
 
 interface Workspace      { id: number; name: string; created_at: string }
 interface TokenTx        { id: number; type: string; amount: number; balance_after: number; created_at: string }
@@ -71,7 +72,7 @@ const TX_LABELS: Record<string, string> = {
                 <div class="hero-info">
                     <div class="hero-name">
                         {{ user.name }}
-                        <span v-if="user.is_admin" class="badge badge--admin">Admin</span>
+                        <span v-if="user.is_admin" class="badge badge--admin">إداري</span>
                         <span v-if="user.banned_at" class="badge badge--banned">محظور</span>
                     </div>
                     <div class="hero-email" dir="ltr">{{ user.email }}</div>
@@ -94,6 +95,15 @@ const TX_LABELS: Record<string, string> = {
                     </div>
                 </div>
                 <div class="hero-actions">
+                    <button
+                        v-if="!user.is_admin"
+                        class="act-btn act-btn--ghost"
+                        @click="router.post(`/admin/users/${user.id}/impersonate`)"
+                        title="تصفح المنصة بحساب هذا المستخدم"
+                    >
+                        <Icon name="user-switch" :size="14" style="vertical-align:-2px; margin-left:4px;" />
+                        انتقال للحساب
+                    </button>
                     <button v-if="!user.banned_at && !user.is_admin" class="act-btn act-btn--danger" @click="ban">حظر</button>
                     <button v-if="user.banned_at" class="act-btn act-btn--success" @click="unban">رفع الحظر</button>
                 </div>
@@ -176,7 +186,7 @@ const TX_LABELS: Record<string, string> = {
 </template>
 
 <style scoped>
-.admin-page { padding: 24px 28px; max-width: 1000px; }
+.admin-page { padding: 24px 28px; }
 
 /* Breadcrumb */
 .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
@@ -232,6 +242,8 @@ const TX_LABELS: Record<string, string> = {
 .act-btn--danger:hover  { background: #ef4444; color: #fff; }
 .act-btn--success { background: color-mix(in oklab, #10b981 12%, transparent); color: #10b981; border: 1px solid color-mix(in oklab, #10b981 30%, transparent); }
 .act-btn--success:hover { background: #10b981; color: #fff; }
+.act-btn--ghost   { background: transparent; color: var(--text-muted); border: 1px solid var(--border-default); }
+.act-btn--ghost:hover   { background: var(--bg-muted); color: var(--text-primary); }
 
 /* Grid */
 .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 0; }

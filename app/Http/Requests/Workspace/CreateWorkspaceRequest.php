@@ -17,6 +17,7 @@ class CreateWorkspaceRequest extends FormRequest
     {
         return [
             'name'             => ['required', 'string', 'min:2', 'max:80'],
+            'entity_type'      => ['nullable', 'string', 'in:business,persona'],
             'business_type'    => ['nullable', 'string', 'max:60'],
             'countries'        => ['nullable', 'array'],
             'countries.*'      => ['string', 'in:sa,ae,kw,qa,bh,om'],

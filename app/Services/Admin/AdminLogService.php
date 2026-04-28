@@ -12,8 +12,8 @@ class AdminLogService
     public function log(
         int $adminId,
         string $action,
-        string $targetType = null,
-        int $targetId = null,
+        string|null $targetType = null,
+        int|null $targetId = null,
         array $payload = [],
     ): void {
         AdminLog::create([

@@ -268,6 +268,21 @@ const icons: Record<string, { paths: string[]; fill?: boolean }> = {
             'M6 6h.01M6 18h.01',
         ],
     },
+    download: {
+        paths: [
+            'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4',
+            'M7 10l5 5 5-5',
+            'M12 15V3',
+        ],
+    },
+    'user-switch': {
+        paths: [
+            'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2',
+            'M9 7a4 4 0 1 0 8 0 4 4 0 0 0-8 0',
+            'M22 21v-2a4 4 0 0 0-3-3.87',
+            'M16 3.13a4 4 0 0 1 0 7.75',
+        ],
+    },
 };
 
 const icon = computed(() => icons[props.name] ?? icons['x']);

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminTokenAuditController extends Controller
 {
@@ -43,8 +44,8 @@ class AdminTokenAuditController extends Controller
 
         $stats = [
             'total_transactions' => TokenTransaction::count(),
-            'total_granted'      => (int) TokenTransaction::where('type', 'grant')->sum('amount'),
-            'total_deducted'     => (int) TokenTransaction::where('type', 'deduct')->sum('amount'),
+            'total_granted'      => (int) TokenTransaction::where('type', 'bonus')->sum('amount'),
+            'total_deducted'     => (int) TokenTransaction::where('type', 'deduction')->sum('amount'),
             'total_purchased'    => (int) TokenTransaction::where('type', 'purchase')->sum('amount'),
             'today_transactions' => TokenTransaction::whereDate('created_at', today())->count(),
         ];
@@ -55,5 +56,32 @@ class AdminTokenAuditController extends Controller
             'stats'        => $stats,
             'volumeChart'  => $volumeChart,
         ]);
+    }
+
+    public function export(): StreamedResponse
+    {
+        $filename = 'tokens-' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, ['#', 'المستخدم', 'البريد', 'النوع', 'الكمية', 'الرصيد بعد', 'الوصف', 'التاريخ']);
+
+            TokenTransaction::with('user:id,name,email')->orderByDesc('created_at')->cursor()
+                ->each(function (TokenTransaction $tx) use ($out) {
+                    fputcsv($out, [
+                        $tx->id,
+                        $tx->user->name ?? '',
+                        $tx->user->email ?? '',
+                        $tx->type,
+                        $tx->amount,
+                        $tx->balance_after,
+                        $tx->description ?? '',
+                        $tx->created_at->format('Y-m-d H:i'),
+                    ]);
+                });
+
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 }

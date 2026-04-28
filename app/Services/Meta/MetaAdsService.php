@@ -75,7 +75,7 @@ class MetaAdsService
 
     private function createCampaign(string $adAccountId, string $token, Campaign $campaign): string
     {
-        $objective = self::OBJECTIVE_MAP[$campaign->objective] ?? 'POST_ENGAGEMENT';
+        $objective = self::OBJECTIVE_MAP[$campaign->objective];
 
         $response = Http::post("{$this->graphBase}/act_{$adAccountId}/campaigns", [
             'name'             => $campaign->name,
@@ -105,13 +105,13 @@ class MetaAdsService
             'optimization_goal'  => $this->resolveOptimizationGoal($campaign->objective),
             $budgetField         => $budgetCents,
             'targeting'          => json_encode($targeting),
-            'start_time'         => $campaign->starts_at?->toIso8601String(),
-            'end_time'           => $campaign->ends_at?->toIso8601String(),
+            'start_time'         => $campaign->starts_at->toIso8601String(),
+            'end_time'           => $campaign->ends_at->toIso8601String(),
             'status'             => 'ACTIVE',
             'access_token'       => $token,
         ];
 
-        if ($campaign->budget_type === 'lifetime' && $campaign->ends_at) {
+        if ($campaign->budget_type === 'lifetime') {
             $payload['end_time'] = $campaign->ends_at->toIso8601String();
         }
 
@@ -187,7 +187,7 @@ class MetaAdsService
             'age_max'       => $campaign->target_age_max ?? 65,
         ];
 
-        $genders = self::GENDER_MAP[$campaign->target_gender ?? 'all'] ?? [];
+        $genders = self::GENDER_MAP[$campaign->target_gender ?? 'all'];
         if (! empty($genders)) {
             $targeting['genders'] = $genders;
         }

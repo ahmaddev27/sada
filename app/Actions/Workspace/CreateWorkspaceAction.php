@@ -17,6 +17,7 @@ class CreateWorkspaceAction
     public function execute(
         User $user,
         string $name,
+        string $entityType = 'business',
         ?string $businessType = null,
         array $countries = [],
         string $defaultDialect = 'sa',
@@ -31,6 +32,7 @@ class CreateWorkspaceAction
         $workspace = Workspace::create([
             'user_id'         => $user->id,
             'name'            => $name,
+            'entity_type'     => $entityType,
             'business_type'   => $businessType,
             'countries'       => $countries ?: ['sa'],
             'default_dialect' => $defaultDialect,

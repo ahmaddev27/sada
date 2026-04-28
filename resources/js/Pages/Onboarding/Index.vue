@@ -6,6 +6,7 @@ const props = defineProps<{
     step:          1 | 2 | 3;
     dialects:      { value: string; label: string }[];
     businessTypes: string[];
+    personaNiches: string[];
 }>();
 
 const progressPct = computed(() => {
@@ -17,6 +18,7 @@ const progressPct = computed(() => {
 // ── Step 1: workspace ────────────────────────────────────────────────────
 const workspaceForm = useForm({
     name:             '',
+    entity_type:      'business' as 'business' | 'persona',
     business_type:    '',
     countries:        ['sa'] as string[],
     default_dialect:  'sa',
@@ -118,12 +120,46 @@ const platforms = [
                         <p v-if="workspaceForm.errors.name" class="field-error">{{ workspaceForm.errors.name }}</p>
                     </div>
 
-                    <!-- Business type -->
+                    <!-- Entity type — persona vs business -->
                     <div class="field">
-                        <label class="field-label">نوع النشاط التجاري</label>
+                        <label class="field-label">نوع الحساب <span class="required">*</span></label>
+                        <div class="entity-grid">
+                            <button
+                                type="button"
+                                :class="['entity-card', { 'entity-card--active': workspaceForm.entity_type === 'business' }]"
+                                @click="workspaceForm.entity_type = 'business'; workspaceForm.business_type = ''"
+                            >
+                                <span class="entity-icon">🏪</span>
+                                <span class="entity-name">نشاط تجاري</span>
+                                <span class="entity-desc">متجر، مطعم، خدمات...</span>
+                            </button>
+                            <button
+                                type="button"
+                                :class="['entity-card', { 'entity-card--active': workspaceForm.entity_type === 'persona' }]"
+                                @click="workspaceForm.entity_type = 'persona'; workspaceForm.business_type = ''"
+                            >
+                                <span class="entity-icon">👤</span>
+                                <span class="entity-name">شخصية / مؤثر</span>
+                                <span class="entity-desc">حساب شخصي، بيرسونة...</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Business type (only for business) -->
+                    <div v-if="workspaceForm.entity_type === 'business'" class="field">
+                        <label class="field-label">نوع النشاط</label>
                         <select v-model="workspaceForm.business_type" class="field-input">
                             <option value="">اختر نوع النشاط (اختياري)</option>
                             <option v-for="t in businessTypes" :key="t" :value="t">{{ t }}</option>
+                        </select>
+                    </div>
+
+                    <!-- Persona niche (only for persona) -->
+                    <div v-if="workspaceForm.entity_type === 'persona'" class="field">
+                        <label class="field-label">مجال التأثير</label>
+                        <select v-model="workspaceForm.business_type" class="field-input">
+                            <option value="">اختر مجالك (اختياري)</option>
+                            <option v-for="n in personaNiches" :key="n" :value="n">{{ n }}</option>
                         </select>
                     </div>
 
@@ -332,6 +368,25 @@ const platforms = [
 .field-input:focus { border-color: var(--sada-500); }
 .field-input--error { border-color: #EF4444; }
 .field-error { font-size: 12px; color: #EF4444; margin: 0; }
+
+/* ── Entity type selector ──────────────────────────────────────────── */
+.entity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.entity-card {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 16px 12px; border-radius: 10px;
+    border: 2px solid var(--border-default);
+    background: var(--bg-page); color: var(--text-primary);
+    cursor: pointer; transition: all .15s; font-family: var(--font-arabic);
+    text-align: center;
+}
+.entity-card:hover { border-color: var(--sada-500); }
+.entity-card--active {
+    border-color: var(--sada-500);
+    background: color-mix(in oklab, var(--sada-500) 8%, transparent);
+}
+.entity-icon { font-size: 24px; line-height: 1; }
+.entity-name { font-size: 14px; font-weight: 700; }
+.entity-desc { font-size: 11px; color: var(--text-muted); }
 
 /* ── Chips (countries + dialects) ──────────────────────────────────── */
 .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }

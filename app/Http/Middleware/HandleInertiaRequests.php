@@ -53,6 +53,10 @@ class HandleInertiaRequests extends Middleware
                 'status'  => $request->session()->get('status'),
             ],
 
+            'impersonating' => $request->session()->has('impersonating_admin_id')
+                ? ['active' => true, 'stop_url' => '/admin/impersonate/stop']
+                : null,
+
             'notifications' => $request->user() ? [
                 'unread_count' => $request->user()->unreadNotifications()->count(),
                 'recent'       => $request->user()->notifications()

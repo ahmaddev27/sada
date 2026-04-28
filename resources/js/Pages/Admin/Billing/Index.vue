@@ -85,6 +85,10 @@ function fmt(n: number) {
                     <h1 class="page-title">الفواتير والإيرادات</h1>
                     <p class="page-subtitle">متابعة المدفوعات والإيرادات من الباقات</p>
                 </div>
+                <a href="/admin/billing/export" class="btn btn-ghost btn--sm" style="text-decoration:none;">
+                    <Icon name="download" :size="14" />
+                    تصدير CSV
+                </a>
             </div>
 
             <!-- KPI row -->

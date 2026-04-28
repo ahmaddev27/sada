@@ -66,6 +66,8 @@ function fmt(n: number) {
 <template>
     <AdminLayout>
         <div class="admin-page">
+
+            <!-- Header -->
             <div class="page-header">
                 <div>
                     <h1 class="page-title">الإعدادات</h1>
@@ -73,110 +75,134 @@ function fmt(n: number) {
                 </div>
             </div>
 
-            <div class="layout-two">
-                <!-- Feature flags -->
-                <div class="flags-section">
-                    <div class="section-header">
+            <!-- ══ Feature Flags ══════════════════════════════════════════════════ -->
+            <div class="section-block">
+                <div class="section-header">
+                    <div>
                         <h2 class="section-title">ميزات المنصة</h2>
-                        <button class="btn btn-primary btn--sm" :disabled="savingFlags" @click="saveFlags">
-                            <Icon name="check" :size="14" />
-                            {{ savingFlags ? 'جارٍ الحفظ...' : 'حفظ التغييرات' }}
-                        </button>
+                        <p class="section-desc">تفعيل وإيقاف الميزات لجميع المستخدمين</p>
                     </div>
-                    <div class="flags-card">
+                    <button class="btn btn-primary btn-sm" :disabled="savingFlags" @click="saveFlags">
+                        <Icon name="check" :size="14" />
+                        {{ savingFlags ? 'جارٍ الحفظ...' : 'حفظ التغييرات' }}
+                    </button>
+                </div>
+
+                <div class="flags-card">
+                    <div class="flags-grid">
                         <div v-for="flag in flagsState" :key="flag.key" class="flag-row">
                             <div class="flag-info">
                                 <div class="flag-label">{{ flag.label }}</div>
-                                <div class="flag-key">{{ flag.key }}</div>
+                                <code class="flag-key">{{ flag.key }}</code>
                             </div>
                             <button
                                 type="button"
-                                :class="['toggle', { 'toggle--on': flag.enabled }]"
+                                class="toggle"
+                                :data-on="String(flag.enabled)"
                                 :aria-pressed="flag.enabled"
+                                :title="flag.enabled ? 'مفعّل — اضغط لإيقاف' : 'موقف — اضغط لتفعيل'"
                                 @click="flag.enabled = !flag.enabled"
-                            >
-                                <span class="toggle-knob" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Token packages -->
-                <div class="packages-section">
-                    <div class="section-header">
-                        <h2 class="section-title">باقات الرصيد</h2>
-                    </div>
-                    <div class="packages-list">
-                        <div v-for="pkg in packages" :key="pkg.id" class="package-card">
-                            <div class="pkg-top">
-                                <div class="pkg-name">{{ pkg.name }}</div>
-                                <div class="pkg-badges">
-                                    <span v-if="pkg.is_popular" class="badge badge--accent">الأكثر طلباً</span>
-                                    <span :class="['badge', pkg.is_active ? 'badge--green' : 'badge--gray']">
-                                        {{ pkg.is_active ? 'مفعّلة' : 'معطّلة' }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="pkg-stats">
-                                <span class="pkg-tokens">{{ fmt(pkg.tokens) }} رصيد</span>
-                                <span class="pkg-price">{{ pkg.price }} {{ pkg.currency }}</span>
-                            </div>
-                            <button class="btn btn-ghost btn--sm btn--full" @click="openPkg(pkg)">
-                                <Icon name="edit" :size="14" />
-                                تعديل
-                            </button>
+                            />
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- ══ Token Packages ═════════════════════════════════════════════════ -->
+            <div class="section-block">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">باقات الرصيد</h2>
+                        <p class="section-desc">أسعار ورصيد كل باقة اشتراك</p>
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div v-if="packages.length === 0" class="empty-state">
+                    <Icon name="coins" :size="32" style="color:var(--text-faint)" />
+                    <p>لا توجد باقات مضافة بعد</p>
+                </div>
+
+                <div v-else class="packages-grid">
+                    <div v-for="pkg in packages" :key="pkg.id" class="package-card">
+                        <div class="pkg-header">
+                            <div class="pkg-name">{{ pkg.name }}</div>
+                            <div class="pkg-badges">
+                                <span v-if="pkg.is_popular" class="badge badge-sand">
+                                    <Icon name="sparkle" :size="10" /> الأكثر طلباً
+                                </span>
+                                <span :class="['badge', pkg.is_active ? 'badge-success' : 'badge-neutral']">
+                                    {{ pkg.is_active ? 'مفعّلة' : 'معطّلة' }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="pkg-stats">
+                            <div class="pkg-stat">
+                                <span class="pkg-stat-val">{{ fmt(pkg.tokens) }}</span>
+                                <span class="pkg-stat-lbl">رصيد</span>
+                            </div>
+                            <div class="pkg-divider"></div>
+                            <div class="pkg-stat">
+                                <span class="pkg-stat-val pkg-stat-val--price">{{ pkg.price }}</span>
+                                <span class="pkg-stat-lbl">{{ pkg.currency }}</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary btn-sm btn-full" @click="openPkg(pkg)">
+                            <Icon name="edit" :size="13" />
+                            تعديل الباقة
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- Package edit modal -->
         <Teleport to="body">
-            <div v-if="editingPkg" class="modal-overlay" @click.self="editingPkg = null">
-                <div class="modal">
-                    <div class="modal-header">
-                        <h3 class="modal-title">تعديل الباقة — {{ editingPkg.name }}</h3>
-                        <button class="close-btn" @click="editingPkg = null">
+            <div v-if="editingPkg" class="modal-backdrop" @click.self="editingPkg = null">
+                <div class="modal modal-sm">
+                    <div class="modal-head">
+                        <div>
+                            <h3 style="margin:0;font-size:15px;font-weight:700;color:var(--text-primary)">تعديل — {{ editingPkg.name }}</h3>
+                        </div>
+                        <button class="btn btn-icon btn-ghost" @click="editingPkg = null">
                             <Icon name="x" :size="18" />
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="field">
-                            <label class="field-label">السعر ({{ editingPkg.currency }})</label>
-                            <input v-model="pkgForm.price" type="number" class="inp" min="1" />
-                            <div v-if="pkgForm.errors.price" class="field-err">{{ pkgForm.errors.price }}</div>
+                        <div class="input-group">
+                            <label class="input-label">السعر ({{ editingPkg.currency }})</label>
+                            <input v-model="pkgForm.price" type="number" class="input" min="1" />
+                            <span v-if="pkgForm.errors.price" class="field-err">{{ pkgForm.errors.price }}</span>
                         </div>
-                        <div class="field">
-                            <label class="field-label">الرصيد المُمنوح</label>
-                            <input v-model="pkgForm.tokens" type="number" class="inp" min="100" />
-                            <div v-if="pkgForm.errors.tokens" class="field-err">{{ pkgForm.errors.tokens }}</div>
+                        <div class="input-group" style="margin-top:14px">
+                            <label class="input-label">الرصيد المُمنوح</label>
+                            <input v-model="pkgForm.tokens" type="number" class="input" min="100" />
+                            <span v-if="pkgForm.errors.tokens" class="field-err">{{ pkgForm.errors.tokens }}</span>
                         </div>
-                        <div class="toggle-fields">
+                        <div class="toggle-fields" style="margin-top:16px">
                             <div class="toggle-field">
-                                <span class="field-label">مفعّلة</span>
+                                <span class="input-label">مفعّلة</span>
                                 <button
                                     type="button"
-                                    :class="['toggle', { 'toggle--on': pkgForm.is_active }]"
+                                    class="toggle"
+                                    :data-on="String(pkgForm.is_active)"
                                     @click="pkgForm.is_active = !pkgForm.is_active"
-                                >
-                                    <span class="toggle-knob" />
-                                </button>
+                                />
                             </div>
                             <div class="toggle-field">
-                                <span class="field-label">الأكثر طلباً</span>
+                                <span class="input-label">الأكثر طلباً</span>
                                 <button
                                     type="button"
-                                    :class="['toggle', { 'toggle--on': pkgForm.is_popular }]"
+                                    class="toggle"
+                                    :data-on="String(pkgForm.is_popular)"
                                     @click="pkgForm.is_popular = !pkgForm.is_popular"
-                                >
-                                    <span class="toggle-knob" />
-                                </button>
+                                />
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-ghost" @click="editingPkg = null">إلغاء</button>
+                    <div class="modal-foot">
+                        <button class="btn btn-secondary" @click="editingPkg = null">إلغاء</button>
                         <button class="btn btn-primary" :disabled="pkgForm.processing" @click="savePkg">
                             {{ pkgForm.processing ? 'جارٍ الحفظ...' : 'حفظ' }}
                         </button>
@@ -188,102 +214,70 @@ function fmt(n: number) {
 </template>
 
 <style scoped>
-.admin-page { padding: 28px 32px; }
-.page-header { margin-bottom: 28px; }
-.page-title  { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
-.page-subtitle { font-size: 13px; color: var(--text-muted); }
+.admin-page { padding: 28px 32px; display: flex; flex-direction: column; gap: 28px; }
 
-.layout-two { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+.page-header   { display: flex; align-items: center; justify-content: space-between; }
+.page-title    { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
+.page-subtitle { font-size: 13px; color: var(--text-muted); margin: 0; }
 
-.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.section-title  { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+/* ── Section blocks ──────────────────────────────────────────────────── */
+.section-block  { display: flex; flex-direction: column; gap: 16px; }
+.section-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.section-title  { font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 3px; }
+.section-desc   { font-size: 12px; color: var(--text-muted); margin: 0; }
 
-/* Flags */
-.flags-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; }
-.flag-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 20px; border-bottom: 1px solid var(--border-subtle); transition: background var(--dur-fast); }
+/* ── Feature flags ───────────────────────────────────────────────────── */
+.flags-card  { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; }
+.flags-grid  { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+.flag-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 14px 20px; border-bottom: 1px solid var(--border-subtle);
+    transition: background var(--dur-fast);
+}
 .flag-row:last-child { border-bottom: none; }
 .flag-row:hover { background: var(--bg-muted); }
-.flag-info { flex: 1; }
+.flag-info  { flex: 1; min-width: 0; }
 .flag-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-.flag-key { font-size: 11px; color: var(--text-muted); font-family: monospace; margin-top: 3px; }
+.flag-key   { display: block; font-size: 11px; color: var(--text-muted); font-family: monospace; margin-top: 3px; background: none; padding: 0; border: none; }
 
-/* ── Toggle ────────────────────────────────────────────────── */
-/*
-  RTL layout:
-  - Knob starts at RIGHT (position: right 3px) = OFF state
-  - translateX(-24px) moves knob LEFT = ON state
-  Width 52px × Height 28px, knob 22px:
-    travel = 52 - 22 - 3 - 3 = 24px
-*/
-.toggle {
-    position: relative;
-    width: 52px;
-    height: 28px;
-    border-radius: 14px;
-    background: #9ca3af;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    flex-shrink: 0;
-    outline: none;
-    transition: background 0.2s ease;
+/* ── Token packages ──────────────────────────────────────────────────── */
+.packages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
 }
-.toggle--on { background: var(--primary, #0F6F5C); }
-.toggle-knob {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-    transition: transform 0.2s ease;
-    pointer-events: none;
+.package-card {
+    background: var(--bg-surface); border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg); padding: 20px;
+    display: flex; flex-direction: column; gap: 14px;
+    transition: box-shadow var(--dur-fast), border-color var(--dur-fast);
 }
-.toggle--on .toggle-knob { transform: translateX(-24px); }
+.package-card:hover { border-color: var(--border-default); box-shadow: 0 2px 12px rgba(0,0,0,.06); }
 
-/* Packages */
-.packages-list { display: flex; flex-direction: column; gap: 12px; }
-.package-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
-.pkg-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.pkg-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
-.pkg-badges { display: flex; gap: 6px; }
-.pkg-stats { display: flex; align-items: baseline; gap: 12px; }
-.pkg-tokens { font-size: 18px; font-weight: 700; color: var(--text-primary); }
-.pkg-price { font-size: 14px; color: var(--primary); font-weight: 600; }
+.pkg-header  { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.pkg-name    { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.pkg-badges  { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 
-.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; }
-.badge--green  { background: color-mix(in oklab, #22c55e 12%, transparent); color: #16a34a; }
-.badge--gray   { background: color-mix(in oklab, #6b7280 12%, transparent); color: #6b7280; }
-.badge--accent { background: color-mix(in oklab, #C8965F 12%, transparent); color: #C8965F; }
+.pkg-stats     { display: flex; align-items: center; gap: 12px; }
+.pkg-stat      { display: flex; flex-direction: column; gap: 2px; }
+.pkg-stat-val  { font-size: 20px; font-weight: 800; color: var(--text-primary); line-height: 1.1; }
+.pkg-stat-val--price { color: var(--accent); font-size: 18px; }
+.pkg-stat-lbl  { font-size: 11px; color: var(--text-muted); }
+.pkg-divider   { width: 1px; height: 32px; background: var(--border-subtle); }
 
-/* Modal */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(2px); }
-.modal { background: var(--bg-card); border-radius: var(--radius-lg); padding: 28px; width: 420px; max-width: 95vw; box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3); }
-.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.modal-title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
-.close-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: var(--radius-sm); }
-.close-btn:hover { background: var(--bg-muted); }
-.modal-body { display: flex; flex-direction: column; gap: 16px; }
-.modal-footer { display: flex; gap: 10px; margin-top: 24px; }
+/* ── Empty state ─────────────────────────────────────────────────────── */
+.empty-state {
+    background: var(--bg-surface); border: 1px dashed var(--border-subtle);
+    border-radius: var(--radius-lg); padding: 48px 24px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    color: var(--text-muted); font-size: 13px;
+}
 
-.field { display: flex; flex-direction: column; gap: 6px; }
-.field-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-.field-err { font-size: 12px; color: #dc2626; }
-.inp { background: var(--bg-page); border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: 9px 12px; font-size: 13px; color: var(--text-primary); font-family: var(--font-arabic); outline: none; width: 100%; box-sizing: border-box; }
-.inp:focus { border-color: var(--primary); }
-
-.toggle-fields { display: flex; gap: 28px; }
+/* ── Modal extras ────────────────────────────────────────────────────── */
+.toggle-fields { display: flex; gap: 24px; }
 .toggle-field  { display: flex; align-items: center; gap: 10px; }
+.field-err     { font-size: 12px; color: var(--error); }
 
-/* Buttons */
-.btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; font-family: var(--font-arabic); cursor: pointer; border: none; transition: background var(--dur-fast), opacity var(--dur-fast); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary { background: var(--primary); color: #fff; }
-.btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
-.btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border-default); }
-.btn-ghost:hover { background: var(--bg-muted); color: var(--text-primary); }
-.btn--sm   { padding: 7px 12px; font-size: 12px; }
-.btn--full { width: 100%; justify-content: center; }
+/* ── Global util overrides ───────────────────────────────────────────── */
+.btn-full { width: 100%; justify-content: center; }
 </style>

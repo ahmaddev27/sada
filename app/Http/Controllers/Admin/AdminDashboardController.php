@@ -61,8 +61,11 @@ class AdminDashboardController extends Controller
             ->get();
 
         // Monthly revenue — last 6 months
+        $monthExpr   = DB::getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', created_at)"
+            : "DATE_FORMAT(created_at, '%Y-%m')";
         $revenueChart = TokenTransaction::select(
-            DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"),
+            DB::raw("{$monthExpr} as month"),
             DB::raw('SUM(amount) as total'),
         )
             ->where('type', 'purchase')

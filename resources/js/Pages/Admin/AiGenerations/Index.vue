@@ -73,17 +73,26 @@ const PLATFORM_META: Record<string, { label: string; cls: string }> = {
     linkedin:  { label: 'لينكدإن',   cls: 'plat--linkedin' },
 }
 const AGENT_META: Record<string, { label: string; cls: string }> = {
-    content_generation: { label: 'توليد محتوى', cls: 'agent--green'  },
-    seasonal:           { label: 'موسمي',        cls: 'agent--amber'  },
-    campaign:           { label: 'حملة',          cls: 'agent--purple' },
+    content_generator:  { label: 'كاتب المحتوى', cls: 'agent--green'  },
+    content_generation: { label: 'توليد محتوى',  cls: 'agent--green'  },
+    seasonal:           { label: 'موسمي',          cls: 'agent--amber'  },
+    campaign:           { label: 'حملة',            cls: 'agent--purple' },
+    analytics:          { label: 'تحليلات',        cls: 'agent--purple' },
 }
 const DIALECT_LABELS: Record<string, string> = {
-    saudi: 'سعودي', gulf: 'خليجي', egyptian: 'مصري',
-    levantine: 'شامي', moroccan: 'مغربي', msa: 'فصحى',
+    fos: 'الفصحى',
+    sa:  'السعودية',
+    ae:  'الإماراتية',
+    kw:  'الكويتية',
+    qa:  'القطرية',
+    bh:  'البحرينية',
+    om:  'العُمانية',
 }
 const CONTENT_TYPE_LABELS: Record<string, string> = {
-    promotional: 'ترويجي', educational: 'تعليمي', entertaining: 'ترفيهي',
-    seasonal: 'موسمي', ad: 'إعلان', organic: 'عضوي',
+    post:  'منشور',
+    reel:  'ريل',
+    story: 'قصة',
+    ad:    'إعلان',
 }
 
 function platformMeta(p: string | null) { return p ? (PLATFORM_META[p] ?? { label: p, cls: 'plat--gray' }) : null }

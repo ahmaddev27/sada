@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 // WS-01 → WS-05
-#[Fillable(['user_id', 'name', 'business_type', 'countries', 'default_dialect', 'logo_path'])]
+#[Fillable(['user_id', 'name', 'entity_type', 'business_type', 'countries', 'default_dialect', 'logo_path'])]
 class Workspace extends Model
 {
     /** @use HasFactory<WorkspaceFactory> */

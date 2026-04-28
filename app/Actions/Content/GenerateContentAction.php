@@ -51,6 +51,7 @@ class GenerateContentAction
             'tone'        => $brandIdentity->tone,
             'banned_words'=> $brandIdentity->banned_words ?? [],
         ] : null;
+        $params['entity_type']    = $workspace->entity_type ?? 'business';
         $params['workspace_type'] = $workspace->business_type ?? null;
 
         $variations = $this->service->generate($params);

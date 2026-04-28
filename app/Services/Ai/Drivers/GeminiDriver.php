@@ -10,7 +10,7 @@ class GeminiDriver implements AiDriverInterface
     public function __construct(
         private readonly string $apiKey,
         private readonly string $model = 'gemini-2.0-flash',
-        private readonly int    $maxTokens = 2048,
+        private readonly int    $maxTokens = 8192,
     ) {}
 
     public function complete(string $system, string $user): string

@@ -142,7 +142,7 @@ PROMPT;
             fn (string $l) => $l !== ''
         );
 
-        return array_values(array_slice($lines, 0, 3));
+        return array_slice($lines, 0, 3);
     }
 
     /**

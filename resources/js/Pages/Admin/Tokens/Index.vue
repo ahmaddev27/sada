@@ -42,11 +42,11 @@ function resetFilters() {
 }
 
 const typeMeta: Record<string, { label: string; cls: string; sign: string }> = {
-    grant:    { label: 'منحة',    cls: 'pill--green',  sign: '+' },
-    deduct:   { label: 'خصم',     cls: 'pill--red',    sign: '−' },
-    purchase: { label: 'شراء',    cls: 'pill--blue',   sign: '+' },
-    refund:   { label: 'استرداد', cls: 'pill--yellow', sign: '+' },
-    expire:   { label: 'انتهاء',  cls: 'pill--gray',   sign: '−' },
+    bonus:     { label: 'منحة',    cls: 'pill--green',  sign: '+' },
+    deduction: { label: 'خصم',     cls: 'pill--red',    sign: '−' },
+    purchase:  { label: 'شراء',    cls: 'pill--blue',   sign: '+' },
+    refund:    { label: 'استرداد', cls: 'pill--yellow', sign: '+' },
+    expiry:    { label: 'انتهاء',  cls: 'pill--gray',   sign: '−' },
 }
 
 function fmt(n: number) {
@@ -62,6 +62,10 @@ function fmt(n: number) {
                     <h1 class="page-title">سجل الرصيد</h1>
                     <p class="page-subtitle">تدقيق كامل لحركات رصيد المستخدمين</p>
                 </div>
+                <a href="/admin/tokens/export" class="btn btn-ghost btn--sm" style="text-decoration:none;">
+                    <Icon name="download" :size="14" />
+                    تصدير CSV
+                </a>
             </div>
 
             <!-- KPIs -->
@@ -109,11 +113,11 @@ function fmt(n: number) {
                 <input v-model="search" class="inp" placeholder="بحث بالاسم أو البريد..." @keyup.enter="applyFilters" />
                 <select v-model="type" class="inp inp--sm" @change="applyFilters">
                     <option value="">كل الأنواع</option>
-                    <option value="grant">منحة</option>
-                    <option value="deduct">خصم</option>
+                    <option value="bonus">منحة</option>
+                    <option value="deduction">خصم</option>
                     <option value="purchase">شراء</option>
                     <option value="refund">استرداد</option>
-                    <option value="expire">انتهاء صلاحية</option>
+                    <option value="expiry">انتهاء صلاحية</option>
                 </select>
                 <button class="btn btn-ghost btn--sm" @click="resetFilters">إعادة تعيين</button>
             </div>
@@ -149,7 +153,7 @@ function fmt(n: number) {
                                     {{ typeMeta[tx.type]?.label ?? tx.type }}
                                 </span>
                             </td>
-                            <td :class="['amount', tx.type === 'deduct' || tx.type === 'expire' ? 'amount--neg' : 'amount--pos']">
+                            <td :class="['amount', tx.type === 'deduction' || tx.type === 'expiry' ? 'amount--neg' : 'amount--pos']">
                                 {{ typeMeta[tx.type]?.sign ?? '' }}{{ fmt(tx.amount) }}
                             </td>
                             <td class="balance-cell">{{ fmt(tx.balance_after) }}</td>
