@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/Components/Layout/AppLayout.vue'
 import Icon from '@/Components/Base/Icon.vue'
+import Modal from '@/Components/Base/Modal.vue'
 
 interface PlanSummary {
     id: number
@@ -30,15 +31,36 @@ const DURATION_LABELS: Record<string, string> = {
     '6_months':  '6 أشهر',
     '12_months': 'سنة كاملة',
 }
-const PLATFORM_ICONS: Record<string, string> = {
-    instagram: 'IG', facebook: 'FB', tiktok: 'TK',
-    snapchat: 'SC', x: 'X',
+const PLATFORM_LABELS: Record<string, string> = {
+    instagram: 'انستجرام',
+    facebook:  'فيسبوك',
+    tiktok:    'تيك توك',
+    snapchat:  'سناب شات',
+    x:         'إكس',
 }
 
-function deletePlan(id: number) {
-    if (confirm('حذف هذه الخطة التسويقية؟')) {
-        router.delete(`/marketing-plan/${id}`)
-    }
+// ── Delete modal ───────────────────────────────────────────────────────────────
+const showDeleteModal  = ref(false)
+const deleteTarget     = ref<PlanSummary | null>(null)
+const deleteProcessing = ref(false)
+
+function openDelete(plan: PlanSummary) {
+    deleteTarget.value = plan
+    showDeleteModal.value = true
+}
+function closeDelete() {
+    showDeleteModal.value = false
+    deleteTarget.value = null
+}
+function confirmDelete() {
+    if (!deleteTarget.value) return
+    deleteProcessing.value = true
+    router.delete(`/marketing-plan/${deleteTarget.value.id}`, {
+        onFinish: () => {
+            deleteProcessing.value = false
+            closeDelete()
+        },
+    })
 }
 
 function timeAgo(iso: string): string {
@@ -103,7 +125,7 @@ function timeAgo(iso: string): string {
                                 {{ DURATION_LABELS[plan.duration] ?? plan.duration }}
                             </span>
                             <span v-for="p in plan.platforms.slice(0, 3)" :key="p" class="ptag ptag-gray">
-                                {{ PLATFORM_ICONS[p] ?? p }}
+                                {{ PLATFORM_LABELS[p] ?? p }}
                             </span>
                         </div>
                     </div>
@@ -120,13 +142,38 @@ function timeAgo(iso: string): string {
                             <span class="spin-dot" />
                             جارٍ التوليد...
                         </span>
-                        <button class="btn btn-sm btn-ghost btn-danger" @click="deletePlan(plan.id)" title="حذف">
+                        <button class="btn btn-sm btn-ghost btn-danger" @click="openDelete(plan)" title="حذف">
                             <Icon name="trash" :size="14" />
                         </button>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Delete confirmation modal -->
+        <Modal :show="showDeleteModal" title="تأكيد الحذف" size="sm" @close="closeDelete">
+            <div class="delete-confirm">
+                <div class="delete-confirm-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6M14 11v6"/>
+                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                </div>
+                <p class="delete-confirm-msg">
+                    هل تريد حذف خطة <strong>{{ deleteTarget?.title }}</strong> نهائياً؟
+                    لا يمكن التراجع عن هذا الإجراء.
+                </p>
+            </div>
+            <template #footer>
+                <button class="btn btn-danger" :disabled="deleteProcessing" @click="confirmDelete">
+                    <span v-if="deleteProcessing" class="delete-spin" />
+                    {{ deleteProcessing ? 'جارٍ الحذف...' : 'حذف الخطة' }}
+                </button>
+                <button class="btn btn-secondary" :disabled="deleteProcessing" @click="closeDelete">إلغاء</button>
+            </template>
+        </Modal>
     </AppLayout>
 </template>
 
@@ -188,4 +235,14 @@ function timeAgo(iso: string): string {
 .spin-dot { width: 8px; height: 8px; border-radius: 50%; border: 2px solid #f59e0b; border-top-color: transparent; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .btn-danger:hover { color: #dc2626; }
+
+.delete-confirm { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 8px 0; text-align: center; }
+.delete-confirm-icon {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: #fee2e2; color: #dc2626;
+    display: grid; place-items: center;
+}
+.delete-confirm-msg { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin: 0; }
+.delete-confirm-msg strong { color: var(--text-primary); }
+.delete-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; animation: spin 0.8s linear infinite; display: inline-block; }
 </style>

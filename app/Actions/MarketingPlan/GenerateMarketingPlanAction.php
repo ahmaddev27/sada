@@ -4,6 +4,7 @@
 
 namespace App\Actions\MarketingPlan;
 
+use App\Models\AiGeneration;
 use App\Models\MarketingPlan;
 use App\Models\User;
 use App\Models\Workspace;
@@ -52,6 +53,19 @@ class GenerateMarketingPlanAction
                 'input_tokens'  => $result['input_tokens'],
                 'output_tokens' => $result['output_tokens'],
                 'title'         => $planData['title'] ?? $plan->title,
+            ]);
+
+            AiGeneration::create([
+                'workspace_id'        => $workspace->id,
+                'user_id'             => $user->id,
+                'agent_type'          => 'marketing_plan',
+                'provider'            => $driver->name(),
+                'ai_model'            => $driver->model(),
+                'input_tokens'        => $result['input_tokens'],
+                'output_tokens'       => $result['output_tokens'],
+                'sada_tokens_charged' => 0,
+                'cost_usd'            => $cost,
+                'cached'              => false,
             ]);
         } catch (\Throwable $e) {
             Log::error('marketing_plan_generation_failed', [

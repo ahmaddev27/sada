@@ -60,17 +60,36 @@ const DURATIONS = [
 
 const CURRENCIES = ['SAR', 'AED', 'KWD', 'QAR', 'BHD', 'OMR', 'USD']
 
-const COUNTRIES: Record<string, string> = {
-    sa: 'السعودية', ae: 'الإمارات', kw: 'الكويت',
-    qa: 'قطر',      bh: 'البحرين', om: 'عُمان',
+const COUNTRIES: Record<string, { label: string; flag: string }> = {
+    sa: { label: 'السعودية', flag: '🇸🇦' },
+    ae: { label: 'الإمارات', flag: '🇦🇪' },
+    kw: { label: 'الكويت',   flag: '🇰🇼' },
+    qa: { label: 'قطر',      flag: '🇶🇦' },
+    bh: { label: 'البحرين',  flag: '🇧🇭' },
+    om: { label: 'عُمان',    flag: '🇴🇲' },
 }
 
 const PLATFORMS = [
-    { value: 'instagram', label: 'انستجرام',  color: '#E1306C' },
-    { value: 'facebook',  label: 'فيسبوك',    color: '#1877F2' },
-    { value: 'tiktok',    label: 'تيك توك',   color: '#010101' },
-    { value: 'snapchat',  label: 'سناب شات',  color: '#FFFC00', dark: true },
-    { value: 'x',         label: 'X (تويتر)', color: '#000000' },
+    {
+        value: 'instagram', label: 'انستجرام', color: '#E1306C',
+        logo: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E1306C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>`,
+    },
+    {
+        value: 'facebook', label: 'فيسبوك', color: '#1877F2',
+        logo: `<svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>`,
+    },
+    {
+        value: 'tiktok', label: 'تيك توك', color: '#25F4EE',
+        logo: `<svg width="18" height="18" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z" fill="#25F4EE"/></svg>`,
+    },
+    {
+        value: 'snapchat', label: 'سناب شات', color: '#FFFC00', dark: true,
+        logo: `<svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 2C8.68 2 6.5 4.5 6.5 7.5v3.75L5 12.75l-.5.75H6c.25 1 1 2 2 2.25.75.25 1.5.75 2 1.25.5.5 1.5 1 2 1s1.5-.5 2-1c.5-.5 1.25-1 2-1.25 1-.25 1.75-1.25 2-2.25h1.5l-.5-.75-1.5-1.5V7.5C17.5 4.5 15.32 2 12 2z" fill="#FFFC00" stroke="#b8a800" stroke-width="0.5" stroke-linejoin="round"/></svg>`,
+    },
+    {
+        value: 'x', label: 'X (تويتر)', color: '#000000',
+        logo: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622z"/></svg>`,
+    },
 ]
 
 const OCCASION_TYPE_LABELS: Record<string, string> = {
@@ -248,13 +267,14 @@ function submit() {
                     <div class="section-title">الدول المستهدفة *</div>
                     <div class="country-grid">
                         <button
-                            v-for="(label, code) in COUNTRIES"
+                            v-for="(data, code) in COUNTRIES"
                             :key="code"
                             type="button"
                             :class="['country-btn', { selected: form.countries.includes(code) }]"
                             @click="toggleItem(form.countries, code)"
                         >
-                            {{ label }}
+                            <span class="country-flag">{{ data.flag }}</span>
+                            {{ data.label }}
                         </button>
                     </div>
                     <div class="form-cols" style="margin-top:20px">
@@ -315,7 +335,7 @@ function submit() {
                             @click="toggleItem(form.platforms, p.value)"
                             :style="form.platforms.includes(p.value) ? { borderColor: p.color, background: p.color + '18' } : {}"
                         >
-                            <span class="platform-dot" :style="{ background: p.color }" />
+                            <span class="platform-logo" v-html="p.logo" />
                             <span>{{ p.label }}</span>
                         </button>
                     </div>
@@ -484,12 +504,14 @@ function submit() {
 /* Countries */
 .country-grid { display: flex; gap: 8px; flex-wrap: wrap; }
 .country-btn {
+    display: flex; align-items: center; gap: 7px;
     padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
     background: var(--bg-subtle); border: 2px solid var(--border-default);
     cursor: pointer; transition: all 0.15s; color: var(--text-primary);
 }
 .country-btn:hover   { border-color: var(--sada-300, #6ab7a0); }
 .country-btn.selected { border-color: var(--sada-500); background: color-mix(in oklab, var(--sada-500) 10%, transparent); color: var(--sada-600); }
+.country-flag { font-size: 18px; line-height: 1; }
 
 /* Tags input */
 .tags-input-wrap {
@@ -516,7 +538,7 @@ function submit() {
     cursor: pointer; transition: all 0.15s; color: var(--text-primary);
 }
 .platform-btn:hover { border-color: var(--border-hover, #bbb); }
-.platform-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.platform-logo { display: flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 0; }
 
 /* Occasions */
 .occasion-group-label { font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 8px; }

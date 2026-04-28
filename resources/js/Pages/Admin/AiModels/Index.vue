@@ -118,7 +118,12 @@ const sortedModels = computed(() => {
         <!-- Page head -->
         <div class="page-head">
             <div>
-                <h1 class="page-title">أداء الموديلات</h1>
+                <div class="page-title-row">
+                    <div class="page-title-icon">
+                        <Icon name="cpu" :size="18" />
+                    </div>
+                    <h1 class="page-title">أداء الموديلات</h1>
+                </div>
                 <p class="page-sub">تكلفة واستخدام كل موديل ذكاء اصطناعي</p>
             </div>
             <!-- Period filter -->
@@ -278,7 +283,21 @@ const sortedModels = computed(() => {
     gap: 16px;
     flex-wrap: wrap;
 }
-.page-title { font-size: 22px; font-weight: 800; margin: 0 0 4px; }
+.page-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+.page-title-icon {
+    width: 36px; height: 36px;
+    border-radius: var(--radius-md);
+    background: color-mix(in oklab, var(--primary, #0F6F5C) 12%, transparent);
+    color: var(--primary, #0F6F5C);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.page-title { font-size: 22px; font-weight: 800; margin: 0; }
 .page-sub   { font-size: 13px; color: var(--text-muted); margin: 0; }
 
 /* KPI */
