@@ -73,11 +73,12 @@ const PLATFORM_META: Record<string, { label: string; cls: string }> = {
     linkedin:  { label: 'لينكدإن',   cls: 'plat--linkedin' },
 }
 const AGENT_META: Record<string, { label: string; cls: string }> = {
-    content_generator:  { label: 'كاتب المحتوى', cls: 'agent--green'  },
-    content_generation: { label: 'توليد محتوى',  cls: 'agent--green'  },
-    seasonal:           { label: 'موسمي',          cls: 'agent--amber'  },
-    campaign:           { label: 'حملة',            cls: 'agent--purple' },
-    analytics:          { label: 'تحليلات',        cls: 'agent--purple' },
+    content_generator:  { label: 'كاتب المحتوى',  cls: 'agent--green'  },
+    content_generation: { label: 'توليد محتوى',   cls: 'agent--green'  },
+    seasonal:           { label: 'موسمي',           cls: 'agent--amber'  },
+    campaign:           { label: 'حملة',             cls: 'agent--purple' },
+    analytics:          { label: 'تحليلات',         cls: 'agent--purple' },
+    marketing_plan:     { label: 'خطة تسويقية',   cls: 'agent--sand'   },
 }
 const DIALECT_LABELS: Record<string, string> = {
     fos: 'الفصحى',
@@ -395,6 +396,7 @@ const cacheRate = props.stats.total ? Math.round((props.stats.cached_count / pro
 .agent--green  { background: color-mix(in oklab, #10b981 14%, transparent); color: #059669; border: 1px solid color-mix(in oklab, #10b981 25%, transparent); }
 .agent--amber  { background: color-mix(in oklab, #f59e0b 14%, transparent); color: #d97706; border: 1px solid color-mix(in oklab, #f59e0b 25%, transparent); }
 .agent--purple { background: color-mix(in oklab, #8b5cf6 14%, transparent); color: #7c3aed; border: 1px solid color-mix(in oklab, #8b5cf6 25%, transparent); }
+.agent--sand   { background: color-mix(in oklab, #C8965F 14%, transparent); color: #9A6A3A; border: 1px solid color-mix(in oklab, #C8965F 25%, transparent); }
 
 .type-meta { display: flex; gap: 4px; flex-wrap: wrap; }
 .meta-tag { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 5px; }
