@@ -95,6 +95,13 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\RedirectAdminToPanel
     Route::post('/generate', [GenerateController::class, 'generate'])->name('generate.generate');
     Route::post('/generate/save', [GenerateController::class, 'save'])->name('generate.save');
 
+    // MKT-01: Marketing Plan Generator
+    Route::get('/marketing-plan',         [\App\Http\Controllers\MarketingPlanController::class, 'index'])->name('marketing-plan.index');
+    Route::get('/marketing-plan/create',  [\App\Http\Controllers\MarketingPlanController::class, 'create'])->name('marketing-plan.create');
+    Route::post('/marketing-plan',        [\App\Http\Controllers\MarketingPlanController::class, 'store'])->name('marketing-plan.store');
+    Route::get('/marketing-plan/{marketingPlan}',    [\App\Http\Controllers\MarketingPlanController::class, 'show'])->name('marketing-plan.show');
+    Route::delete('/marketing-plan/{marketingPlan}', [\App\Http\Controllers\MarketingPlanController::class, 'destroy'])->name('marketing-plan.destroy');
+
     // SCH-01→SCH-11: Scheduling — calendar + posts history
     Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
     Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
