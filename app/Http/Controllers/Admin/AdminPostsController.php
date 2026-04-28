@@ -12,7 +12,8 @@ class AdminPostsController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Post::with(['workspace:id,name', 'user:id,name', 'socialAccount:id,provider'])
+        $query = Post::withoutWorkspaceScope()
+            ->with(['workspace:id,name', 'user:id,name', 'socialAccount:id,provider'])
             ->orderByDesc('created_at');
 
         if ($search = $request->string('search')->toString()) {
@@ -30,11 +31,11 @@ class AdminPostsController extends Controller
         $posts = $query->paginate(30)->withQueryString();
 
         $counts = [
-            'all'       => Post::count(),
-            'scheduled' => Post::where('status', 'scheduled')->count(),
-            'published' => Post::where('status', 'published')->count(),
-            'failed'    => Post::where('status', 'failed')->count(),
-            'draft'     => Post::where('status', 'draft')->count(),
+            'all'       => Post::withoutWorkspaceScope()->count(),
+            'scheduled' => Post::withoutWorkspaceScope()->where('status', 'scheduled')->count(),
+            'published' => Post::withoutWorkspaceScope()->where('status', 'published')->count(),
+            'failed'    => Post::withoutWorkspaceScope()->where('status', 'failed')->count(),
+            'draft'     => Post::withoutWorkspaceScope()->where('status', 'draft')->count(),
         ];
 
         return Inertia::render('Admin/Posts/Index', [

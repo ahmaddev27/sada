@@ -29,23 +29,23 @@ class AdminDashboardController extends Controller
         $archivedWorkspaces  = Workspace::whereNotNull('archived_at')->count();
 
         // Posts
-        $totalPosts     = Post::count();
-        $scheduledPosts = Post::where('status', 'scheduled')->count();
-        $publishedPosts = Post::where('status', 'published')->count();
-        $failedPosts    = Post::where('status', 'failed')->count();
-        $draftPosts     = Post::where('status', 'draft')->count();
+        $totalPosts     = Post::withoutWorkspaceScope()->count();
+        $scheduledPosts = Post::withoutWorkspaceScope()->where('status', 'scheduled')->count();
+        $publishedPosts = Post::withoutWorkspaceScope()->where('status', 'published')->count();
+        $failedPosts    = Post::withoutWorkspaceScope()->where('status', 'failed')->count();
+        $draftPosts     = Post::withoutWorkspaceScope()->where('status', 'draft')->count();
 
         // AI Generations
-        $totalGenerations   = AiGeneration::count();
-        $generationsToday   = AiGeneration::whereDate('created_at', today())->count();
-        $totalTokensCharged = AiGeneration::sum('sada_tokens_charged');
-        $totalInputTokens   = AiGeneration::sum('input_tokens');
-        $totalOutputTokens  = AiGeneration::sum('output_tokens');
+        $totalGenerations   = AiGeneration::withoutWorkspaceScope()->count();
+        $generationsToday   = AiGeneration::withoutWorkspaceScope()->whereDate('created_at', today())->count();
+        $totalTokensCharged = AiGeneration::withoutWorkspaceScope()->sum('sada_tokens_charged');
+        $totalInputTokens   = AiGeneration::withoutWorkspaceScope()->sum('input_tokens');
+        $totalOutputTokens  = AiGeneration::withoutWorkspaceScope()->sum('output_tokens');
 
         // Social accounts
-        $totalSocialAccounts   = SocialAccount::count();
-        $healthySocialAccounts = SocialAccount::where('status', 'healthy')->count();
-        $expiredSocialAccounts = SocialAccount::where('status', 'expired')->count();
+        $totalSocialAccounts   = SocialAccount::withoutWorkspaceScope()->count();
+        $healthySocialAccounts = SocialAccount::withoutWorkspaceScope()->where('status', 'healthy')->count();
+        $expiredSocialAccounts = SocialAccount::withoutWorkspaceScope()->where('status', 'expired')->count();
 
         // Revenue (token purchases)
         $totalRevenue = (int) TokenTransaction::where('type', 'purchase')->sum('amount');
@@ -75,11 +75,12 @@ class AdminDashboardController extends Controller
             ->get();
 
         // AI generations — last 14 days
-        $generationsChart = AiGeneration::select(
-            DB::raw('DATE(created_at) as date'),
-            DB::raw('COUNT(*) as count'),
-            DB::raw('SUM(sada_tokens_charged) as tokens'),
-        )
+        $generationsChart = AiGeneration::withoutWorkspaceScope()
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('COUNT(*) as count'),
+                DB::raw('SUM(sada_tokens_charged) as tokens'),
+            )
             ->where('created_at', '>=', now()->subDays(14))
             ->groupBy('date')
             ->orderBy('date')
@@ -91,16 +92,18 @@ class AdminDashboardController extends Controller
             ->get(['id', 'name', 'email', 'created_at', 'banned_at', 'is_admin', 'token_balance']);
 
         // Recent AI generations
-        $recentGenerations = AiGeneration::with([
-            'workspace:id,name',
-            'user:id,name',
-        ])
+        $recentGenerations = AiGeneration::withoutWorkspaceScope()
+            ->with([
+                'workspace:id,name',
+                'user:id,name',
+            ])
             ->latest()
             ->limit(8)
             ->get(['id', 'workspace_id', 'user_id', 'agent_type', 'platform', 'sada_tokens_charged', 'cached', 'created_at']);
 
         // Failed posts
-        $recentFailedPosts = Post::with('workspace:id,name')
+        $recentFailedPosts = Post::withoutWorkspaceScope()
+            ->with('workspace:id,name')
             ->where('status', 'failed')
             ->latest()
             ->limit(5)

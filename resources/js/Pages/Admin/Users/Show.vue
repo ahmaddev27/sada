@@ -280,7 +280,7 @@ const TX_LABELS: Record<string, string> = {
 .ws-date { font-size: 11px; color: var(--text-muted); }
 
 /* Table */
-.table-wrap { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); }
+.table-wrap { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); background: var(--bg-surface); }
 .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .admin-table th { padding: 9px 12px; background: var(--bg-muted); color: var(--text-muted); font-weight: 600; text-align: right; border-bottom: 1px solid var(--border-default); white-space: nowrap; }
 .admin-table td { padding: 9px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); }

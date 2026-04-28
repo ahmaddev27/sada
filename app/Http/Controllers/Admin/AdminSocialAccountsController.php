@@ -12,7 +12,8 @@ class AdminSocialAccountsController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = SocialAccount::with(['workspace:id,name'])
+        $query = SocialAccount::withoutWorkspaceScope()
+            ->with(['workspace:id,name'])
             ->orderByDesc('created_at');
 
         if ($request->filled('provider')) {
@@ -33,10 +34,10 @@ class AdminSocialAccountsController extends Controller
         $accounts = $query->paginate(30)->withQueryString();
 
         $stats = [
-            'total'    => SocialAccount::count(),
-            'healthy'  => SocialAccount::where('status', 'healthy')->count(),
-            'expired'  => SocialAccount::where('status', 'expired')->count(),
-            'revoked'  => SocialAccount::where('status', 'revoked')->count(),
+            'total'    => SocialAccount::withoutWorkspaceScope()->count(),
+            'healthy'  => SocialAccount::withoutWorkspaceScope()->where('status', 'healthy')->count(),
+            'expired'  => SocialAccount::withoutWorkspaceScope()->where('status', 'expired')->count(),
+            'revoked'  => SocialAccount::withoutWorkspaceScope()->where('status', 'revoked')->count(),
         ];
 
         return Inertia::render('Admin/SocialAccounts/Index', [

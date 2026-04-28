@@ -217,7 +217,7 @@ function initials(name: string) {
 .admin-btn:hover { background: var(--sada-600); }
 
 /* Table */
-.table-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border-default); }
+.table-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border-default); background: var(--bg-surface); }
 .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .admin-table th { padding: 10px 14px; background: var(--bg-muted); color: var(--text-muted); font-weight: 600; text-align: right; border-bottom: 1px solid var(--border-default); white-space: nowrap; }
 .admin-table td { padding: 10px 14px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); vertical-align: middle; }

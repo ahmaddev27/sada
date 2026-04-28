@@ -12,7 +12,8 @@ class AdminAiGenerationsController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = AiGeneration::with(['workspace:id,name', 'user:id,name'])
+        $query = AiGeneration::withoutWorkspaceScope()
+            ->with(['workspace:id,name', 'user:id,name'])
             ->orderByDesc('created_at');
 
         if ($request->filled('platform')) {
@@ -30,12 +31,12 @@ class AdminAiGenerationsController extends Controller
         $generations = $query->paginate(30)->withQueryString();
 
         $stats = [
-            'total'           => AiGeneration::count(),
-            'today'           => AiGeneration::whereDate('created_at', today())->count(),
-            'tokens_charged'  => (int) AiGeneration::sum('sada_tokens_charged'),
-            'input_tokens'    => (int) AiGeneration::sum('input_tokens'),
-            'output_tokens'   => (int) AiGeneration::sum('output_tokens'),
-            'cached_count'    => AiGeneration::where('cached', true)->count(),
+            'total'           => AiGeneration::withoutWorkspaceScope()->count(),
+            'today'           => AiGeneration::withoutWorkspaceScope()->whereDate('created_at', today())->count(),
+            'tokens_charged'  => (int) AiGeneration::withoutWorkspaceScope()->sum('sada_tokens_charged'),
+            'input_tokens'    => (int) AiGeneration::withoutWorkspaceScope()->sum('input_tokens'),
+            'output_tokens'   => (int) AiGeneration::withoutWorkspaceScope()->sum('output_tokens'),
+            'cached_count'    => AiGeneration::withoutWorkspaceScope()->where('cached', true)->count(),
         ];
 
         return Inertia::render('Admin/AiGenerations/Index', [

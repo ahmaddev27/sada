@@ -23,7 +23,7 @@ class AdminAiModelsController extends Controller
             default => null,
         };
 
-        $query = AiGeneration::query()
+        $query = AiGeneration::withoutWorkspaceScope()
             ->select([
                 'provider',
                 'ai_model',
@@ -64,7 +64,7 @@ class AdminAiModelsController extends Controller
         ];
 
         // Daily trend for chart (last N days grouped by date + provider)
-        $trendQuery = AiGeneration::query()
+        $trendQuery = AiGeneration::withoutWorkspaceScope()
             ->select([
                 DB::raw('DATE(created_at) AS date'),
                 'provider',
