@@ -33,7 +33,8 @@ const nav = [
     { href: '/admin/ai-models',       label: 'أداء الموديلات',            icon: 'sparkle',   exact: false },
     { href: '/admin/notifications',   label: 'الإشعارات',                icon: 'bell',      exact: false },
     { href: '/admin/system',          label: 'صحة النظام',               icon: 'server',    exact: false },
-    { href: '/admin/settings',        label: 'الإعدادات',                icon: 'settings',  exact: false },
+    { href: '/admin/site-settings',   label: 'إعدادات الموقع',           icon: 'globe',     exact: false },
+    { href: '/admin/settings',        label: 'إعدادات النظام',           icon: 'settings',  exact: false },
 ]
 
 function isActive(href: string, exact: boolean) {

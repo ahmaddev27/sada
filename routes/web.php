@@ -184,6 +184,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', \App\Htt
     Route::get('/settings',                           [\App\Http\Controllers\Admin\AdminSettingsController::class,       'index'])->name('settings.index');
     Route::post('/settings/flags',                    [\App\Http\Controllers\Admin\AdminSettingsController::class,       'updateFlags'])->name('settings.flags');
     Route::post('/settings/packages/{package}',       [\App\Http\Controllers\Admin\AdminSettingsController::class,       'updatePackage'])->name('settings.packages.update');
+    Route::get('/site-settings',                      [\App\Http\Controllers\Admin\AdminSiteSettingsController::class,   'index'])->name('site-settings.index');
+    Route::post('/site-settings',                     [\App\Http\Controllers\Admin\AdminSiteSettingsController::class,   'update'])->name('site-settings.update');
+    Route::post('/site-settings/image/{key}',         [\App\Http\Controllers\Admin\AdminSiteSettingsController::class,   'uploadImage'])->name('site-settings.image');
 });
 
 // ── Artisan helper — protected by secret key (cPanel deployments) ──────────
