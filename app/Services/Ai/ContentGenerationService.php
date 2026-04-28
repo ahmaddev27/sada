@@ -116,7 +116,13 @@ class ContentGenerationService
      * CG-05: generate 3 variations — tries each driver in order until one succeeds.
      *
      * @param array<string, mixed> $params
-     * @return array<int, array{title: string, body: string, headline?: string, description?: string, tags: string[], char_count: int}>
+     * @return array{
+     *   variations: array<int, array{title: string, body: string, headline?: string, description?: string, tags: string[], char_count: int}>,
+     *   provider: string,
+     *   model: string,
+     *   input_tokens: int,
+     *   output_tokens: int,
+     * }
      */
     public function generate(array $params): array
     {
@@ -127,8 +133,14 @@ class ContentGenerationService
 
         foreach ($drivers as $driver) {
             try {
-                $raw = $driver->complete($system, $user);
-                return $this->parseVariations($raw, (string) ($params['platform'] ?? 'instagram'), (string) ($params['content_type'] ?? 'post'));
+                $result = $driver->complete($system, $user);
+                return [
+                    'variations'    => $this->parseVariations($result['content'], (string) ($params['platform'] ?? 'instagram'), (string) ($params['content_type'] ?? 'post')),
+                    'provider'      => $driver->name(),
+                    'model'         => $driver->model(),
+                    'input_tokens'  => $result['input_tokens'],
+                    'output_tokens' => $result['output_tokens'],
+                ];
             } catch (Throwable $e) {
                 Log::warning("AI driver [{$driver->name()}] failed: {$e->getMessage()}");
                 $last = $e;

@@ -175,6 +175,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', \App\Htt
     Route::get('/tokens',                             [\App\Http\Controllers\Admin\AdminTokenAuditController::class,     'index'])->name('tokens.index');
     Route::get('/tokens/export',                     [\App\Http\Controllers\Admin\AdminTokenAuditController::class,     'export'])->name('tokens.export');
     Route::get('/ai-costs',                           [\App\Http\Controllers\Admin\AdminAiCostController::class,         'index'])->name('ai-costs.index');
+    Route::get('/ai-models',                          [\App\Http\Controllers\Admin\AdminAiModelsController::class,        'index'])->name('ai-models.index');
     Route::get('/notifications',                      [\App\Http\Controllers\Admin\AdminNotificationController::class,   'index'])->name('notifications.index');
     Route::post('/notifications/broadcast',           [\App\Http\Controllers\Admin\AdminNotificationController::class,   'broadcast'])->name('notifications.broadcast');
     Route::get('/system',                             [\App\Http\Controllers\Admin\AdminSystemController::class,         'index'])->name('system.index');
