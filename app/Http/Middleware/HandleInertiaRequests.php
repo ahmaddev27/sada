@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\SiteSettingsService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -56,6 +57,8 @@ class HandleInertiaRequests extends Middleware
             'impersonating' => $request->session()->has('impersonating_admin_id')
                 ? ['active' => true, 'stop_url' => '/admin/impersonate/stop']
                 : null,
+
+            'siteSettings' => app(SiteSettingsService::class)->public(),
 
             'notifications' => $request->user() ? [
                 'unread_count' => $request->user()->unreadNotifications()->count(),
