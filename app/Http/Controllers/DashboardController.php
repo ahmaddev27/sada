@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MarketingPlan;
 use App\Models\Post;
 use App\Models\SocialAccount;
 use Illuminate\Http\Request;
@@ -16,8 +17,9 @@ class DashboardController extends Controller
         $workspace = $request->attributes->get('current_workspace');
 
         $postStats = ['total' => 0, 'published' => 0, 'scheduled' => 0, 'draft' => 0, 'failed' => 0];
-        $recentPosts    = [];
-        $socialAccounts = [];
+        $recentPosts      = [];
+        $socialAccounts   = [];
+        $marketingPlans   = 0;
 
         if ($workspace) {
             $rows = Post::withoutWorkspaceScope()
@@ -58,6 +60,11 @@ class DashboardController extends Controller
                     'account_name' => $a->account_name,
                     'status'       => $a->status,
                 ]);
+
+            $marketingPlans = MarketingPlan::withoutWorkspaceScope()
+                ->where('workspace_id', $workspace->id)
+                ->where('status', 'completed')
+                ->count();
         }
 
         return Inertia::render('Dashboard/Index', [
@@ -66,6 +73,7 @@ class DashboardController extends Controller
                 'posts'           => $postStats,
                 'social_accounts' => count($socialAccounts),
                 'workspaces'      => $user->workspaces()->count(),
+                'marketing_plans' => $marketingPlans,
             ],
             'recentPosts'    => $recentPosts,
             'socialAccounts' => $socialAccounts,

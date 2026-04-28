@@ -12,6 +12,7 @@ const props = defineProps<{
         posts: { total: number; published: number; scheduled: number; draft: number; failed: number };
         social_accounts: number;
         workspaces: number;
+        marketing_plans: number;
     };
     recentPosts: Array<{
         id: number;
@@ -74,6 +75,15 @@ const kpis = computed(() => [
         href: '/posts?status=draft',
         delta: null,
     },
+    {
+        label: 'خطط تسويقية',
+        value: props.stats.marketing_plans,
+        icon: 'target',
+        color: '#C8965F',
+        bg: 'color-mix(in oklab, #C8965F 14%, transparent)',
+        href: '/marketing-plan',
+        delta: null,
+    },
 ]);
 
 const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
@@ -97,10 +107,11 @@ const PLATFORM_COLOR: Record<string, string> = {
 };
 
 const quickActions = [
-    { label: 'توليد محتوى', icon: 'sparkle',   href: '/generate',  color: 'var(--sada-500)', bg: 'color-mix(in oklab, var(--sada-500) 14%, transparent)' },
-    { label: 'عرض التقويم', icon: 'calendar',  href: '/calendar',  color: 'var(--info)',      bg: 'color-mix(in oklab, var(--info) 14%, transparent)'      },
-    { label: 'حملة موسمية', icon: 'moon',      href: '/seasonal',  color: 'var(--warning)',   bg: 'color-mix(in oklab, var(--warning) 14%, transparent)'   },
-    { label: 'الحملات',     icon: 'megaphone', href: '/campaigns', color: '#8B5CF6',          bg: 'color-mix(in oklab, #8B5CF6 14%, transparent)'          },
+    { label: 'توليد محتوى',   icon: 'sparkle',   href: '/generate',         color: 'var(--sada-500)', bg: 'color-mix(in oklab, var(--sada-500) 14%, transparent)' },
+    { label: 'عرض التقويم',   icon: 'calendar',  href: '/calendar',         color: 'var(--info)',      bg: 'color-mix(in oklab, var(--info) 14%, transparent)'      },
+    { label: 'حملة موسمية',   icon: 'moon',      href: '/seasonal',         color: 'var(--warning)',   bg: 'color-mix(in oklab, var(--warning) 14%, transparent)'   },
+    { label: 'الحملات',       icon: 'megaphone', href: '/campaigns',        color: '#8B5CF6',          bg: 'color-mix(in oklab, #8B5CF6 14%, transparent)'          },
+    { label: 'خطة تسويقية',  icon: 'target',    href: '/marketing-plan',   color: '#C8965F',          bg: 'color-mix(in oklab, #C8965F 14%, transparent)'          },
 ];
 
 function relativeTime(iso: string): string {
@@ -144,9 +155,14 @@ function formatScheduled(iso: string | null): string {
                         </div>
                         <div class="banner-desc">
                             <span v-if="stats.posts.scheduled > 0">
-                                لديك <strong>{{ stats.posts.scheduled }}</strong> منشور مجدول — استمر!
+                                لديك <strong>{{ stats.posts.scheduled }}</strong> منشور مجدول
+                                <template v-if="stats.marketing_plans > 0"> و<strong>{{ stats.marketing_plans }}</strong> خطة تسويقية مكتملة</template>
+                                — استمر!
                             </span>
-                            <span v-else>ابدأ بتوليد محتوى جديد اليوم.</span>
+                            <span v-else-if="stats.marketing_plans > 0">
+                                لديك <strong>{{ stats.marketing_plans }}</strong> خطة تسويقية مكتملة — ابدأ بتنفيذها اليوم.
+                            </span>
+                            <span v-else>ابدأ بتوليد محتوى جديد أو أنشئ خطة تسويقية شاملة.</span>
                         </div>
                         <div class="banner-actions">
                             <Link href="/generate" class="banner-btn-primary">
@@ -462,7 +478,7 @@ function formatScheduled(iso: string | null): string {
 /* ── KPI grid ── */
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 14px;
 }
 
@@ -711,10 +727,13 @@ function formatScheduled(iso: string | null): string {
 }
 .connect-btn:hover { background: var(--bg-muted); border-color: var(--sada-400); }
 
+@media (max-width: 1200px) {
+    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+}
 @media (max-width: 1100px) {
     .banner-row { flex-direction: column; }
     .token-card { width: 100%; }
-    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
     .bottom-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
