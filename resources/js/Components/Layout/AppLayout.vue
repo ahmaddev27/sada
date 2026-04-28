@@ -85,9 +85,10 @@ const navWork = [
     { label: 'توليد محتوى',        href: '/generate',   icon: 'sparkle', badge: 'جديد' },
     { label: 'التقويم',            href: '/calendar',   icon: 'calendar' },
     { label: 'سجل المحتوى',        href: '/posts',      icon: 'clock' },
-    { label: 'الحملات الإعلانية',  href: '/campaigns',  icon: 'megaphone' },
-    { label: 'المواسم',            href: '/seasonal',   icon: 'moon' },
-    { label: 'التحليلات',          href: '/analytics',  icon: 'chart' },
+    { label: 'الحملات الإعلانية',  href: '/campaigns',      icon: 'megaphone' },
+    { label: 'المواسم',            href: '/seasonal',       icon: 'moon' },
+    { label: 'خطة تسويقية',       href: '/marketing-plan', icon: 'target', badge: 'AI' },
+    { label: 'التحليلات',          href: '/analytics',      icon: 'chart' },
 ]
 
 const navAccount = [
