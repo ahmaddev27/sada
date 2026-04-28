@@ -19,6 +19,8 @@ class AiGeneration extends Model
         'workspace_id',
         'user_id',
         'agent_type',
+        'provider',
+        'ai_model',
         'dialect',
         'platform',
         'content_type',
@@ -26,11 +28,13 @@ class AiGeneration extends Model
         'input_tokens',
         'output_tokens',
         'sada_tokens_charged',
+        'cost_usd',
         'cached',
     ];
 
     protected $casts = [
-        'cached' => 'boolean',
+        'cached'   => 'boolean',
+        'cost_usd' => 'decimal:8',
     ];
 
     /** @return BelongsTo<User, $this> */

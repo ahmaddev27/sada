@@ -54,20 +54,30 @@ class GenerateContentAction
         $params['entity_type']    = $workspace->entity_type ?? 'business';
         $params['workspace_type'] = $workspace->business_type ?? null;
 
-        $variations = $this->service->generate($params);
+        $result = $this->service->generate($params);
+
+        // Calculate actual cost from token usage
+        $costUsd  = $this->calculateCost(
+            model:        $result['model'],
+            inputTokens:  $result['input_tokens'],
+            outputTokens: $result['output_tokens'],
+        );
 
         // Record usage then deduct atomically via TokenService (BIL-02, BIL-04)
         $generation = AiGeneration::create([
             'workspace_id'        => $workspace->id,
             'user_id'             => $user->id,
             'agent_type'          => 'content_generator',
+            'provider'            => $result['provider'],
+            'ai_model'            => $result['model'],
             'dialect'             => (string) ($params['dialect'] ?? 'fos'),
             'platform'            => (string) ($params['platform'] ?? 'instagram'),
             'content_type'        => (string) ($params['content_type'] ?? 'post'),
             'prompt'              => mb_substr((string) ($params['prompt'] ?? ''), 0, 500),
-            'input_tokens'        => 0,
-            'output_tokens'       => 0,
+            'input_tokens'        => $result['input_tokens'],
+            'output_tokens'       => $result['output_tokens'],
             'sada_tokens_charged' => $tokensRequired,
+            'cost_usd'            => $costUsd,
         ]);
 
         $this->tokens->deduct(
@@ -79,8 +89,26 @@ class GenerateContentAction
         );
 
         return [
-            'variations'    => $variations,
+            'variations'    => $result['variations'],
             'tokens_charged'=> $tokensRequired,
         ];
+    }
+
+    private function calculateCost(string $model, int $inputTokens, int $outputTokens): float
+    {
+        /** @var array<string, array{input: float, output: float}> $pricing */
+        $pricing = config('ai_pricing.models', []);
+        $rates   = $pricing[$model] ?? null;
+
+        if ($rates === null) {
+            return 0.0;
+        }
+
+        // Pricing is per 1M tokens
+        return round(
+            ($inputTokens  / 1_000_000 * $rates['input']) +
+            ($outputTokens / 1_000_000 * $rates['output']),
+            8
+        );
     }
 }

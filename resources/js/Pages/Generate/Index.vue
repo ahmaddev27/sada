@@ -221,7 +221,38 @@ function savePost(action: 'draft' | 'publish') {
     })
 }
 
-const copied = ref(false)
+const copied        = ref(false)
+const manualPosted  = ref(false)
+
+const META_PLATFORMS: Record<string, { label: string, url: string }> = {
+    facebook:  { label: 'فيسبوك',   url: 'https://www.facebook.com' },
+    instagram: { label: 'انستجرام', url: 'https://www.instagram.com' },
+}
+
+const isMetaPlatform = computed(() => platform.value in META_PLATFORMS)
+
+function manualPost() {
+    if (!selectedVariation.value) return
+
+    const body = isEditing.value ? editingBody.value : selectedVariation.value.body
+    const tags  = selectedVariation.value.tags.join(' ')
+    const full  = body + (tags ? '\n\n' + tags : '')
+
+    // Copy content to clipboard
+    const openPlatform = () => {
+        window.open(META_PLATFORMS[platform.value]?.url ?? 'https://www.facebook.com', '_blank', 'noopener')
+        manualPosted.value = true
+        setTimeout(() => { manualPosted.value = false }, 3000)
+    }
+
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(full).then(openPlatform).catch(() => {
+            fallbackCopy(full, openPlatform)
+        })
+    } else {
+        fallbackCopy(full, openPlatform)
+    }
+}
 
 function copyToClipboard(variation: Variation) {
     const body = variation.id === selectedVariation.value?.id && isEditing.value
@@ -709,6 +740,25 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
                         </div>
                     </div>
 
+                    <!-- Manual Meta posting banner -->
+                    <div v-if="isMetaPlatform" class="manual-post-banner">
+                        <div class="manual-post-info">
+                            <Icon name="instagram" :size="15" style="color:var(--accent)" />
+                            <span>
+                                ربط {{ META_PLATFORMS[platform]?.label }} قيد الإعداد —
+                                انسخ المحتوى وانشره يدوياً الآن
+                            </span>
+                        </div>
+                        <button
+                            class="btn btn-sm btn-accent-soft"
+                            @click="manualPost"
+                            :disabled="!selectedVariation"
+                        >
+                            <Icon name="copy" :size="14" />
+                            {{ manualPosted ? 'تم النسخ — تحقق من التبويب الجديد ✓' : `نسخ وفتح ${META_PLATFORMS[platform]?.label}` }}
+                        </button>
+                    </div>
+
                     <!-- Action bar (CG-08) -->
                     <div class="action-bar">
                         <div style="font-size:12px; color:var(--text-muted);">
@@ -939,6 +989,26 @@ const selectedDialectLabel = computed(() => DIALECTS.find(d => d.id === dialect.
 .ig-caption {
     padding: 10px 12px 14px;
     font-size: 13px; line-height: 1.7;
+}
+
+/* ── Manual Meta posting banner ── */
+.manual-post-banner {
+    background: linear-gradient(135deg, rgba(200,150,95,.08) 0%, rgba(200,150,95,.04) 100%);
+    border: 1px solid rgba(200,150,95,.3);
+    border-radius: var(--radius-lg);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.manual-post-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
 }
 
 /* ── Action bar ── */

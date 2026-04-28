@@ -13,7 +13,7 @@ class OpenAiDriver implements AiDriverInterface
         private readonly int    $maxTokens = 8192,
     ) {}
 
-    public function complete(string $system, string $user): string
+    public function complete(string $system, string $user): array
     {
         if (empty($this->apiKey)) {
             throw new RuntimeException('OpenAI API key is not configured.');
@@ -29,8 +29,13 @@ class OpenAiDriver implements AiDriverInterface
                 ],
             ])->throw()->json();
 
-        return $response['choices'][0]['message']['content'] ?? '';
+        return [
+            'content'       => $response['choices'][0]['message']['content'] ?? '',
+            'input_tokens'  => $response['usage']['prompt_tokens']     ?? 0,
+            'output_tokens' => $response['usage']['completion_tokens'] ?? 0,
+        ];
     }
 
-    public function name(): string { return 'openai'; }
+    public function name(): string  { return 'openai'; }
+    public function model(): string { return $this->model; }
 }

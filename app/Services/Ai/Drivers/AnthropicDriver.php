@@ -13,7 +13,7 @@ class AnthropicDriver implements AiDriverInterface
         private readonly int    $maxTokens = 8192,
     ) {}
 
-    public function complete(string $system, string $user): string
+    public function complete(string $system, string $user): array
     {
         if (empty($this->apiKey)) {
             throw new RuntimeException('Anthropic API key is not configured.');
@@ -30,8 +30,13 @@ class AnthropicDriver implements AiDriverInterface
             'messages'   => [['role' => 'user', 'content' => $user]],
         ])->throw()->json();
 
-        return $response['content'][0]['text'] ?? '';
+        return [
+            'content'       => $response['content'][0]['text'] ?? '',
+            'input_tokens'  => $response['usage']['input_tokens']  ?? 0,
+            'output_tokens' => $response['usage']['output_tokens'] ?? 0,
+        ];
     }
 
-    public function name(): string { return 'anthropic'; }
+    public function name(): string  { return 'anthropic'; }
+    public function model(): string { return $this->model; }
 }
