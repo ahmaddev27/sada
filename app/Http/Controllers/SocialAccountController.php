@@ -8,6 +8,7 @@ use App\Actions\Social\ConnectSocialAccountAction;
 use App\Actions\Social\DisconnectSocialAccountAction;
 use App\Actions\Social\RefreshSocialTokenAction;
 use App\Models\SocialAccount;
+use App\Services\FeatureFlagService;
 use App\Services\Meta\MetaOAuthService;
 use App\Services\Snapchat\SnapchatOAuthService;
 use App\Services\TikTok\TikTokOAuthService;
@@ -72,17 +73,22 @@ class SocialAccountController extends Controller
             return redirect($meta->redirectUrl($state));
         }
 
+        $flags = app(FeatureFlagService::class);
+
         if ($provider === 'tiktok') {
+            abort_unless($flags->isEnabled('tiktok_integration'), 403, 'تكامل TikTok غير مفعّل حالياً.');
             session(['tiktok_oauth_state' => $state]);
             return redirect($tiktok->redirectUrl($state));
         }
 
         if ($provider === 'snapchat') {
+            abort_unless($flags->isEnabled('snapchat_integration'), 403, 'تكامل Snapchat غير مفعّل حالياً.');
             session(['snapchat_oauth_state' => $state]);
             return redirect($snapchat->redirectUrl($state));
         }
 
         if ($provider === 'x') {
+            abort_unless($flags->isEnabled('x_integration'), 403, 'تكامل X غير مفعّل حالياً.');
             session(['x_oauth_state' => $state]);
             // XOAuthService stores the PKCE verifier in session internally
             return redirect($x->redirectUrl($state));

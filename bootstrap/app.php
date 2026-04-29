@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\DispatchDuePosts;
+use App\Console\Commands\RefreshAiPricing;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -27,6 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule): void {
         // SCH-02: check for due posts every minute
         $schedule->command(DispatchDuePosts::class)->everyMinute();
+        // refresh live AI pricing from OpenRouter once a day
+        $schedule->command(RefreshAiPricing::class)->daily();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

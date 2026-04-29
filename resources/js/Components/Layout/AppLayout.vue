@@ -17,6 +17,7 @@ const ws           = computed(() => page.props.currentWorkspace)
 const workspaces   = computed(() => page.props.workspaces ?? [])
 const flash        = computed(() => page.props.flash)
 const siteSettings = computed(() => page.props.siteSettings)
+const flags        = computed(() => page.props.featureFlags)
 
 const logoSrc = computed(() => {
     if (ui.theme === 'dark') {
@@ -90,22 +91,22 @@ const wsInitials = computed(() => {
 
 const currentPath = computed(() => page.url.split('?')[0])
 
-const navWork = [
-    { label: 'الرئيسية',           href: '/dashboard',  icon: 'home' },
-    { label: 'توليد محتوى',        href: '/generate',   icon: 'sparkle', badge: 'جديد' },
-    { label: 'التقويم',            href: '/calendar',   icon: 'calendar' },
-    { label: 'سجل المحتوى',        href: '/posts',      icon: 'clock' },
-    { label: 'الحملات الإعلانية',  href: '/campaigns',      icon: 'megaphone' },
-    { label: 'المواسم',            href: '/seasonal',       icon: 'moon' },
-    { label: 'خطة تسويقية',       href: '/marketing-plan', icon: 'target', badge: 'AI' },
-    { label: 'التحليلات',          href: '/analytics',      icon: 'chart' },
-]
+const navWork = computed(() => [
+    { label: 'الرئيسية',          href: '/dashboard',      icon: 'home',      show: true },
+    { label: 'توليد محتوى',       href: '/generate',       icon: 'sparkle',   show: flags.value?.ai_generation    ?? true,  badge: 'جديد' },
+    { label: 'التقويم',           href: '/calendar',       icon: 'calendar',  show: true },
+    { label: 'سجل المحتوى',       href: '/posts',          icon: 'clock',     show: true },
+    { label: 'الحملات الإعلانية', href: '/campaigns',      icon: 'megaphone', show: flags.value?.paid_campaigns   ?? true },
+    { label: 'المواسم',           href: '/seasonal',       icon: 'moon',      show: flags.value?.seasonal_engine  ?? true },
+    { label: 'خطة تسويقية',      href: '/marketing-plan', icon: 'target',    show: flags.value?.ai_generation    ?? true,  badge: 'AI' },
+    { label: 'التحليلات',         href: '/analytics',      icon: 'chart',     show: true },
+].filter(i => i.show))
 
-const navAccount = [
-    { label: 'الحسابات المرتبطة', href: '/social/accounts', icon: 'instagram' },
-    { label: 'الفوترة',           href: '/billing',         icon: 'credit' },
-    { label: 'الإعدادات',         href: '/settings',        icon: 'settings' },
-]
+const navAccount = computed(() => [
+    { label: 'الحسابات المرتبطة', href: '/social/accounts', icon: 'instagram', show: true },
+    { label: 'الفوترة',           href: '/billing',          icon: 'credit',    show: flags.value?.billing ?? true },
+    { label: 'الإعدادات',         href: '/settings',         icon: 'settings',  show: true },
+].filter(i => i.show))
 
 function isActive(href: string) {
     return currentPath.value === href || currentPath.value.startsWith(href + '/')

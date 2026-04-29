@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\FeatureFlagService;
 use App\Services\SiteSettingsService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -58,7 +59,8 @@ class HandleInertiaRequests extends Middleware
                 ? ['active' => true, 'stop_url' => '/admin/impersonate/stop']
                 : null,
 
-            'siteSettings' => app(SiteSettingsService::class)->public(),
+            'siteSettings'  => app(SiteSettingsService::class)->public(),
+            'featureFlags'  => app(FeatureFlagService::class)->all(),
 
             'notifications' => $request->user() ? [
                 'unread_count' => $request->user()->unreadNotifications()->count(),

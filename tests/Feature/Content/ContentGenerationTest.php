@@ -30,13 +30,24 @@ function fakeVariations(): array
     ];
 }
 
+function fakeGenerateResult(): array
+{
+    return [
+        'variations'    => fakeVariations(),
+        'provider'      => 'anthropic',
+        'model'         => 'claude-3-5-haiku-20241022',
+        'input_tokens'  => 120,
+        'output_tokens' => 280,
+    ];
+}
+
 // ── CG-05: Generation endpoint returns 3 variations ─────────────────────────
 
 it('يُولّد ثلاثة خيارات محتوى عبر الـ AI', function () {
     [$user, $workspace] = makeWorkspace(200);
 
     $this->mock(ContentGenerationService::class, function (MockInterface $mock) {
-        $mock->shouldReceive('generate')->once()->andReturn(fakeVariations());
+        $mock->shouldReceive('generate')->once()->andReturn(fakeGenerateResult());
     });
 
     $response = $this->actingAs($user)
@@ -63,7 +74,7 @@ it('يُسجّل سجل ai_generation بعد التوليد', function () {
     [$user, $workspace] = makeWorkspace(200);
 
     $this->mock(ContentGenerationService::class, function (MockInterface $mock) {
-        $mock->shouldReceive('generate')->once()->andReturn(fakeVariations());
+        $mock->shouldReceive('generate')->once()->andReturn(fakeGenerateResult());
     });
 
     $this->actingAs($user)
@@ -109,7 +120,7 @@ it('يخصم 40 توكن من رصيد المستخدم بعد التوليد', 
     [$user, $workspace] = makeWorkspace(200);
 
     $this->mock(ContentGenerationService::class, function (MockInterface $mock) {
-        $mock->shouldReceive('generate')->once()->andReturn(fakeVariations());
+        $mock->shouldReceive('generate')->once()->andReturn(fakeGenerateResult());
     });
 
     $this->actingAs($user)

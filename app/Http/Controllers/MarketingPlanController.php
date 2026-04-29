@@ -108,7 +108,7 @@ class MarketingPlanController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        $plan = (new GenerateMarketingPlanAction())->execute($inputs, $workspace, $user);
+        $plan = app(GenerateMarketingPlanAction::class)->execute($inputs, $workspace, $user);
 
         if ($plan->status === 'failed') {
             return back()->with('flash', ['error' => 'فشل في توليد الخطة، يرجى المحاولة مرة أخرى.']);

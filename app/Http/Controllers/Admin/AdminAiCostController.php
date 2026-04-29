@@ -35,7 +35,13 @@ class AdminAiCostController extends Controller
 
         // Breakdown by agent type
         $byAgentType = AiGeneration::withoutWorkspaceScope()
-            ->select('agent_type', DB::raw('COUNT(*) as count'), DB::raw('SUM(sada_tokens_charged) as tokens'), DB::raw('SUM(CASE WHEN cached = 1 THEN 1 ELSE 0 END) as cached_count'))
+            ->select(
+                'agent_type',
+                DB::raw('COUNT(*) as count'),
+                DB::raw('SUM(sada_tokens_charged) as tokens'),
+                DB::raw('SUM(cost_usd) as cost_usd'),
+                DB::raw('SUM(CASE WHEN cached = 1 THEN 1 ELSE 0 END) as cached_count'),
+            )
             ->groupBy('agent_type')
             ->orderByDesc('count')
             ->get();
@@ -53,12 +59,16 @@ class AdminAiCostController extends Controller
             ->orderBy('date')
             ->get();
 
+        $usdToSar = (float) config('ai_pricing.usd_to_sar', 3.75);
+
         $stats = [
             'total_generations'   => AiGeneration::withoutWorkspaceScope()->count(),
             'today_generations'   => AiGeneration::withoutWorkspaceScope()->whereDate('created_at', today())->count(),
             'total_tokens_billed' => (int) AiGeneration::withoutWorkspaceScope()->sum('sada_tokens_charged'),
             'total_input_tokens'  => (int) AiGeneration::withoutWorkspaceScope()->sum('input_tokens'),
             'total_output_tokens' => (int) AiGeneration::withoutWorkspaceScope()->sum('output_tokens'),
+            'total_cost_usd'      => round((float) AiGeneration::withoutWorkspaceScope()->sum('cost_usd'), 4),
+            'total_cost_sar'      => round((float) AiGeneration::withoutWorkspaceScope()->sum('cost_usd') * $usdToSar, 4),
             'cached_count'        => (int) AiGeneration::withoutWorkspaceScope()->where('cached', true)->count(),
             'cached_savings'      => (int) AiGeneration::withoutWorkspaceScope()->where('cached', true)->sum('sada_tokens_charged'),
         ];

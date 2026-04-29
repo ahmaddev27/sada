@@ -83,6 +83,19 @@ export interface SiteSettings {
     [key: string]: unknown
 }
 
+export interface FeatureFlags {
+    ai_generation: boolean
+    paid_campaigns: boolean
+    tiktok_integration: boolean
+    snapchat_integration: boolean
+    x_integration: boolean
+    linkedin_integration: boolean
+    seasonal_engine: boolean
+    analytics_ai: boolean
+    billing: boolean
+    [key: string]: boolean
+}
+
 export interface PageProps extends Record<string, unknown> {
     auth: {
         user: User | null;
@@ -101,6 +114,7 @@ export interface PageProps extends Record<string, unknown> {
     } | null;
     impersonating: { active: boolean; stop_url: string } | null;
     siteSettings: SiteSettings;
+    featureFlags: FeatureFlags;
 }
 
 // ADS-01 → ADS-11

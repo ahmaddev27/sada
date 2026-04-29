@@ -50,6 +50,7 @@ class SeasonalController extends Controller
      */
     public function generate(string $key): \Illuminate\Http\RedirectResponse
     {
+        /** @var SeasonalOccasion|null $occasion */
         $occasion = $this->getAllOccasions()->firstWhere('key', $key);
 
         if ($occasion === null) {
@@ -70,6 +71,7 @@ class SeasonalController extends Controller
     {
         $raw = $this->getAllOccasions();
 
+        /** @var array<int, SeasonalOccasion> $filtered */
         $filtered = $country === 'all'
             ? $raw->all()
             : $raw->filter(fn ($o) => in_array($country, $o->countries ?? []))->values()->all();

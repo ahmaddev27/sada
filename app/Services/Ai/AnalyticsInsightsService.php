@@ -55,7 +55,7 @@ class AnalyticsInsightsService
         foreach ($this->buildDriverChain() as $driver) {
             try {
                 $raw = $driver->complete($system, $user);
-                $parsed = $this->parseInsights($raw);
+                $parsed = $this->parseInsights($raw['content']);
                 if (count($parsed) >= 1) {
                     return $parsed;
                 }

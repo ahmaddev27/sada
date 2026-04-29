@@ -40,7 +40,7 @@ class AdminAiModelsController extends Controller
             $query->where('created_at', '>=', $from);
         }
 
-        $rows = $query->get();
+        $rows = $query->toBase()->get();
 
         $usdToSar = (float) config('ai_pricing.usd_to_sar', 3.75);
 
@@ -79,7 +79,7 @@ class AdminAiModelsController extends Controller
             $trendQuery->where('created_at', '>=', $from);
         }
 
-        $trend = $trendQuery->get()->map(fn ($r) => [
+        $trend = $trendQuery->toBase()->get()->map(fn ($r) => [
             'date'     => $r->date,
             'provider' => $r->provider,
             'requests' => (int) $r->requests,

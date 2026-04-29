@@ -7,6 +7,7 @@ namespace App\Actions\Content;
 use App\Models\AiGeneration;
 use App\Models\BrandIdentity;
 use App\Models\Workspace;
+use App\Services\Ai\AiPricingService;
 use App\Services\Ai\ContentGenerationService;
 use App\Services\TokenService;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,7 @@ class GenerateContentAction
     public function __construct(
         private readonly ContentGenerationService $service,
         private readonly TokenService $tokens,
+        private readonly AiPricingService $pricing,
     ) {}
 
     /**
@@ -56,11 +58,11 @@ class GenerateContentAction
 
         $result = $this->service->generate($params);
 
-        // Calculate actual cost from token usage
-        $costUsd  = $this->calculateCost(
-            model:        $result['model'],
-            inputTokens:  $result['input_tokens'],
-            outputTokens: $result['output_tokens'],
+        // Calculate actual cost from live OpenRouter pricing (falls back to config)
+        $costUsd = $this->pricing->costFor(
+            $result['model'],
+            $result['input_tokens'],
+            $result['output_tokens'],
         );
 
         // Record usage then deduct atomically via TokenService (BIL-02, BIL-04)
@@ -94,21 +96,4 @@ class GenerateContentAction
         ];
     }
 
-    private function calculateCost(string $model, int $inputTokens, int $outputTokens): float
-    {
-        /** @var array<string, array{input: float, output: float}> $pricing */
-        $pricing = config('ai_pricing.models', []);
-        $rates   = $pricing[$model] ?? null;
-
-        if ($rates === null) {
-            return 0.0;
-        }
-
-        // Pricing is per 1M tokens
-        return round(
-            ($inputTokens  / 1_000_000 * $rates['input']) +
-            ($outputTokens / 1_000_000 * $rates['output']),
-            8
-        );
-    }
 }

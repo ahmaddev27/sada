@@ -2,12 +2,16 @@
 
 // SE-01→SE-08: Seasonal engine tests
 
+use App\Models\SeasonalOccasion;
 use App\Models\User;
 use App\Models\Workspace;
-use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Cache;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+
+// Clear the DB-backed seasonal cache before every test so stale data never bleeds through
+beforeEach(fn () => Cache::forget('seasonal:occasions:active'));
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -19,44 +23,45 @@ function makeUserWithWorkspace(): User
     return $user;
 }
 
-function fakeTwoOccasions(): void
+function makeTwoOccasions(): void
 {
-    Config::set('seasonal.occasions', [
-        [
-            'key'       => 'eid-fitr',
-            'name'      => 'عيد الفطر',
-            'subtitle'  => 'فطر مبارك',
-            'date'      => now()->addDays(5)->format('Y-m-d'),
-            'end_date'  => now()->addDays(7)->format('Y-m-d'),
-            'icon'      => '🌙',
-            'color'     => '#0F6F5C',
-            'countries' => ['all'],
-            'templates' => ['تهنئة', 'عرض خاص'],
-            'featured'  => true,
-            'hashtags'  => ['عيد_الفطر', 'عيد_مبارك'],
-            'is_recurring' => true,
-        ],
-        [
-            'key'       => 'national-day-sa',
-            'name'      => 'اليوم الوطني السعودي',
-            'subtitle'  => '94 عاماً من العطاء',
-            'date'      => now()->addDays(30)->format('Y-m-d'),
-            'end_date'  => null,
-            'icon'      => '🇸🇦',
-            'color'     => '#006C35',
-            'countries' => ['SA'],
-            'templates' => ['تهنئة وطنية'],
-            'featured'  => false,
-            'hashtags'  => ['اليوم_الوطني'],
-            'is_recurring' => true,
-        ],
+    SeasonalOccasion::create([
+        'key'          => 'eid-fitr',
+        'name'         => 'عيد الفطر',
+        'subtitle'     => 'فطر مبارك',
+        'date'         => now()->addDays(5)->format('Y-m-d'),
+        'end_date'     => now()->addDays(7)->format('Y-m-d'),
+        'icon'         => '🌙',
+        'color'        => '#0F6F5C',
+        'countries'    => ['all'],
+        'featured'     => true,
+        'hashtags'     => ['عيد_الفطر', 'عيد_مبارك'],
+        'is_recurring' => true,
+        'active'       => true,
+        'sort_order'   => 1,
+    ]);
+
+    SeasonalOccasion::create([
+        'key'          => 'national-day-sa',
+        'name'         => 'اليوم الوطني السعودي',
+        'subtitle'     => '94 عاماً من العطاء',
+        'date'         => now()->addDays(30)->format('Y-m-d'),
+        'end_date'     => null,
+        'icon'         => '🇸🇦',
+        'color'        => '#006C35',
+        'countries'    => ['SA'],
+        'featured'     => false,
+        'hashtags'     => ['اليوم_الوطني'],
+        'is_recurring' => true,
+        'active'       => true,
+        'sort_order'   => 2,
     ]);
 }
 
 // ── SE-01: page renders for authenticated user ────────────────────────────────
 
 it('SE-01: renders seasonal index page for authenticated user', function (): void {
-    fakeTwoOccasions();
+    makeTwoOccasions();
     $user = makeUserWithWorkspace();
 
     actingAs($user)
@@ -74,7 +79,7 @@ it('SE-01: redirects unauthenticated visitor to login', function (): void {
 // ── SE-02: occasions are passed to the view ───────────────────────────────────
 
 it('SE-02: passes occasions array to the view', function (): void {
-    fakeTwoOccasions();
+    makeTwoOccasions();
     $user = makeUserWithWorkspace();
 
     actingAs($user)
@@ -92,7 +97,7 @@ it('SE-02: passes occasions array to the view', function (): void {
 // ── SE-02: upcoming occasion is identified ────────────────────────────────────
 
 it('SE-02: upcoming occasion is the soonest future occasion', function (): void {
-    fakeTwoOccasions();
+    makeTwoOccasions();
     $user = makeUserWithWorkspace();
 
     actingAs($user)
@@ -105,7 +110,7 @@ it('SE-02: upcoming occasion is the soonest future occasion', function (): void 
 // ── SE-04: featured filter works ─────────────────────────────────────────────
 
 it('SE-04: featured occasions are separated', function (): void {
-    fakeTwoOccasions();
+    makeTwoOccasions();
     $user = makeUserWithWorkspace();
 
     actingAs($user)
@@ -119,7 +124,7 @@ it('SE-04: featured occasions are separated', function (): void {
 // ── SE-05: country filter returns only matching occasions ─────────────────────
 
 it('SE-05: country=SA returns only Saudi occasions', function (): void {
-    fakeTwoOccasions();
+    makeTwoOccasions();
     $user = makeUserWithWorkspace();
 
     actingAs($user)
@@ -134,7 +139,7 @@ it('SE-05: country=SA returns only Saudi occasions', function (): void {
 // ── SE-05: country=all returns all occasions ──────────────────────────────────
 
 it('SE-05: country=all returns every occasion', function (): void {
-    fakeTwoOccasions();
+    makeTwoOccasions();
     $user = makeUserWithWorkspace();
 
     actingAs($user)
@@ -147,7 +152,7 @@ it('SE-05: country=all returns every occasion', function (): void {
 // ── SE-06: countdown strings are attached ─────────────────────────────────────
 
 it('SE-06: occasions have days_until, status, and countdown fields', function (): void {
-    fakeTwoOccasions();
+    makeTwoOccasions();
     $user = makeUserWithWorkspace();
 
     actingAs($user)
@@ -162,7 +167,7 @@ it('SE-06: occasions have days_until, status, and countdown fields', function ()
 // ── SE-06: active occasion gets "جارٍ الآن" countdown ───────────────────────
 
 it('SE-06: active occasion shows جارٍ الآن in countdown', function (): void {
-    Config::set('seasonal.occasions', [[
+    SeasonalOccasion::create([
         'key'          => 'ramadan',
         'name'         => 'رمضان الكريم',
         'subtitle'     => 'شهر العطاء',
@@ -171,11 +176,12 @@ it('SE-06: active occasion shows جارٍ الآن in countdown', function (): v
         'icon'         => '🌙',
         'color'        => '#0F6F5C',
         'countries'    => ['all'],
-        'templates'    => [],
         'featured'     => true,
         'hashtags'     => ['رمضان_كريم'],
         'is_recurring' => true,
-    ]]);
+        'active'       => true,
+        'sort_order'   => 1,
+    ]);
 
     $user = makeUserWithWorkspace();
 
@@ -190,7 +196,7 @@ it('SE-06: active occasion shows جارٍ الآن in countdown', function (): v
 // ── SE-06: passed occasion gets "انتهى" countdown ────────────────────────────
 
 it('SE-06: past occasion shows انتهى in countdown', function (): void {
-    Config::set('seasonal.occasions', [[
+    SeasonalOccasion::create([
         'key'          => 'old-event',
         'name'         => 'مناسبة قديمة',
         'subtitle'     => '',
@@ -199,11 +205,12 @@ it('SE-06: past occasion shows انتهى in countdown', function (): void {
         'icon'         => '📅',
         'color'        => '#C8965F',
         'countries'    => ['all'],
-        'templates'    => [],
         'featured'     => false,
         'hashtags'     => [],
         'is_recurring' => false,
-    ]]);
+        'active'       => true,
+        'sort_order'   => 1,
+    ]);
 
     $user = makeUserWithWorkspace();
 
@@ -218,7 +225,7 @@ it('SE-06: past occasion shows انتهى in countdown', function (): void {
 // ── SE-03: generate redirects to /generate with occasion context ──────────────
 
 it('SE-03: generate redirects to generate page with occasion query params', function (): void {
-    fakeTwoOccasions();
+    makeTwoOccasions();
     $user = makeUserWithWorkspace();
 
     actingAs($user)
@@ -231,7 +238,7 @@ it('SE-03: generate redirects to generate page with occasion query params', func
 // ── SE-03: generate with unknown key redirects back to seasonal index ─────────
 
 it('SE-03: generate with unknown key redirects to seasonal index', function (): void {
-    fakeTwoOccasions();
+    makeTwoOccasions();
     $user = makeUserWithWorkspace();
 
     actingAs($user)
@@ -242,7 +249,7 @@ it('SE-03: generate with unknown key redirects to seasonal index', function (): 
 // ── SE-07: countdown_detail breakdown is attached to upcoming ─────────────────
 
 it('SE-07: upcoming occasion has countdown_detail with days, hours, minutes', function (): void {
-    fakeTwoOccasions();
+    makeTwoOccasions();
     $user = makeUserWithWorkspace();
 
     actingAs($user)
@@ -257,7 +264,7 @@ it('SE-07: upcoming occasion has countdown_detail with days, hours, minutes', fu
 // ── SE-07: no upcoming returns null ──────────────────────────────────────────
 
 it('SE-07: returns null for upcoming when all occasions are passed', function (): void {
-    Config::set('seasonal.occasions', [[
+    SeasonalOccasion::create([
         'key'          => 'past-event',
         'name'         => 'مناسبة سابقة',
         'subtitle'     => '',
@@ -266,11 +273,12 @@ it('SE-07: returns null for upcoming when all occasions are passed', function ()
         'icon'         => '📅',
         'color'        => '#C8965F',
         'countries'    => ['all'],
-        'templates'    => [],
         'featured'     => false,
         'hashtags'     => [],
         'is_recurring' => false,
-    ]]);
+        'active'       => true,
+        'sort_order'   => 1,
+    ]);
 
     $user = makeUserWithWorkspace();
 

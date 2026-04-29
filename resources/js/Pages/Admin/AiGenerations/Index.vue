@@ -6,6 +6,8 @@ import AdminLayout from '@/Components/Admin/AdminLayout.vue'
 interface Generation {
     id: number
     agent_type: string
+    provider: string | null
+    ai_model: string | null
     dialect: string | null
     platform: string | null
     content_type: string | null
@@ -13,6 +15,7 @@ interface Generation {
     input_tokens: number
     output_tokens: number
     sada_tokens_charged: number
+    cost_usd: number
     cached: boolean
     created_at: string
     workspace: { id: number; name: string } | null
@@ -34,6 +37,8 @@ const props = defineProps<{
         tokens_charged: number
         input_tokens: number
         output_tokens: number
+        total_cost_usd: number
+        total_cost_sar: number
         cached_count: number
     }
     filters: { search?: string; platform?: string; agent_type?: string }
@@ -162,6 +167,16 @@ const cacheRate = props.stats.total ? Math.round((props.stats.cached_count / pro
                         <div class="kpi-sub muted">توكنات صدى</div>
                     </div>
                 </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon kpi-icon--amber">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                    </div>
+                    <div>
+                        <div class="kpi-num">${{ stats.total_cost_usd.toFixed(4) }}</div>
+                        <div class="kpi-label">تكلفة API الفعلية</div>
+                        <div class="kpi-sub muted">{{ stats.total_cost_sar.toFixed(2) }} ر.س</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Filters -->
@@ -177,7 +192,8 @@ const cacheRate = props.stats.total ? Math.round((props.stats.cached_count / pro
                 </select>
                 <select v-model="agentType" class="f-select" @change="applyFilter">
                     <option value="">كل الأنواع</option>
-                    <option value="content_generation">توليد محتوى</option>
+                    <option value="content_generator">كاتب المحتوى</option>
+                    <option value="marketing_plan">خطة تسويقية</option>
                     <option value="seasonal">موسمي</option>
                     <option value="campaign">حملة</option>
                 </select>
@@ -192,9 +208,11 @@ const cacheRate = props.stats.total ? Math.round((props.stats.cached_count / pro
                             <th style="width:40px">#</th>
                             <th>Workspace / المستخدم</th>
                             <th>نوع الطلب</th>
+                            <th>الموديل</th>
                             <th>الطلب (Prompt)</th>
                             <th>المنصة</th>
                             <th>الرموز (Tokens)</th>
+                            <th>تكلفة API</th>
                             <th>التاريخ</th>
                         </tr>
                     </thead>
@@ -224,6 +242,9 @@ const cacheRate = props.stats.total ? Math.round((props.stats.cached_count / pro
                                 </div>
                             </td>
 
+                            <!-- Model -->
+                            <td class="td-model" dir="ltr">{{ g.ai_model ?? '—' }}</td>
+
                             <!-- Prompt preview -->
                             <td class="td-prompt">{{ truncate(g.prompt) }}</td>
 
@@ -246,6 +267,9 @@ const cacheRate = props.stats.total ? Math.round((props.stats.cached_count / pro
                                     ↑{{ fmt(g.input_tokens) }} · ↓{{ fmt(g.output_tokens) }}
                                 </div>
                             </td>
+
+                            <!-- API cost -->
+                            <td class="td-cost">${{ (g.cost_usd ?? 0).toFixed(6) }}</td>
 
                             <!-- Date -->
                             <td class="td-muted td-date">{{ dt(g.created_at) }}</td>
@@ -300,6 +324,22 @@ const cacheRate = props.stats.total ? Math.round((props.stats.cached_count / pro
                             <div v-if="dialectLabel(selected.dialect)" class="meta-item">
                                 <span class="meta-label">اللهجة</span>
                                 <span class="meta-tag meta-tag--dialect">{{ dialectLabel(selected.dialect) }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Model + cost -->
+                        <div class="modal-meta" style="margin-top:0">
+                            <div v-if="selected.provider" class="meta-item">
+                                <span class="meta-label">المزود</span>
+                                <span class="meta-val" dir="ltr">{{ selected.provider }}</span>
+                            </div>
+                            <div v-if="selected.ai_model" class="meta-item">
+                                <span class="meta-label">الموديل</span>
+                                <span class="meta-val" dir="ltr" style="font-family:'JetBrains Mono',monospace;font-size:11px">{{ selected.ai_model }}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">تكلفة API</span>
+                                <span class="meta-val" style="color:#d97706;font-family:'JetBrains Mono',monospace">${{ (selected.cost_usd ?? 0).toFixed(6) }}</span>
                             </div>
                         </div>
 
@@ -474,6 +514,8 @@ const cacheRate = props.stats.total ? Math.round((props.stats.cached_count / pro
 }
 .modal-footer-date { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
 .muted { color: var(--text-muted) !important; }
+.td-model { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.td-cost  { font-size: 12px; font-weight: 600; color: #d97706; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
 
 /* Responsive */
 @media (max-width: 900px) { .kpi-strip { grid-template-columns: repeat(2, 1fr); } }

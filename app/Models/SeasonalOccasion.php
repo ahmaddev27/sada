@@ -23,6 +23,7 @@ class SeasonalOccasion extends Model
         'active'       => 'boolean',
     ];
 
+    /** @return HasMany<SeasonalTemplate, $this> */
     public function templates(): HasMany
     {
         return $this->hasMany(SeasonalTemplate::class)->orderBy('sort_order');

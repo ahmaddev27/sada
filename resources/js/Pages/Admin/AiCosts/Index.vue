@@ -7,11 +7,14 @@ import Icon from '@/Components/Base/Icon.vue'
 interface Generation {
     id: number
     agent_type: string
+    provider: string | null
+    ai_model: string | null
     platform: string | null
     dialect: string | null
     input_tokens: number
     output_tokens: number
     sada_tokens_charged: number
+    cost_usd: number
     cached: boolean
     created_at: string
     workspace: { id: number; name: string } | null
@@ -22,6 +25,7 @@ interface AgentStat {
     agent_type: string
     count: number
     tokens: number
+    cost_usd: number
     cached_count: number
 }
 
@@ -34,6 +38,8 @@ const props = defineProps<{
         total_tokens_billed: number
         total_input_tokens: number
         total_output_tokens: number
+        total_cost_usd: number
+        total_cost_sar: number
         cached_count: number
         cached_savings: number
     }
@@ -63,6 +69,7 @@ function resetFilters() {
 const agentLabels: Record<string, string> = {
     content_generator:  'كاتب المحتوى',
     content_generation: 'توليد المحتوى',
+    marketing_plan:     'خطة تسويقية',
     caption_writer:     'كتابة التعليقات',
     hashtag_generator:  'توليد الهاشتاقات',
     analytics:          'تحليلات',
@@ -82,6 +89,10 @@ const platformLabels: Record<string, string> = {
 
 function fmt(n: number) {
     return new Intl.NumberFormat('ar-SA').format(n)
+}
+
+function fmtUsd(n: number) {
+    return '$' + n.toFixed(4)
 }
 
 function cacheRate(stat: AgentStat) {
@@ -138,6 +149,16 @@ function cacheRate(stat: AgentStat) {
                     </div>
                     <div class="kpi-label">توليدات اليوم</div>
                 </div>
+                <div class="kpi-card">
+                    <div class="kpi-top">
+                        <div class="kpi-value">{{ fmtUsd(stats.total_cost_usd) }}</div>
+                        <div class="kpi-icon" style="background:color-mix(in oklab,#f59e0b 12%,transparent);color:#f59e0b">
+                            <Icon name="coins" :size="20" />
+                        </div>
+                    </div>
+                    <div class="kpi-label">تكلفة API الفعلية (USD)</div>
+                    <div class="kpi-sub">{{ stats.total_cost_sar.toFixed(2) }} ر.س</div>
+                </div>
             </div>
 
             <!-- Breakdown by agent type -->
@@ -149,6 +170,7 @@ function cacheRate(stat: AgentStat) {
                         <div class="breakdown-stats">
                             <span class="stat-chip">{{ fmt(stat.count) }} توليد</span>
                             <span class="stat-chip accent">{{ fmt(stat.tokens) }} رصيد</span>
+                            <span class="stat-chip amber">{{ fmtUsd(stat.cost_usd ?? 0) }}</span>
                             <span class="stat-chip green">{{ cacheRate(stat) }} مخزّن</span>
                         </div>
                     </div>
@@ -183,27 +205,31 @@ function cacheRate(stat: AgentStat) {
                             <th>Workspace</th>
                             <th>المستخدم</th>
                             <th>الوكيل</th>
+                            <th>الموديل</th>
                             <th>المنصة</th>
-                            <th>رموز الدخل</th>
-                            <th>رموز الخرج</th>
+                            <th>دخل</th>
+                            <th>خرج</th>
                             <th>مُفوتر</th>
+                            <th>تكلفة API</th>
                             <th>Cache</th>
                             <th>التاريخ</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="generations.data.length === 0">
-                            <td colspan="10" class="empty-row">لا توجد بيانات</td>
+                            <td colspan="12" class="empty-row">لا توجد بيانات</td>
                         </tr>
                         <tr v-for="g in generations.data" :key="g.id">
                             <td class="id-cell">{{ g.id }}</td>
                             <td class="ws-cell">{{ g.workspace?.name ?? '—' }}</td>
                             <td class="ws-cell">{{ g.user?.name ?? '—' }}</td>
                             <td><span class="pill pill--purple">{{ agentLabels[g.agent_type] ?? g.agent_type }}</span></td>
+                            <td class="model-cell" dir="ltr">{{ g.ai_model ?? '—' }}</td>
                             <td><span class="pill pill--gray">{{ g.platform ? (platformLabels[g.platform] ?? g.platform) : '—' }}</span></td>
                             <td class="num-cell">{{ fmt(g.input_tokens) }}</td>
                             <td class="num-cell">{{ fmt(g.output_tokens) }}</td>
                             <td class="amount">{{ fmt(g.sada_tokens_charged) }}</td>
+                            <td class="cost-cell">{{ fmtUsd(g.cost_usd ?? 0) }}</td>
                             <td>
                                 <span :class="['pill', g.cached ? 'pill--green' : 'pill--gray']">
                                     {{ g.cached ? 'نعم' : 'لا' }}
@@ -253,6 +279,10 @@ function cacheRate(stat: AgentStat) {
 .stat-chip { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 99px; background: var(--bg-muted); color: var(--text-muted); }
 .stat-chip.accent { background: color-mix(in oklab, #C8965F 12%, transparent); color: #C8965F; }
 .stat-chip.green  { background: color-mix(in oklab, #22c55e 12%, transparent); color: #16a34a; }
+.stat-chip.amber  { background: color-mix(in oklab, #f59e0b 12%, transparent); color: #d97706; }
+.kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.model-cell { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cost-cell  { font-size: 12px; font-weight: 600; color: #d97706; font-family: 'JetBrains Mono', monospace; }
 
 .filters-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
 .inp { background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: 8px 12px; font-size: 13px; color: var(--text-primary); font-family: var(--font-arabic); outline: none; }

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 // CON-10: Connected accounts page
 import { ref, computed } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Components/Layout/AppLayout.vue'
 import Modal from '@/Components/Base/Modal.vue'
+import type { PageProps } from '@/Types'
 
 interface SocialAccount {
     id: number
@@ -21,9 +22,12 @@ interface SocialAccount {
 
 const props = defineProps<{ accounts: SocialAccount[] }>()
 
+const page   = usePage<PageProps>()
+const flags  = computed(() => page.props.featureFlags)
+
 const byProvider = (p: string) => computed(() => props.accounts.filter(a => a.provider === p))
 
-const platforms = [
+const platforms = computed(() => [
     {
         key:         'instagram',
         label:       'Instagram',
@@ -32,6 +36,7 @@ const platforms = [
         bg:          'linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)',
         iconColor:   '#fff',
         connectPath: '/social/connect/meta',
+        enabled:     true,
     },
     {
         key:         'facebook',
@@ -41,6 +46,7 @@ const platforms = [
         bg:          '#1877f2',
         iconColor:   '#fff',
         connectPath: '/social/connect/meta',
+        enabled:     true,
     },
     {
         key:         'tiktok',
@@ -50,6 +56,7 @@ const platforms = [
         bg:          '#010101',
         iconColor:   '#fff',
         connectPath: '/social/connect/tiktok',
+        enabled:     flags.value?.tiktok_integration ?? false,
     },
     {
         key:         'snapchat',
@@ -59,6 +66,7 @@ const platforms = [
         bg:          '#FFFC00',
         iconColor:   '#000',
         connectPath: '/social/connect/snapchat',
+        enabled:     flags.value?.snapchat_integration ?? false,
     },
     {
         key:         'x',
@@ -68,8 +76,9 @@ const platforms = [
         bg:          '#000000',
         iconColor:   '#fff',
         connectPath: '/social/connect/x',
+        enabled:     flags.value?.x_integration ?? false,
     },
-]
+])
 
 // ── Disconnect modal ─────────────────────────────────────────────────
 const disconnectTarget = ref<SocialAccount | null>(null)
@@ -113,8 +122,8 @@ function connect(path: string) {
                 </div>
             </div>
 
-            <!-- Platform sections — always all 5 shown -->
-            <section v-for="plat in platforms" :key="plat.key" class="platform-section">
+            <!-- Platform sections -->
+            <section v-for="plat in platforms" :key="plat.key" class="platform-section" :class="{ 'platform-section--disabled': !plat.enabled }">
 
                 <!-- Section header -->
                 <div class="platform-header">
@@ -137,7 +146,8 @@ function connect(path: string) {
                     <span v-if="plat.accounts.value.length" class="count-badge">
                         {{ plat.accounts.value.length }}
                     </span>
-                    <button class="btn-connect" @click="connect(plat.connectPath)">
+                    <span v-if="!plat.enabled" class="badge-soon">قريباً</span>
+                    <button v-else class="btn-connect" @click="connect(plat.connectPath)">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         ربط حساب
                     </button>
@@ -338,4 +348,12 @@ function connect(path: string) {
     display: grid; place-items: center; margin: 0 auto 16px;
 }
 .disconnect-text { font-size: 14px; color: var(--text-primary); line-height: 1.7; margin: 0; }
+
+.platform-section--disabled { opacity: .55; pointer-events: none; }
+.badge-soon {
+    font-size: 11px; font-weight: 600; letter-spacing: .4px;
+    padding: 3px 10px; border-radius: 20px;
+    background: color-mix(in oklab, var(--text-muted) 15%, transparent);
+    color: var(--text-muted);
+}
 </style>

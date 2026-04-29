@@ -8,6 +8,7 @@ use App\Models\AiGeneration;
 use App\Models\MarketingPlan;
 use App\Models\User;
 use App\Models\Workspace;
+use App\Services\Ai\AiPricingService;
 use App\Services\Ai\Drivers\AnthropicDriver;
 use App\Services\Ai\Drivers\GeminiDriver;
 use App\Services\Ai\Drivers\GroqDriver;
@@ -16,6 +17,10 @@ use Illuminate\Support\Facades\Log;
 
 class GenerateMarketingPlanAction
 {
+    public function __construct(
+        private readonly AiPricingService $pricing,
+    ) {}
+
     /**
      * @param array<string, mixed> $inputs
      */
@@ -38,10 +43,10 @@ class GenerateMarketingPlanAction
 
             $planData = $this->extractJson($result['content']);
 
-            $cost = $this->calculateCost(
+            $cost = $this->pricing->costFor(
                 $driver->model(),
                 $result['input_tokens'],
-                $result['output_tokens']
+                $result['output_tokens'],
             );
 
             $plan->update([
@@ -239,20 +244,6 @@ MSG;
         }
 
         throw new \RuntimeException('No AI provider is configured. Please set at least one API key in .env.');
-    }
-
-    private function calculateCost(string $model, int $inputTokens, int $outputTokens): float
-    {
-        $rates = config('ai_pricing.models', [])[$model] ?? null;
-
-        if ($rates === null) {
-            return 0.0;
-        }
-
-        return round(
-            ($inputTokens / 1_000_000 * $rates['input']) + ($outputTokens / 1_000_000 * $rates['output']),
-            8
-        );
     }
 
     private function countryLabel(string $code): string
