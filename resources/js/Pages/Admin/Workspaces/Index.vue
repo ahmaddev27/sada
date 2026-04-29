@@ -2,6 +2,9 @@
 import { ref } from 'vue'
 import { router, Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Components/Admin/AdminLayout.vue'
+import { useConfirmStore } from '@/Stores/confirm'
+
+const confirmStore = useConfirmStore()
 
 interface Workspace {
     id: number
@@ -42,8 +45,9 @@ function applyFilter() {
     router.get('/admin/workspaces', { search: search.value, status: status.value }, { preserveState: true, replace: true })
 }
 
-function suspend(ws: Workspace) {
-    if (! confirm(`تعليق "${ws.name}"؟`)) return
+async function suspend(ws: Workspace) {
+    const ok = await confirmStore.ask({ title: `تعليق "${ws.name}"؟`, confirmText: 'تعليق', dangerous: true })
+    if (!ok) return
     router.post(`/admin/workspaces/${ws.id}/suspend`, {})
 }
 

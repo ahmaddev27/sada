@@ -3,6 +3,9 @@ import { ref, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
 import AdminLayout from '@/Components/Admin/AdminLayout.vue'
 import Icon from '@/Components/Base/Icon.vue'
+import { useConfirmStore } from '@/Stores/confirm'
+
+const confirmStore = useConfirmStore()
 
 interface Occasion {
     id: number
@@ -132,10 +135,15 @@ function toggleActive(o: Occasion) {
     router.post(`/admin/seasonal/${o.id}/toggle`)
 }
 
-function deleteOccasion(o: Occasion) {
-    if (confirm(`حذف مناسبة "${o.name}"؟ سيتم حذف جميع القوالب المرتبطة بها.`)) {
-        router.delete(`/admin/seasonal/${o.id}`)
-    }
+async function deleteOccasion(o: Occasion) {
+    const ok = await confirmStore.ask({
+        title: `حذف "${o.name}"؟`,
+        message: 'سيتم حذف جميع القوالب المرتبطة بها نهائياً.',
+        confirmText: 'حذف',
+        dangerous: true,
+    })
+    if (!ok) return
+    router.delete(`/admin/seasonal/${o.id}`)
 }
 </script>
 

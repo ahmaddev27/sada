@@ -4,6 +4,7 @@ import { usePage, Link, router } from '@inertiajs/vue3'
 import { useUiStore } from '@/Stores/ui'
 import Icon from '@/Components/Base/Icon.vue'
 import Toast from '@/Components/Base/Toast.vue'
+import ConfirmModal from '@/Components/Base/ConfirmModal.vue'
 import type { PageProps } from '@/Types'
 import type { AppNotification } from '@/Types'
 
@@ -438,6 +439,7 @@ onUnmounted(() => {
     </div>
 
     <Toast />
+    <ConfirmModal />
 </template>
 
 <style scoped>

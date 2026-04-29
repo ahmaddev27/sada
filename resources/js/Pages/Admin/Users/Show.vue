@@ -3,6 +3,9 @@ import { ref } from 'vue'
 import { router, Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Components/Admin/AdminLayout.vue'
 import Icon from '@/Components/Base/Icon.vue'
+import { useConfirmStore } from '@/Stores/confirm'
+
+const confirmStore = useConfirmStore()
 
 interface Workspace      { id: number; name: string; created_at: string }
 interface TokenTx        { id: number; type: string; amount: number; balance_after: number; created_at: string }
@@ -24,8 +27,9 @@ const props = defineProps<{ user: User }>()
 const grantAmount = ref(0)
 const granting    = ref(false)
 
-function ban() {
-    if (! confirm(`حظر ${props.user.name}؟`)) return
+async function ban() {
+    const ok = await confirmStore.ask({ title: `حظر ${props.user.name}؟`, confirmText: 'حظر', dangerous: true })
+    if (!ok) return
     router.post(`/admin/users/${props.user.id}/ban`, {})
 }
 

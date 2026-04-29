@@ -4,6 +4,7 @@ import { Link, usePage, router } from '@inertiajs/vue3'
 import { useUiStore } from '@/Stores/ui'
 import Icon from '@/Components/Base/Icon.vue'
 import Toast from '@/Components/Base/Toast.vue'
+import ConfirmModal from '@/Components/Base/ConfirmModal.vue'
 import type { PageProps } from '@/Types'
 
 const page  = usePage<PageProps>()
@@ -145,6 +146,7 @@ function logout() {
     </div>
 
     <Toast />
+    <ConfirmModal />
 </template>
 
 <style scoped>

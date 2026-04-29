@@ -3,6 +3,9 @@ import { ref } from 'vue'
 import { router, Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Components/Admin/AdminLayout.vue'
 import Icon from '@/Components/Base/Icon.vue'
+import { useConfirmStore } from '@/Stores/confirm'
+
+const confirmStore = useConfirmStore()
 
 interface Template {
     id: number
@@ -89,10 +92,10 @@ function submit() {
     }
 }
 
-function deleteTemplate(t: Template) {
-    if (confirm('حذف هذا القالب؟')) {
-        router.delete(`/admin/seasonal/${props.occasion.id}/templates/${t.id}`)
-    }
+async function deleteTemplate(t: Template) {
+    const ok = await confirmStore.ask({ title: 'حذف هذا القالب؟', confirmText: 'حذف', dangerous: true })
+    if (!ok) return
+    router.delete(`/admin/seasonal/${props.occasion.id}/templates/${t.id}`)
 }
 </script>
 

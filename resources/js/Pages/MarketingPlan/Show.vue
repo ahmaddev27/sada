@@ -3,6 +3,9 @@ import { computed } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/Components/Layout/AppLayout.vue'
 import Icon from '@/Components/Base/Icon.vue'
+import { useConfirmStore } from '@/Stores/confirm'
+
+const confirmStore = useConfirmStore()
 
 interface PlanData {
     title: string
@@ -66,10 +69,15 @@ function printPlan() {
     window.print()
 }
 
-function deletePlan() {
-    if (confirm('حذف هذه الخطة التسويقية نهائياً؟')) {
-        router.delete(`/marketing-plan/${props.plan.id}`)
-    }
+async function deletePlan() {
+    const ok = await confirmStore.ask({
+        title: 'حذف الخطة التسويقية؟',
+        message: 'سيتم حذف هذه الخطة نهائياً ولا يمكن التراجع عن هذا الإجراء.',
+        confirmText: 'حذف',
+        dangerous: true,
+    })
+    if (!ok) return
+    router.delete(`/marketing-plan/${props.plan.id}`)
 }
 </script>
 

@@ -3,6 +3,9 @@ import { ref, computed, reactive } from 'vue'
 import { router } from '@inertiajs/vue3'
 import AdminLayout from '@/Components/Admin/AdminLayout.vue'
 import Icon from '@/Components/Base/Icon.vue'
+import { useUiStore } from '@/Stores/ui'
+
+const ui = useUiStore()
 
 interface SettingItem {
     key: string
@@ -71,7 +74,7 @@ async function uploadImage(key: string, event: Event) {
             form[key]         = data.url
         }
     } catch {
-        alert('فشل رفع الصورة.')
+        ui.error('فشل رفع الصورة.')
     } finally {
         imageUploading[key] = false
         input.value = ''

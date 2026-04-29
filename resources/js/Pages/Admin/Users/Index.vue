@@ -2,6 +2,9 @@
 import { ref } from 'vue'
 import { router, Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Components/Admin/AdminLayout.vue'
+import { useConfirmStore } from '@/Stores/confirm'
+
+const confirmStore = useConfirmStore()
 
 interface User {
     id: number
@@ -43,8 +46,9 @@ function applyFilter() {
     router.get('/admin/users', { search: search.value, status: status.value }, { preserveState: true, replace: true })
 }
 
-function ban(user: User) {
-    if (! confirm(`حظر ${user.name}؟`)) return
+async function ban(user: User) {
+    const ok = await confirmStore.ask({ title: `حظر ${user.name}؟`, confirmText: 'حظر', dangerous: true })
+    if (!ok) return
     router.post(`/admin/users/${user.id}/ban`, {})
 }
 
