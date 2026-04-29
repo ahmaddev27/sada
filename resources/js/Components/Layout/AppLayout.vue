@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import { useUiStore } from '@/Stores/ui'
+import { usePushNotifications } from '@/Composables/usePushNotifications'
 import Icon from '@/Components/Base/Icon.vue'
 import Toast from '@/Components/Base/Toast.vue'
 import ConfirmModal from '@/Components/Base/ConfirmModal.vue'
@@ -135,7 +136,12 @@ function onKey(e: KeyboardEvent) {
     if (e.key === 'Escape') { closeMobile(); closeWsDrop(); closeUserDrop(); closeNotif(); }
 }
 
-onMounted(() => window.addEventListener('keydown', onKey))
+const { autoInit: pushAutoInit } = usePushNotifications()
+
+onMounted(() => {
+    window.addEventListener('keydown', onKey)
+    if (user.value) pushAutoInit()
+})
 onUnmounted(() => {
     window.removeEventListener('keydown', onKey)
 })

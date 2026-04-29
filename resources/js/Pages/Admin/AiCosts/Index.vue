@@ -91,8 +91,8 @@ function fmt(n: number) {
     return new Intl.NumberFormat('ar-SA').format(n)
 }
 
-function fmtUsd(n: number) {
-    return '$' + n.toFixed(4)
+function fmtUsd(n: number | string) {
+    return '$' + Number(n).toFixed(4)
 }
 
 function cacheRate(stat: AgentStat) {
@@ -157,7 +157,7 @@ function cacheRate(stat: AgentStat) {
                         </div>
                     </div>
                     <div class="kpi-label">تكلفة API الفعلية (USD)</div>
-                    <div class="kpi-sub">{{ stats.total_cost_sar.toFixed(2) }} ر.س</div>
+                    <div class="kpi-sub">{{ Number(stats.total_cost_sar).toFixed(2) }} ر.س</div>
                 </div>
             </div>
 

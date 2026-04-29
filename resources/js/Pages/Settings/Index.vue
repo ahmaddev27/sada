@@ -339,13 +339,15 @@ onMounted(() => pushInit());
                         <div class="push-card-title">
                             <Icon name="bell" :size="16" />
                             إشعارات المتصفح
+                            <span v-if="pushSubscribed" class="push-status-dot push-status-dot--on" title="مفعّل" />
+                            <span v-else-if="pushSupported" class="push-status-dot push-status-dot--off" title="معطّل" />
                         </div>
                         <div class="push-card-desc">
                             تلقَّ إشعارات فورية عند نشر منشوراتك أو انخفاض رصيدك.
                         </div>
                     </div>
                     <div class="push-card-action">
-                        <span v-if="!pushSupported" class="push-unsupported">غير مدعوم</span>
+                        <span v-if="!pushSupported" class="push-unsupported" title="يتطلب HTTPS ومتصفحاً حديثاً">غير مدعوم</span>
                         <button
                             v-else-if="pushSubscribed"
                             class="btn-push btn-push--off"
@@ -353,7 +355,10 @@ onMounted(() => pushInit());
                             @click="pushUnsubscribe"
                         >
                             <span v-if="pushLoading">...</span>
-                            <span v-else>إيقاف</span>
+                            <template v-else>
+                                <Icon name="bell" :size="12" />
+                                إيقاف
+                            </template>
                         </button>
                         <button
                             v-else
@@ -362,7 +367,10 @@ onMounted(() => pushInit());
                             @click="pushSubscribe"
                         >
                             <span v-if="pushLoading">...</span>
-                            <span v-else>تفعيل</span>
+                            <template v-else>
+                                <Icon name="bell" :size="12" />
+                                تفعيل
+                            </template>
                         </button>
                     </div>
                 </div>
@@ -715,6 +723,16 @@ onMounted(() => pushInit());
     background: var(--bg-page); border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
 }
+.push-status-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-right: 2px;
+    vertical-align: middle;
+}
+.push-status-dot--on  { background: #10b981; box-shadow: 0 0 0 2px color-mix(in oklab, #10b981 25%, transparent); }
+.push-status-dot--off { background: var(--border-default); }
+
 .push-card-title {
     display: flex; align-items: center; gap: 7px;
     font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px;
@@ -722,6 +740,7 @@ onMounted(() => pushInit());
 .push-card-desc  { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 .push-unsupported { font-size: 12px; color: var(--text-muted); }
 .btn-push {
+    display: inline-flex; align-items: center; gap: 5px;
     padding: 7px 16px; border-radius: 7px; font-size: 13px; font-weight: 600;
     font-family: var(--font-arabic); cursor: pointer; border: none;
     transition: opacity .15s; white-space: nowrap;

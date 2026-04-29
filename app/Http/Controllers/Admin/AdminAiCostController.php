@@ -44,7 +44,14 @@ class AdminAiCostController extends Controller
             )
             ->groupBy('agent_type')
             ->orderByDesc('count')
-            ->get();
+            ->toBase()->get()
+            ->map(fn ($item) => [
+                'agent_type'   => $item->agent_type,
+                'count'        => (int) $item->count,
+                'tokens'       => (int) $item->tokens,
+                'cost_usd'     => round((float) $item->cost_usd, 6),
+                'cached_count' => (int) $item->cached_count,
+            ]);
 
         // Daily usage — last 14 days
         $dailyChart = AiGeneration::withoutWorkspaceScope()

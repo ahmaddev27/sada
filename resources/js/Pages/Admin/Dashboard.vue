@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Link } from '@inertiajs/vue3'
+import { Link, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Components/Admin/AdminLayout.vue'
 
 const props = defineProps<{
     totalUsers:    number
     newUsersToday: number
-    newUsersWeek:  number
     bannedUsers:   number
     totalWorkspaces:     number
     suspendedWorkspaces: number
@@ -25,6 +24,11 @@ const props = defineProps<{
     healthySocialAccounts: number
     expiredSocialAccounts: number
     totalRevenue: number
+    newUsersInPeriod:    number
+    generationsInPeriod: number
+    tokensInPeriod:      number
+    revenueInPeriod:     number
+    period: string
     userGrowth:       { date: string; count: number }[]
     revenueChart:     { month: string; total: number }[]
     generationsChart: { date: string; count: number; tokens: number }[]
@@ -32,6 +36,21 @@ const props = defineProps<{
     recentGenerations: { id: number; workspace: { name: string } | null; user: { name: string } | null; agent_type: string; platform: string; sada_tokens_charged: number; cached: boolean; created_at: string }[]
     recentFailedPosts: { id: number; workspace: { name: string } | null; platform: string; scheduled_for: string | null; created_at: string }[]
 }>()
+
+const PERIODS = [
+    { value: '1',   label: '٢٤ ساعة' },
+    { value: '7',   label: '٧ أيام'  },
+    { value: '30',  label: '٣٠ يوماً' },
+    { value: '90',  label: '٩٠ يوماً' },
+    { value: 'all', label: 'الكل'    },
+]
+
+function setPeriod(p: string) {
+    router.get('/admin', { period: p }, { preserveState: true, replace: true })
+}
+
+const periodLabel = computed(() => PERIODS.find(p => p.value === props.period)?.label ?? '٣٠ يوماً')
+const chartPeriodLabel = computed(() => props.period === 'all' ? 'كل الوقت' : `آخر ${periodLabel.value}`)
 
 const today = new Date().toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
@@ -62,9 +81,9 @@ const PLATFORM_LABELS: Record<string, string> = {
     linkedin:  'لينكدإن',
 }
 
-const userGrowthMax    = computed(() => Math.max(...props.userGrowth.map(x => x.count), 1))
-const genChartMax      = computed(() => Math.max(...props.generationsChart.map(x => x.count), 1))
-const revenueChartMax  = computed(() => Math.max(...props.revenueChart.map(x => x.total), 1))
+const userGrowthMax   = computed(() => Math.max(...props.userGrowth.map(x => x.count), 1))
+const genChartMax     = computed(() => Math.max(...props.generationsChart.map(x => x.count), 1))
+const revenueChartMax = computed(() => Math.max(...props.revenueChart.map(x => x.total), 1))
 
 const postHealthPct = computed(() => {
     if (!props.totalPosts) return 0
@@ -94,6 +113,19 @@ const socialHealthPct = computed(() => {
                 </div>
             </div>
 
+            <!-- ── Period selector ────────────────────────────────── -->
+            <div class="period-bar">
+                <span class="period-bar-label">الفترة:</span>
+                <div class="period-btns">
+                    <button
+                        v-for="p in PERIODS"
+                        :key="p.value"
+                        :class="['period-btn', { 'period-btn--active': period === p.value }]"
+                        @click="setPeriod(p.value)"
+                    >{{ p.label }}</button>
+                </div>
+            </div>
+
             <!-- ── Alert: failed posts ─────────────────────────────── -->
             <div v-if="failedPosts > 0" class="alert-bar">
                 <span class="alert-dot" />
@@ -111,7 +143,7 @@ const socialHealthPct = computed(() => {
                     <div class="hero-label">إجمالي المستخدمين</div>
                     <div class="hero-sub">
                         <span class="tag tag--light">+{{ newUsersToday }} اليوم</span>
-                        <span class="tag tag--light">+{{ newUsersWeek }} الأسبوع</span>
+                        <span class="tag tag--light">+{{ fmt(newUsersInPeriod) }} في {{ periodLabel }}</span>
                     </div>
                 </div>
 
@@ -123,6 +155,7 @@ const socialHealthPct = computed(() => {
                     <div class="hero-label">توليدات AI</div>
                     <div class="hero-sub">
                         <span class="tag tag--purple">+{{ generationsToday }} اليوم</span>
+                        <span class="tag tag--purple">{{ fmt(generationsInPeriod) }} في {{ periodLabel }}</span>
                     </div>
                 </div>
 
@@ -245,8 +278,8 @@ const socialHealthPct = computed(() => {
                             <div class="usr-icon usr-icon--green">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                             </div>
-                            <span class="usr-lbl">جدد هذا الأسبوع</span>
-                            <span class="usr-val green">+{{ fmt(newUsersWeek) }}</span>
+                            <span class="usr-lbl">جدد في {{ periodLabel }}</span>
+                            <span class="usr-val green">+{{ fmt(newUsersInPeriod) }}</span>
                         </div>
                         <div class="usr-row">
                             <div class="usr-icon usr-icon--red">
@@ -272,7 +305,7 @@ const socialHealthPct = computed(() => {
                 <div class="chart-card">
                     <div class="chart-head">
                         <span class="chart-title">نمو المستخدمين</span>
-                        <span class="chart-sub">آخر 30 يوماً</span>
+                        <span class="chart-sub">{{ chartPeriodLabel }}</span>
                     </div>
                     <div class="spark-chart">
                         <template v-if="userGrowth.length">
@@ -293,7 +326,7 @@ const socialHealthPct = computed(() => {
                 <div class="chart-card">
                     <div class="chart-head">
                         <span class="chart-title">توليدات AI</span>
-                        <span class="chart-sub">آخر 14 يوماً</span>
+                        <span class="chart-sub">{{ chartPeriodLabel }}</span>
                     </div>
                     <div class="spark-chart">
                         <template v-if="generationsChart.length">
@@ -314,7 +347,7 @@ const socialHealthPct = computed(() => {
                 <div class="chart-card chart-card--wide">
                     <div class="chart-head">
                         <span class="chart-title">الإيرادات (توكنات مُباعة)</span>
-                        <span class="chart-sub">آخر 6 أشهر</span>
+                        <span class="chart-sub">{{ chartPeriodLabel }} · {{ fmt(revenueInPeriod) }} توكن</span>
                     </div>
                     <div class="spark-chart spark-chart--labeled">
                         <template v-if="revenueChart.length">
@@ -472,6 +505,27 @@ const socialHealthPct = computed(() => {
     border-color: color-mix(in oklab, var(--sada-500) 25%, transparent);
 }
 .hdr-btn--accent:hover { background: color-mix(in oklab, var(--sada-500) 18%, transparent); }
+
+/* ── Period selector ────────────────────────────── */
+.period-bar {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 18px; flex-wrap: wrap;
+}
+.period-bar-label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+.period-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+.period-btn {
+    font-size: 12px; font-weight: 600; padding: 5px 14px;
+    border-radius: var(--radius-md);
+    background: var(--bg-surface); border: 1px solid var(--border-default);
+    color: var(--text-secondary); cursor: pointer;
+    font-family: var(--font-arabic);
+    transition: all .15s;
+}
+.period-btn:hover { background: var(--bg-muted); border-color: var(--border-hover); }
+.period-btn--active {
+    background: var(--sada-500); border-color: var(--sada-500);
+    color: #fff;
+}
 
 /* ── Alert bar ──────────────────────────────────── */
 .alert-bar {

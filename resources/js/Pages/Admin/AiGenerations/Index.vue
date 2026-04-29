@@ -172,9 +172,9 @@ const cacheRate = props.stats.total ? Math.round((props.stats.cached_count / pro
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                     </div>
                     <div>
-                        <div class="kpi-num">${{ stats.total_cost_usd.toFixed(4) }}</div>
+                        <div class="kpi-num">${{ Number(stats.total_cost_usd).toFixed(4) }}</div>
                         <div class="kpi-label">تكلفة API الفعلية</div>
-                        <div class="kpi-sub muted">{{ stats.total_cost_sar.toFixed(2) }} ر.س</div>
+                        <div class="kpi-sub muted">{{ Number(stats.total_cost_sar).toFixed(2) }} ر.س</div>
                     </div>
                 </div>
             </div>
@@ -269,7 +269,7 @@ const cacheRate = props.stats.total ? Math.round((props.stats.cached_count / pro
                             </td>
 
                             <!-- API cost -->
-                            <td class="td-cost">${{ (g.cost_usd ?? 0).toFixed(6) }}</td>
+                            <td class="td-cost">${{ Number(g.cost_usd ?? 0).toFixed(6) }}</td>
 
                             <!-- Date -->
                             <td class="td-muted td-date">{{ dt(g.created_at) }}</td>
@@ -339,7 +339,7 @@ const cacheRate = props.stats.total ? Math.round((props.stats.cached_count / pro
                             </div>
                             <div class="meta-item">
                                 <span class="meta-label">تكلفة API</span>
-                                <span class="meta-val" style="color:#d97706;font-family:'JetBrains Mono',monospace">${{ (selected.cost_usd ?? 0).toFixed(6) }}</span>
+                                <span class="meta-val" style="color:#d97706;font-family:'JetBrains Mono',monospace">${{ Number(selected.cost_usd ?? 0).toFixed(6) }}</span>
                             </div>
                         </div>
 

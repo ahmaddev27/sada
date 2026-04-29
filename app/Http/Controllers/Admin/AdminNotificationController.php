@@ -7,9 +7,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\User;
+use App\Notifications\AdminBroadcastNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -43,9 +44,19 @@ class AdminNotificationController extends Controller
             'audience' => ['required', 'in:all,verified'],
         ]);
 
-        $targetCount = $data['audience'] === 'verified'
-            ? User::whereNotNull('email_verified_at')->count()
-            : User::count();
+        $usersQuery = User::when(
+            $data['audience'] === 'verified',
+            fn ($q) => $q->whereNotNull('email_verified_at'),
+        );
+
+        $targetCount = $usersQuery->count();
+
+        // Dispatch queued notifications in chunks to avoid memory spikes
+        $notification = new AdminBroadcastNotification($data['title'], $data['body']);
+
+        $usersQuery->chunkById(100, function ($chunk) use ($notification) {
+            NotificationFacade::send($chunk, clone $notification);
+        });
 
         // Log the broadcast action
         AdminLog::create([
