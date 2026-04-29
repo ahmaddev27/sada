@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { getToken, deleteToken } from 'firebase/messaging';
 import { messagingPromise } from '@/firebase';
 
-const FCM_VAPID_KEY  = '6sp9Bcy2DrT3nFY11dGz4Vvo5RT_jJvBMT5KtXCTGQk';
+const FCM_VAPID_KEY  = 'BOdUGS90dssU5sT5P3BM1j9tti0CcHiN2eRe2LLA9sclXHhgyy-_1HVCcneZ37hKVY19DUPdmNF2hvce5bONP9w';
 const ASKED_KEY      = 'push_permission_asked';
 const OPTED_IN_KEY   = 'push_opted_in';
 const REFRESH_KEY    = 'push_last_refresh';
